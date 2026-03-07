@@ -142,12 +142,12 @@ export default function Header({
           </div>
         </div>
 
-        <Link
+        {/* <Link
           href="/rules"
           className="relative p-2.5 text-white hover:text-gold transition-colors"
         >
           წესები
-        </Link>
+        </Link> */}
 
         {/* Search */}
         <div className="flex-1 max-w-xl hidden lg:flex items-center bg-dark-card rounded-2xl border border-dark-border p-1 relative">

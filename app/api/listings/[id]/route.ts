@@ -5,10 +5,11 @@ import { getUserFromRequest } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
-  const listing = await Listing.findById(params.id)
+  const { id } = await params;
+  const listing = await Listing.findById(id)
     .populate('owner', 'name avatar phone email instagram facebook');
   if (!listing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -20,39 +21,41 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   const decoded = getUserFromRequest(request);
   if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const listing = await Listing.findById(params.id);
+  const { id } = await params;
+  const listing = await Listing.findById(id);
   if (!listing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (listing.owner.toString() !== decoded.id && decoded.role !== 'ADMIN')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const body = await request.json();
-  const updated = await Listing.findByIdAndUpdate(params.id, body, { new: true });
+  const updated = await Listing.findByIdAndUpdate(id, body, { new: true });
   return NextResponse.json(updated);
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   const decoded = getUserFromRequest(request);
   if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const listing = await Listing.findById(params.id);
+  const { id } = await params;
+  const listing = await Listing.findById(id);
   if (!listing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (listing.owner.toString() !== decoded.id && decoded.role !== 'ADMIN')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  await Listing.findByIdAndDelete(params.id);
-  const offers = await Offer.find({ listing: params.id });
+  await Listing.findByIdAndDelete(id);
+  const offers = await Offer.find({ listing: id });
   const offerIds = offers.map(o => o._id);
-  await Offer.deleteMany({ listing: params.id });
+  await Offer.deleteMany({ listing: id });
   if (offerIds.length > 0)
     await Notification.deleteMany({ offer: { $in: offerIds } });
 

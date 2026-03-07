@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   MapPin,
   Edit3,
@@ -18,8 +19,6 @@ export function ListingCardSkeleton() {
       <div className="p-4 space-y-3">
         <div className="h-4 bg-zinc-800 rounded w-3/4" />
         <div className="h-3 bg-zinc-800 rounded w-1/3" />
-        <div className="h-3 bg-zinc-800 rounded w-full" />
-        <div className="h-3 bg-zinc-800 rounded w-2/3" />
         <div className="flex gap-2 pt-2">
           <div className="h-8 bg-zinc-800 rounded-lg flex-1" />
           <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
@@ -48,6 +47,7 @@ export default function ListingCard({
   delay = 0,
   className,
 }: ListingCardProps) {
+  const router = useRouter();
   const [isSaved, setIsSaved] = useState(
     user?.savedListings?.includes(listing._id),
   );
@@ -92,15 +92,18 @@ export default function ListingCard({
 
   return (
     <div
-      className={cn("animate-fade-up h-full", className)}
+      className={cn("animate-fade-up h-full cursor-pointer", className)}
       style={{ animationDelay: `${delay}s` }}
+      onClick={() => listing._id && router.push(`/listing/${listing._id}`)}
     >
       <div
         className={cn(
           "group relative w-full h-full flex flex-col overflow-hidden rounded-xl border transition-all duration-300 hover:-translate-y-1 bg-card",
           type === "VIP"
             ? "border-gold/30 hover:shadow-[0_12px_40px_rgba(212,175,55,0.2)]"
-            : "border-dark-border hover:border-gold/20",
+            : type === "SILVER"
+              ? "border-zinc-400/40 hover:shadow-[0_12px_40px_rgba(192,192,192,0.15)]"
+              : "border-dark-border hover:border-gold/20",
           isExchanged && "border-red-500/60 opacity-90",
         )}
       >
@@ -114,13 +117,14 @@ export default function ListingCard({
           </div>
         )}
 
+        {/* IMAGE */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-dark/40 group/carousel shrink-0">
           <img
             src={
               listing.images?.[currentImageIndex] ||
               "https://picsum.photos/seed/item/400/400"
             }
-            className="w-full h-full object-cover transition-opacity duration-300"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             referrerPolicy="no-referrer"
             loading="lazy"
             alt={listing.title}
@@ -152,13 +156,27 @@ export default function ListingCard({
               </div>
             </>
           )}
+
+          {/* BADGES */}
           {type === "VIP" && (
             <span className="absolute left-2 top-2 rounded-md bg-gold/90 px-2 py-0.5 text-[10px] font-bold text-dark flex items-center gap-1 z-20 shadow-lg">
               ⭐ VIP
             </span>
           )}
+          {type === "SILVER" && (
+            <span
+              className="absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-bold flex items-center gap-1 z-20 shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, #C0C0C0, #E8E8E8)",
+                color: "#1a1a1a",
+              }}
+            >
+              🥈 SILVER
+            </span>
+          )}
         </div>
 
+        {/* INFO */}
         <div className="bg-dark-card p-4 flex flex-col flex-1 space-y-3">
           <div className="flex justify-between items-start gap-2">
             <h4 className="font-bold text-sm text-white line-clamp-1 flex-1">
@@ -179,15 +197,12 @@ export default function ListingCard({
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <MapPin size={12} className="text-gold" />
+            <MapPin size={12} className="text-[#a81010ff]" />
             {listing.city}
           </div>
 
-          <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed h-8">
-            {listing.description}
-          </p>
-
-          <div className="space-y-2">
+          {/* გაცვლა მინდა */}
+          <div className="space-y-1.5">
             <p className="text-[10px] font-bold text-gold uppercase tracking-widest flex items-center gap-1.5">
               <RefreshCw size={10} /> გაცვლა მინდა:
             </p>
@@ -219,6 +234,7 @@ export default function ListingCard({
             </div>
           </div>
 
+          {/* ACTIONS */}
           <div className="mt-auto pt-3 flex items-center gap-2 border-t border-dark-border/50">
             {user &&
             (user._id === listing.owner?._id || user.role === "ADMIN") ? (
@@ -233,17 +249,9 @@ export default function ListingCard({
                   <Edit3 size={12} /> რედაქტირება
                 </button>
                 <button
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.stopPropagation();
-                    if (onDelete) {
-                      onDelete();
-                      return;
-                    }
-                    if (!confirm("ნამდვილად გსურთ წაშლა?")) return;
-                    const res = await fetch(`/api/listings/${listing._id}`, {
-                      method: "DELETE",
-                    });
-                    if (res.ok) window.location.reload();
+                    onDelete?.();
                   }}
                   className="rounded-lg border border-red-500/20 bg-red-500/10 p-2 text-red-500 hover:bg-red-500 hover:text-white transition-all"
                 >

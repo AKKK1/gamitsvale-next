@@ -82,7 +82,7 @@ export default function AdminPanel() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-white rounded-[40px] p-10 shadow-2xl"
+          className="w-full max-w-md bg-black rounded-[40px] p-10 shadow-2xl"
         >
           <div className="flex justify-center mb-8">
             <div className="p-4 bg-zinc-900 text-white rounded-2xl">
@@ -137,11 +137,11 @@ export default function AdminPanel() {
     return <div className="p-20 text-center font-bold">წვდომა აკრძალულია</div>;
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-black">
       <Header onAddListing={() => setShowAddModal(true)} />
       <main className="max-w-7xl mx-auto px-4 py-12">
         <div className="flex items-center gap-3 mb-12">
-          <div className="p-3 bg-zinc-900 text-white rounded-2xl">
+          <div className="p-3 bg-zinc-900 text-black rounded-2xl">
             <Shield size={24} />
           </div>
           <h1 className="text-3xl font-black tracking-tight">
@@ -169,7 +169,7 @@ export default function AdminPanel() {
           ].map((s) => (
             <div
               key={s.label}
-              className="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm"
+              className="bg-black p-8 rounded-[32px] border border-zinc-100 shadow-sm"
             >
               <div className="flex items-center justify-between mb-4">
                 {s.icon}
@@ -182,14 +182,14 @@ export default function AdminPanel() {
           ))}
         </div>
 
-        <div className="bg-white rounded-[32px] border border-zinc-100 shadow-sm overflow-hidden mb-12">
+        <div className="bg-black rounded-[32px] border border-zinc-100 shadow-sm overflow-hidden mb-12">
           <div className="p-8 border-b border-zinc-50">
             <h3 className="text-xl font-black">მომხმარებლები</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-zinc-50 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                <tr className="bg-black text-[10px] font-black uppercase tracking-widest text-zinc-400">
                   <th className="px-8 py-4">სახელი</th>
                   <th className="px-8 py-4">ბალანსი</th>
                   <th className="px-8 py-4">როლი</th>
@@ -213,7 +213,7 @@ export default function AdminPanel() {
                         className={cn(
                           "px-3 py-1 rounded-full text-[10px] font-black",
                           u.role === "ADMIN"
-                            ? "bg-gold text-white"
+                            ? "bg-gold text-black"
                             : "bg-zinc-100 text-zinc-500",
                         )}
                       >
@@ -235,7 +235,7 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        <div className="bg-white rounded-[32px] border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="bg-black rounded-[32px] border border-zinc-100 shadow-sm overflow-hidden">
           <div className="p-8 border-b border-zinc-50">
             <h3 className="text-xl font-black">განცხადებები</h3>
           </div>

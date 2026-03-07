@@ -5,20 +5,22 @@ import { getUserFromRequest } from '@/lib/auth';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   const decoded = getUserFromRequest(request);
   if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { id } = await params;
+
   const user = await User.findById(decoded.id);
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  const index = user.savedListings.indexOf(params.id as any);
+  const index = user.savedListings.indexOf(id as any);
   if (index > -1) {
     user.savedListings.splice(index, 1);
   } else {
-    user.savedListings.push(params.id as any);
+    user.savedListings.push(id as any);
   }
 
   await user.save();
