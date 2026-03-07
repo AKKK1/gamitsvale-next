@@ -1,26 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-gold: #D4AF37;
+  --color-gold-hover: #B8962E;
+  --color-dark: #0A0A0A;
+  --color-dark-card: #141414;
+  --color-dark-border: #262626;
+  --color-border: var(--color-dark-border);
+  --color-card: var(--color-dark-card);
+  --color-secondary: #1A1A1A;
+  --color-muted-foreground: #71717A;
+  --color-foreground: #FFFFFF;
+  --color-primary: var(--color-gold);
+  --color-primary-foreground: var(--color-dark);
+  --color-accent: #262626;
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FFFFFF;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --animate-fade-up: fade-up 0.5s ease-out forwards;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-dark text-white font-sans antialiased;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F2D06B 50%, #B8962E 100%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F2D06B 50%, #B8962E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.vip-glow {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+.dark-glass {
+  @apply bg-dark-card/80 backdrop-blur-xl border border-dark-border;
 }
