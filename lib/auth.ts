@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { connectDB } from './db';
-import { User } from '@/lib/models.ts';
+import { User } from '@/lib/models';
 import { cookies } from 'next/headers';
 
 export async function getUser() {
