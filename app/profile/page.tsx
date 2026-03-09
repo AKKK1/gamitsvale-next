@@ -1088,7 +1088,7 @@ export default function ProfilePage() {
               onClick={() =>
                 setDeleteConfirmation({ isOpen: false, listingId: null })
               }
-              className="absolute inset-0 bg-dark/80 backdrop-blur-sm"
+              className="absolute inset-0 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
