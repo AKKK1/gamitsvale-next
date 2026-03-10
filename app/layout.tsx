@@ -4,7 +4,12 @@ import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: "GAMITSVALE.GE — გაცვალე საქართველოში",
-  description: "Georgian Swap & Barter Marketplace",
+  description:
+    "Georgian Swap & Barter Marketplace, ნივთების გაცვლის საიტი სადაც არაფერს ადევს ფასი, ყველაფერი კი საჭიროებებზეა.",
+
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

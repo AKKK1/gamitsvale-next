@@ -8,6 +8,7 @@ import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import Link from "next/link";
+import Footer from "./footer/page";
 export default function HomePage() {
   const { user } = useAuth();
   const [listings, setListings] = useState<any[]>([]);
@@ -294,6 +295,7 @@ export default function HomePage() {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 }

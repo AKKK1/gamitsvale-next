@@ -1,0 +1,8 @@
+import { MetadataRoute } from 'next'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    { url: 'https://gamitsvale.ge', lastModified: new Date() },
+    { url: 'https://gamitsvale.ge/rules', lastModified: new Date() },
+  ]
+}

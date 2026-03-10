@@ -10,11 +10,11 @@ import {
   ChevronDown,
   X,
   Filter,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function Header({
   onAddListing,
@@ -24,7 +24,6 @@ export default function Header({
   onSearch?: (query: string, type: string, filters?: any) => void;
 }) {
   const { user, logout } = useAuth();
-  const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [searchType, setSearchType] = useState<"want" | "give" | "service">(
@@ -42,6 +41,7 @@ export default function Header({
     category: "",
     condition: "",
   });
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -57,6 +57,14 @@ export default function Header({
     }
   }, [user]);
 
+  // body scroll lock მობილური მენიუს დროს
+  useEffect(() => {
+    document.body.style.overflow = showMobileMenu ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showMobileMenu]);
+
   const handleSearch = () => {
     if (onSearch) onSearch(searchQuery, searchType, filters);
     setShowFilters(false);
@@ -64,377 +72,500 @@ export default function Header({
 
   const handleLogout = async () => {
     await logout();
+    setShowMobileMenu(false);
   };
 
   const handleOfferAction = async (id: string, status: string) => {
-    const res = await fetch(`/api/offers/${id}`, {
+    await fetch(`/api/offers/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    if (res.ok) {
-      fetch("/api/notifications")
-        .then((r) => r.json())
-        .then(setNotifications);
-    }
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then(setNotifications);
   };
 
-  return (
-    <header className="sticky top-0 z-50 bg-dark/80 backdrop-blur-xl border-b border-dark-border">
-      <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-8">
-        {/* Logo & Categories */}
-        <div className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-2xl font-black tracking-tighter text-white flex items-center gap-1 shrink-0"
-          >
-            {/* ლოგო(ს) ზედმეტია რომ ხელით არ შეცვლილიყო */}
-            {settings?.logos ? (
-              <img
-                src={settings.logo}
-                alt={settings.siteName}
-                className="h-8 object-contain"
-              />
-            ) : (
-              <>
-                GAMITSVALE<span className="text-gold">.GE</span>
-              </>
-            )}
-          </Link>
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-          <div className="relative">
-            <button
-              onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
-              className="flex items-center gap-2 px-4 py-2 bg-dark-card border border-dark-border rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
+  return (
+    <>
+      <header className="sticky top-0 z-50 bg-dark/80 backdrop-blur-xl border-b border-dark-border">
+        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-8">
+          {/* ── ლოგო + კატეგორიები ── */}
+          <div className="flex items-center gap-4 lg:gap-6">
+            <Link
+              href="/"
+              className="text-2xl font-black tracking-tighter text-white flex items-center gap-1 shrink-0"
             >
-              <Menu size={16} />
-              <span className="hidden md:inline">კატეგორიები</span>
-              <ChevronDown
-                size={14}
-                className={cn(
-                  "transition-transform",
-                  showCategoriesDropdown && "rotate-180",
+              {settings?.logoს ? (
+                <img
+                  src={settings.logo}
+                  alt={settings.siteName}
+                  className="h-8 object-contain"
+                />
+              ) : (
+                <>
+                  GAMITSVALE<span className="text-gold">.GE</span>
+                </>
+              )}
+            </Link>
+
+            {/* კატეგორიები — desktop only */}
+            <div className="relative hidden lg:block">
+              <button
+                onClick={() =>
+                  setShowCategoriesDropdown(!showCategoriesDropdown)
+                }
+                className="flex items-center gap-2 px-4 py-2 bg-dark-card border border-dark-border rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
+              >
+                <Menu size={16} />
+                <span>კატეგორიები</span>
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "transition-transform",
+                    showCategoriesDropdown && "rotate-180",
+                  )}
+                />
+              </button>
+              <AnimatePresence>
+                {showCategoriesDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 mt-2 w-64 bg-dark-card border border-dark-border rounded-2xl shadow-2xl p-2 z-[60]"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${cat.id}`}
+                        onClick={() => setShowCategoriesDropdown(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
+                      >
+                        <span className="text-lg">{cat.icon}</span>
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </motion.div>
                 )}
-              />
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* ── საძიებო — desktop only ── */}
+          <div className="flex-1 max-w-xl hidden lg:flex items-center bg-dark-card rounded-2xl border border-dark-border p-1 relative">
+            <div className="flex items-center gap-1 px-2 border-r border-dark-border">
+              <select
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value as any)}
+                className="bg-transparent text-xs font-bold text-zinc-400 outline-none px-2 cursor-pointer"
+              >
+                <option value="want">მინდა</option>
+                <option value="give">გინდა</option>
+                <option value="service">საქმე</option>
+              </select>
+            </div>
+            <input
+              type="text"
+              placeholder="ძიება..."
+              className="flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-zinc-600"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "p-2 transition-colors",
+                showFilters ? "text-gold" : "text-zinc-400 hover:text-gold",
+              )}
+            >
+              <Filter size={18} />
+            </button>
+            <button
+              onClick={handleSearch}
+              className="p-2 text-zinc-400 hover:text-gold transition-colors"
+            >
+              <Search size={18} />
             </button>
             <AnimatePresence>
-              {showCategoriesDropdown && (
+              {showFilters && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 mt-2 w-64 bg-dark-card border border-dark-border rounded-2xl shadow-2xl p-2 z-[60]"
+                  className="absolute top-full right-0 mt-2 w-full bg-dark-card border border-dark-border rounded-2xl shadow-2xl p-4 z-[60]"
                 >
-                  {CATEGORIES.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/category/${cat.id}`}
-                      onClick={() => setShowCategoriesDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
-                    >
-                      <span className="text-lg">{cat.icon}</span>
-                      {cat.name}
-                    </Link>
-                  ))}
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      {
+                        label: "ქალაქი",
+                        key: "city",
+                        options: GEORGIAN_CITIES.map((c) => ({
+                          value: c,
+                          label: c,
+                        })),
+                      },
+                      {
+                        label: "კატეგორია",
+                        key: "category",
+                        options: CATEGORIES.map((c) => ({
+                          value: c.id,
+                          label: c.name,
+                        })),
+                      },
+                      {
+                        label: "მდგომარეობა",
+                        key: "condition",
+                        options: [
+                          { value: "NEW", label: "ახალი" },
+                          { value: "USED", label: "მეორადი" },
+                        ],
+                      },
+                    ].map((f) => (
+                      <div key={f.key} className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          {f.label}
+                        </label>
+                        <select
+                          value={(filters as any)[f.key]}
+                          onChange={(e) =>
+                            setFilters({ ...filters, [f.key]: e.target.value })
+                          }
+                          className="w-full bg-dark border border-dark-border rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-gold/50"
+                        >
+                          <option value="">ყველა</option>
+                          {f.options.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={handleSearch}
+                    className="w-full mt-4 bg-gold text-dark font-black uppercase tracking-widest text-xs py-2 rounded-lg hover:bg-gold-hover transition-colors"
+                  >
+                    ძებნა
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
+          {/* ── Actions — desktop only ── */}
+          <div className="hidden lg:flex items-center gap-4">
+            {user ? (
+              <>
+                <div className="relative">
+                  <button
+                    onClick={async () => {
+                      setShowNotifications(!showNotifications);
+                      if (!showNotifications && unreadCount > 0) {
+                        await fetch("/api/notifications/read", {
+                          method: "POST",
+                        });
+                        setNotifications(
+                          notifications.map((n) => ({ ...n, isRead: true })),
+                        );
+                      }
+                    }}
+                    className="relative p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-2 right-2 w-4 h-4 bg-gold text-dark text-[10px] font-black flex items-center justify-center rounded-full border-2 border-dark">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {showNotifications && (
+                      <NotificationDropdown
+                        notifications={notifications}
+                        onAction={handleOfferAction}
+                        onClose={() => setShowNotifications(false)}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+                <button
+                  onClick={onAddListing}
+                  className="bg-gold hover:bg-gold-hover text-dark px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-gold/10"
+                >
+                  <Plus size={18} /> განცხადება
+                </button>
+                <Link
+                  href="/profile"
+                  className="flex items-center p-1 rounded-xl border border-dark-border hover:border-gold/50 transition-all bg-dark-card"
+                >
+                  <img
+                    src={user.avatar || "https://www.gravatar.com/avatar?d=mp"}
+                    className="w-9 h-9 rounded-lg object-cover border border-dark-border"
+                    referrerPolicy="no-referrer"
+                  />
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2.5 text-zinc-500 hover:text-red-500 transition-colors bg-dark-card rounded-xl border border-dark-border"
+                >
+                  <LogOut size={18} />
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowAuthModal("login")}
+                  className="rounded-lg border border-dark-border px-4 py-2 text-sm text-zinc-400 hover:border-gold hover:text-gold transition-colors"
+                >
+                  შესვლა
+                </button>
+                <button
+                  onClick={() => setShowAuthModal("register")}
+                  className="bg-gold text-dark px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all"
+                >
+                  რეგისტრაცია
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ── მობილური: Bell + + + Burger ── */}
+          <div className="flex lg:hidden items-center gap-2">
+            <button
+              onClick={onAddListing}
+              className="bg-gold hover:bg-gold-hover text-dark p-2.5 rounded-xl transition-all"
+            >
+              <Plus size={20} />
+            </button>
+            {user && (
+              <button
+                onClick={async () => {
+                  setShowNotifications(!showNotifications);
+                  if (!showNotifications && unreadCount > 0) {
+                    await fetch("/api/notifications/read", { method: "POST" });
+                    setNotifications(
+                      notifications.map((n) => ({ ...n, isRead: true })),
+                    );
+                  }
+                }}
+                className="relative p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-gold text-dark text-[10px] font-black flex items-center justify-center rounded-full border-2 border-dark">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => setShowMobileMenu(true)}
+              className="p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
         </div>
 
-        {/* <Link
-          href="/rules"
-          className="relative p-2.5 text-white hover:text-gold transition-colors"
-        >
-          წესები
-        </Link> */}
-
-        {/* Search */}
-        <div className="flex-1 max-w-xl hidden lg:flex items-center bg-dark-card rounded-2xl border border-dark-border p-1 relative">
-          <div className="flex items-center gap-1 px-2 border-r border-dark-border">
+        {/* ── მობილური საძიებო ── */}
+        <div className="lg:hidden px-4 pb-3">
+          <div className="flex items-center bg-dark-card rounded-xl border border-dark-border p-1">
             <select
               value={searchType}
               onChange={(e) => setSearchType(e.target.value as any)}
-              className="bg-transparent text-xs font-bold text-zinc-400 outline-none px-2 cursor-pointer"
+              className="bg-transparent text-xs font-bold text-zinc-400 outline-none px-2 cursor-pointer border-r border-dark-border mr-1"
             >
               <option value="want">მინდა</option>
               <option value="give">გინდა</option>
               <option value="service">საქმე</option>
             </select>
+            <input
+              type="text"
+              placeholder="ძიება..."
+              className="flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-zinc-600"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button
+              onClick={handleSearch}
+              className="p-2 text-zinc-400 hover:text-gold transition-colors"
+            >
+              <Search size={16} />
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="ძიება..."
-            className="flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-zinc-600"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          />
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={cn(
-              "p-2 transition-colors",
-              showFilters ? "text-gold" : "text-zinc-400 hover:text-gold",
-            )}
-          >
-            <Filter size={18} />
-          </button>
-          <button
-            onClick={handleSearch}
-            className="p-2 text-zinc-400 hover:text-gold transition-colors"
-          >
-            <Search size={18} />
-          </button>
-
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute top-full right-0 mt-2 w-full bg-dark-card border border-dark-border rounded-2xl shadow-2xl p-4 z-[60]"
-              >
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                      ქალაქი
-                    </label>
-                    <select
-                      value={filters.city}
-                      onChange={(e) =>
-                        setFilters({ ...filters, city: e.target.value })
-                      }
-                      className="w-full bg-dark border border-dark-border rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-gold/50"
-                    >
-                      <option value="">ყველა</option>
-                      {GEORGIAN_CITIES.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                      კატეგორია
-                    </label>
-                    <select
-                      value={filters.category}
-                      onChange={(e) =>
-                        setFilters({ ...filters, category: e.target.value })
-                      }
-                      className="w-full bg-dark border border-dark-border rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-gold/50"
-                    >
-                      <option value="">ყველა</option>
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                      მდგომარეობა
-                    </label>
-                    <select
-                      value={filters.condition}
-                      onChange={(e) =>
-                        setFilters({ ...filters, condition: e.target.value })
-                      }
-                      className="w-full bg-dark border border-dark-border rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-gold/50"
-                    >
-                      <option value="">ყველა</option>
-                      <option value="NEW">ახალი</option>
-                      <option value="USED">მეორადი</option>
-                    </select>
-                  </div>
-                </div>
-                <button
-                  onClick={handleSearch}
-                  className="w-full mt-4 bg-gold text-dark font-black uppercase tracking-widest text-xs py-2 rounded-lg hover:bg-gold-hover transition-colors"
-                >
-                  ძებნა
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
+      </header>
 
-        {/* Actions */}
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <div className="relative">
+      {/* ══════════════════════════════════════════
+          მობილური Drawer (მარჯვნიდან შემოდის)
+      ══════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <>
+            {/* backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileMenu(false)}
+              className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm lg:hidden"
+            />
+            {/* drawer panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="fixed top-0 right-0 h-full w-[80vw] max-w-xs bg-dark-card border-l border-dark-border z-[80] flex flex-col lg:hidden"
+            >
+              {/* drawer header */}
+              <div className="flex items-center justify-between px-5 py-5 border-b border-dark-border shrink-0">
+                <span className="text-base font-black text-white tracking-tight">
+                  GAMITS<span className="text-gold">VALE</span>.GE
+                </span>
                 <button
-                  onClick={async () => {
-                    setShowNotifications(!showNotifications);
-                    if (
-                      !showNotifications &&
-                      notifications.some((n) => !n.isRead)
-                    ) {
-                      await fetch("/api/notifications/read", {
-                        method: "POST",
-                      });
-                      setNotifications(
-                        notifications.map((n) => ({ ...n, isRead: true })),
-                      );
-                    }
-                  }}
-                  className="relative p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="p-2 text-zinc-500 hover:text-white rounded-xl transition-colors"
                 >
-                  <Bell size={20} />
-                  {notifications.some((n) => !n.isRead) && (
-                    <span className="absolute top-2 right-2 w-4 h-4 bg-gold text-dark text-[10px] font-black flex items-center justify-center rounded-full border-2 border-dark">
-                      {notifications.filter((n) => !n.isRead).length}
-                    </span>
-                  )}
+                  <X size={20} />
                 </button>
-                <AnimatePresence>
-                  {showNotifications && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-4 w-96 bg-dark-card border border-dark-border rounded-3xl shadow-2xl p-6 overflow-hidden origin-top-right z-[60]"
-                    >
-                      <div className="flex items-center justify-between mb-6">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                          შეტყობინებები
-                        </h4>
-                        <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">
-                          ახალი
-                        </span>
-                      </div>
-                      <div className="space-y-4 max-h-96 overflow-y-auto no-scrollbar">
-                        {notifications.length === 0 && (
-                          <p className="text-xs text-zinc-500 text-center py-4">
-                            შეტყობინება არ არის
-                          </p>
-                        )}
-                        {notifications.map((n) => (
-                          <div
-                            key={n._id}
-                            className="p-4 rounded-2xl bg-dark/40 border border-dark-border hover:border-gold/30 transition-all"
-                          >
-                            <div className="flex gap-4">
-                              <img
-                                src={
-                                  n.offer?.sender?.avatar ||
-                                  "https://www.gravatar.com/avatar?d=mp"
-                                }
-                                className="w-10 h-10 rounded-full border border-dark-border"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between mb-1">
-                                  <p className="text-xs font-bold text-white">
-                                    {n.offer?.sender?.name || "მომხმარებელი"}
-                                  </p>
-                                </div>
-                                <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-3">
-                                  {n.type === "NEW_OFFER"
-                                    ? `შემოგთავაზათ: ${n.offer?.description}`
-                                    : "თქვენი შეთავაზება განახლდა"}
-                                </p>
-                                {n.type === "NEW_OFFER" &&
-                                  n.offer?.status === "PENDING" && (
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={() =>
-                                          handleOfferAction(
-                                            n.offer._id,
-                                            "ACCEPTED",
-                                          )
-                                        }
-                                        className="flex-1 py-2 bg-green-600/20 text-green-500 text-[9px] font-black rounded-lg hover:bg-green-600 hover:text-white transition-all border border-green-600/30"
-                                      >
-                                        თანხმობა
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleOfferAction(
-                                            n.offer._id,
-                                            "THINKING",
-                                          )
-                                        }
-                                        className="flex-1 py-2 bg-zinc-800 text-zinc-400 text-[9px] font-black rounded-lg hover:bg-zinc-700 transition-all border border-zinc-700"
-                                      >
-                                        დაფიქრება
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleOfferAction(
-                                            n.offer._id,
-                                            "DECLINED",
-                                          )
-                                        }
-                                        className="flex-1 py-2 bg-red-600/20 text-red-500 text-[9px] font-black rounded-lg hover:bg-red-600 hover:text-white transition-all border border-red-600/30"
-                                      >
-                                        უარი
-                                      </button>
-                                    </div>
-                                  )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <Link
-                        href="/profile"
-                        onClick={() => setShowNotifications(false)}
-                        className="block w-full mt-6 py-3 text-[10px] font-black uppercase tracking-widest text-gold hover:text-white transition-colors border-t border-dark-border text-center"
-                      >
-                        ყველას ნახვა
-                      </Link>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
-              <button
-                onClick={onAddListing}
-                className="bg-gold hover:bg-gold-hover text-dark px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-gold/10"
-              >
-                <Plus size={18} />
-                <span className="hidden sm:inline">განცხადება</span>
-              </button>
+              {/* drawer body */}
+              <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-1">
+                {/* user info */}
+                {user && (
+                  <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl bg-dark border border-dark-border">
+                    <img
+                      src={
+                        user.avatar || "https://www.gravatar.com/avatar?d=mp"
+                      }
+                      className="w-10 h-10 rounded-xl object-cover border border-dark-border"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-white truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-[10px] text-zinc-500 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-              <Link
-                href="/profile"
-                className="flex items-center p-1 rounded-xl border border-dark-border hover:border-gold/50 transition-all bg-dark-card"
-              >
-                <img
-                  src={user.avatar || "https://www.gravatar.com/avatar?d=mp"}
-                  className="w-9 h-9 rounded-lg object-cover border border-dark-border"
-                  referrerPolicy="no-referrer"
-                />
-              </Link>
+                {/* ნავიგაციის ლინკები */}
+                {[
+                  { href: "/", label: "🏠 მთავარი" },
+                  { href: "/rules", label: "📋 წესები" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
 
-              <button
-                onClick={handleLogout}
-                className="p-2.5 text-zinc-500 hover:text-red-500 transition-colors bg-dark-card rounded-xl border border-dark-border"
-              >
-                <LogOut size={18} />
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowAuthModal("login")}
-                className="hidden sm:block rounded-lg border border-dark-border px-4 py-2 text-sm text-zinc-400 hover:border-gold hover:text-gold transition-colors"
-              >
-                შესვლა
-              </button>
-              <button
-                onClick={() => setShowAuthModal("register")}
-                className="bg-gold text-dark px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all"
-              >
-                რეგისტრაცია
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+                {/* კატეგორიები */}
+                <div className="pt-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-3 pb-2">
+                    კატეგორიები
+                  </p>
+                  {CATEGORIES.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.id}`}
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
+                    >
+                      <span className="text-base">{cat.icon}</span>
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* drawer footer */}
+              <div className="border-t border-dark-border px-3 py-4 space-y-2 shrink-0">
+                {user ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dark-border text-sm font-black text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
+                    >
+                      <User size={16} /> პროფილი
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-red-500/10 text-sm font-black text-red-500 hover:bg-red-500/20 transition-all"
+                    >
+                      <LogOut size={16} /> გასვლა
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowAuthModal("login");
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full py-3 rounded-xl border border-dark-border text-sm font-black text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
+                    >
+                      შესვლა
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAuthModal("register");
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full py-3 rounded-xl bg-gold text-dark text-sm font-black hover:bg-gold-hover transition-all"
+                    >
+                      რეგისტრაცია
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* შეტყობინებები მობილეზე */}
+      <AnimatePresence>
+        {showNotifications && (
+          <div className="fixed inset-0 z-[70] flex items-start justify-end p-4 pt-24 lg:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNotifications(false)}
+              className="absolute inset-0"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="relative w-full max-w-sm"
+            >
+              <NotificationDropdown
+                notifications={notifications}
+                onAction={handleOfferAction}
+                onClose={() => setShowNotifications(false)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showAuthModal && (
@@ -444,10 +575,102 @@ export default function Header({
           />
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }
 
+// ── NotificationDropdown (გამოიყენება desktop + mobile) ────────────────────
+function NotificationDropdown({
+  notifications,
+  onAction,
+  onClose,
+}: {
+  notifications: any[];
+  onAction: (id: string, status: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      className="absolute top-full right-0 mt-4 w-96 bg-dark-card border border-dark-border rounded-3xl shadow-2xl p-6 z-[60]"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+          შეტყობინებები
+        </h4>
+        <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">
+          ახალი
+        </span>
+      </div>
+      <div className="space-y-4 max-h-96 overflow-y-auto no-scrollbar">
+        {notifications.length === 0 && (
+          <p className="text-xs text-zinc-500 text-center py-4">
+            შეტყობინება არ არის
+          </p>
+        )}
+        {notifications.map((n) => (
+          <div
+            key={n._id}
+            className="p-4 rounded-2xl bg-dark/40 border border-dark-border hover:border-gold/30 transition-all"
+          >
+            <div className="flex gap-4">
+              <img
+                src={
+                  n.offer?.sender?.avatar ||
+                  "https://www.gravatar.com/avatar?d=mp"
+                }
+                className="w-10 h-10 rounded-full border border-dark-border"
+              />
+              <div className="flex-1">
+                <p className="text-xs font-bold text-white mb-1">
+                  {n.offer?.sender?.name || "მომხმარებელი"}
+                </p>
+                <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-3">
+                  {n.type === "NEW_OFFER"
+                    ? `შემოგთავაზათ: ${n.offer?.description}`
+                    : "თქვენი შეთავაზება განახლდა"}
+                </p>
+                {n.type === "NEW_OFFER" && n.offer?.status === "PENDING" && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onAction(n.offer._id, "ACCEPTED")}
+                      className="flex-1 py-2 bg-green-600/20 text-green-500 text-[9px] font-black rounded-lg hover:bg-green-600 hover:text-white transition-all border border-green-600/30"
+                    >
+                      თანხმობა
+                    </button>
+                    <button
+                      onClick={() => onAction(n.offer._id, "THINKING")}
+                      className="flex-1 py-2 bg-zinc-800 text-zinc-400 text-[9px] font-black rounded-lg hover:bg-zinc-700 transition-all border border-zinc-700"
+                    >
+                      დაფიქრება
+                    </button>
+                    <button
+                      onClick={() => onAction(n.offer._id, "DECLINED")}
+                      className="flex-1 py-2 bg-red-600/20 text-red-500 text-[9px] font-black rounded-lg hover:bg-red-600 hover:text-white transition-all border border-red-600/30"
+                    >
+                      უარი
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Link
+        href="/profile"
+        onClick={onClose}
+        className="block w-full mt-6 py-3 text-[10px] font-black uppercase tracking-widest text-gold hover:text-white transition-colors border-t border-dark-border text-center"
+      >
+        ყველას ნახვა
+      </Link>
+    </motion.div>
+  );
+}
+
+// ── AuthModal ───────────────────────────────────────────────────────────────
 function AuthModal({
   type,
   onClose,
@@ -473,7 +696,6 @@ function AuthModal({
     e.preventDefault();
     setLoading(true);
     setError("");
-
     if (type === "login") {
       if (step === "forgot") {
         const res = await fetch("/api/auth/forgot-password", {
@@ -521,13 +743,13 @@ function AuthModal({
   };
 
   return (
-    <div className="fixed inset-100 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0  backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
       />
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -550,7 +772,6 @@ function AuthModal({
                 ? "შესვლა"
                 : "რეგისტრაცია"}
         </h2>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           {type === "register" && step === "form" && (
             <div className="space-y-1.5">
@@ -568,7 +789,6 @@ function AuthModal({
               />
             </div>
           )}
-
           {(step === "form" || step === "forgot") && (
             <>
               <div className="space-y-1.5">
@@ -615,7 +835,6 @@ function AuthModal({
               )}
             </>
           )}
-
           {step === "reset" && (
             <>
               <div className="space-y-1.5">
@@ -650,7 +869,6 @@ function AuthModal({
               </div>
             </>
           )}
-
           {step === "verify" && (
             <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
@@ -671,13 +889,11 @@ function AuthModal({
               </p>
             </div>
           )}
-
           {error && (
             <p className="text-xs text-red-500 text-center font-bold">
               {error}
             </p>
           )}
-
           <button
             disabled={loading}
             className="w-full bg-gold text-dark py-3.5 rounded-xl text-sm font-bold hover:bg-gold-hover transition-all disabled:opacity-50 mt-2"
@@ -694,7 +910,6 @@ function AuthModal({
                       ? "შესვლა"
                       : "რეგისტრაცია"}
           </button>
-
           {(step === "forgot" || step === "reset") && (
             <button
               type="button"
@@ -705,12 +920,11 @@ function AuthModal({
             </button>
           )}
         </form>
-
         {step === "form" && (
           <>
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-dark-border"></div>
+                <div className="w-full border-t border-dark-border" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
                 <span className="bg-dark-card px-4 text-zinc-500">ან</span>

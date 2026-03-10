@@ -30,12 +30,15 @@ import {
   Camera,
   Bookmark,
   X,
+  Copy, // ← კოპირების აიქონი
+  Check, // ← დადასტურების აიქონი (კოპირების შემდეგ)
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import Link from "next/link";
 
+// ─── utility: className-ების გაერთიანება ──────────────────────────────────
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(" ");
 }
@@ -43,17 +46,25 @@ function cn(...inputs: any[]) {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, logout, refresh } = useAuth();
+
+  // ── აქტიური ტაბი ──────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<
     "offers" | "listings" | "saved" | "settings" | "admin_users"
   >("offers");
+
+  // ── შეთავაზებების ფილტრი ──────────────────────────────────────────────
   const [offerFilter, setOfferFilter] = useState<
     "PENDING" | "ACCEPTED" | "DECLINED"
   >("PENDING");
+
+  // ── მონაცემები ─────────────────────────────────────────────────────────
   const [offers, setOffers] = useState<any[]>([]);
   const [listings, setListings] = useState<any[]>([]);
   const [savedListings, setSavedListings] = useState<any[]>([]);
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ── მოდალები ───────────────────────────────────────────────────────────
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [siteSettings, setSiteSettings] = useState<any>(null);
@@ -62,9 +73,17 @@ export default function ProfilePage() {
     isOpen: boolean;
     listingId: string | null;
   }>({ isOpen: false, listingId: null });
+
+  // ── კოპირების state ─────────────────────────────────────────────────────
+  // შეიცავს იმ ველის უნიკალურ key-ს რომელიც ბოლოს დაკოპირდა
+  // გამოიყენება Check აიქონის საჩვენებლად 2 წამის განმავლობაში
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // ── file input refs ────────────────────────────────────────────────────
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
+  // ── data fetching ──────────────────────────────────────────────────────
   useEffect(() => {
     if (user) {
       fetchData();
@@ -117,6 +136,16 @@ export default function ProfilePage() {
     setLoading(false);
   };
 
+  // ── კოპირების handler ──────────────────────────────────────────────────
+  // key   — უნიკალური სტრინგი (offerId + field), Check-ის სწორად გასანათებლად
+  // value — ტექსტი რომელიც კლიპბორდში გადადის
+  const handleCopy = (key: string, value: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000); // 2 წამის შემდეგ გადაბრუნება Copy-ზე
+  };
+
+  // ── admin handlers ──────────────────────────────────────────────────────
   const handleUpdateUser = async (id: string, updates: any) => {
     const res = await fetch(`/api/admin/users/${id}/balance`, {
       method: "PATCH",
@@ -187,6 +216,7 @@ export default function ProfilePage() {
     });
     if (res.ok) {
       if (status === "ACCEPTED") {
+        // 🎉 კონფეტი ანიმაცია დათანხმებისას — საიტის ფერებში
         confetti({
           particleCount: 150,
           spread: 70,
@@ -198,6 +228,7 @@ export default function ProfilePage() {
     }
   };
 
+  // ── guard: auth ─────────────────────────────────────────────────────────
   if (!user)
     return (
       <div className="p-20 text-center font-bold">
@@ -205,11 +236,15 @@ export default function ProfilePage() {
       </div>
     );
 
+  // ══════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-dark text-white">
       <Header onAddListing={() => setShowAddModal(true)} />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* ── Breadcrumb: მთავარი / პროფილი ── */}
         <div className="mb-6 flex items-center gap-2 text-xs text-zinc-500">
           <Link href="/" className="hover:text-white transition-colors">
             მთავარი
@@ -218,12 +253,16 @@ export default function ProfilePage() {
           <span className="text-white font-medium">პროფილი</span>
         </div>
 
+        {/* ── მთავარი Grid: [320px sidebar] + [content] ── */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-[320px_1fr]">
-          {/* ── Sidebar ── */}
+          {/* ════════════════════════════════
+              SIDEBAR
+          ════════════════════════════════ */}
           <div className="space-y-4">
-            {/* Profile Info */}
+            {/* ── Profile Card: avatar + სახელი + კონტაქტი ── */}
             <div className="rounded-xl border border-dark-border bg-dark-card p-5">
               <div className="mb-4 flex items-center gap-4">
+                {/* avatar წრე — hover-ზე Camera ღილაკი ჩნდება */}
                 <div className="relative group">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-dark text-2xl font-bold text-gold overflow-hidden border-2 border-dark-border group-hover:border-gold/50 transition-colors">
                     {user.avatar ? (
@@ -236,6 +275,7 @@ export default function ProfilePage() {
                       user.name?.charAt(0) || "U"
                     )}
                   </div>
+                  {/* Camera ღილაკი — opacity-0 → opacity-100 on hover */}
                   <button
                     onClick={() => avatarInputRef.current?.click()}
                     className="absolute -bottom-1 -right-1 p-1.5 bg-gold text-dark rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -250,6 +290,7 @@ export default function ProfilePage() {
                     accept="image/*"
                   />
                 </div>
+
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate text-base font-bold text-white">
                     {user.name}
@@ -260,6 +301,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* კონტაქტის ველები sidebar-ში (read-only, არ კოპირდება) */}
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2.5 text-sm text-zinc-400">
                   <Mail className="h-4 w-4 shrink-0 text-gold/60" />
@@ -285,6 +327,7 @@ export default function ProfilePage() {
                 )}
               </div>
 
+              {/* პარამეტრებზე გადასვლის ღილაკი */}
               <button
                 onClick={() => setActiveTab("settings")}
                 className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dark-border py-2 text-xs font-medium text-zinc-400 hover:border-gold hover:text-gold transition-colors"
@@ -293,11 +336,12 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Balance */}
+            {/* ── Balance Card ── */}
             <div className="rounded-xl border border-dark-border bg-dark-card p-5">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Wallet className="h-4 w-4 text-gold" />
+                  {/* ოქროსფერი Wallet icon */}
                   <span className="text-sm font-semibold text-white">
                     ბალანსი
                   </span>
@@ -306,6 +350,7 @@ export default function ProfilePage() {
                   {user.balance} ₾
                 </span>
               </div>
+              {/* div და არა button — button-ში button არ შეიძლება */}
               <div
                 onClick={() => setShowPaymentModal(true)}
                 className="w-full rounded-lg bg-gold text-dark py-2.5 text-sm font-semibold hover:bg-gold-hover transition-all cursor-pointer text-center"
@@ -314,7 +359,8 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* ── Navigation Menu ── */}
+            {/* active tab: bg-gold/10 + text-gold, inactive: zinc-400 hover:white */}
             <div className="flex flex-col gap-1 rounded-xl border border-dark-border bg-dark-card p-2">
               {[
                 {
@@ -346,12 +392,13 @@ export default function ProfilePage() {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
                     activeTab === tab.id
-                      ? "bg-gold/10 font-semibold text-gold"
+                      ? "bg-gold/10 font-semibold text-gold" // ← active
                       : "text-zinc-400 hover:bg-dark hover:text-white",
                   )}
                 >
                   {tab.icon}
                   <span className="flex-1 text-left">{tab.label}</span>
+                  {/* badge — მხოლოდ count > 0 დროს ჩანს */}
                   {tab.badge ? (
                     <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gold/20 px-1.5 text-[10px] font-bold text-gold">
                       {tab.badge}
@@ -361,6 +408,7 @@ export default function ProfilePage() {
                 </button>
               ))}
 
+              {/* Admin-only nav item */}
               {user.role === "ADMIN" && (
                 <button
                   onClick={() => setActiveTab("admin_users")}
@@ -377,8 +425,10 @@ export default function ProfilePage() {
                 </button>
               )}
 
+              {/* გამყოფი ხაზი logout-ის წინ */}
               <div className="h-px bg-dark-border my-1 mx-2" />
 
+              {/* Logout — წითელი hover */}
               <button
                 onClick={async () => {
                   await logout();
@@ -390,10 +440,12 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Daily Limit */}
+            {/* ── Daily Limit Card ── */}
+            {/* Progress bar: gold→yellow→red count-ის მიხედვით */}
             <div className="rounded-xl border border-dark-border bg-dark-card p-5">
               <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">
                 <span>დღიური ლიმიტი</span>
+                {/* count ფერი: 0-2=white, 3+=red */}
                 <span
                   className={cn(
                     "font-black",
@@ -403,21 +455,23 @@ export default function ProfilePage() {
                   {user.dailyPostCount}/3
                 </span>
               </div>
+              {/* Progress bar — width % დინამიურად */}
               <div className="w-full h-1.5 bg-dark rounded-full overflow-hidden">
                 <div
                   className={cn(
                     "h-full transition-all duration-500",
                     user.dailyPostCount >= 3
-                      ? "bg-red-500/70"
+                      ? "bg-red-500/70" // ← ამოწურული
                       : user.dailyPostCount === 2
-                        ? "bg-yellow-500/70"
-                        : "bg-gold",
+                        ? "bg-yellow-500/70" // ← თითქმის ამოწურული
+                        : "bg-gold", // ← ნორმალური
                   )}
                   style={{
                     width: `${Math.min((user.dailyPostCount / 3) * 100, 100)}%`,
                   }}
                 />
               </div>
+              {/* გაფრთხილება — მხოლოდ ლიმიტის ამოწურვისას */}
               {user.dailyPostCount >= 3 && (
                 <p className="text-[10px] text-red-400 font-bold mt-2 text-center">
                   დღიური ლიმიტი ამოწურულია
@@ -425,12 +479,14 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-          {/* ── /Sidebar ── */}
+          {/* ════ /SIDEBAR ════ */}
 
-          {/* ── Content ── */}
+          {/* ════════════════════════════════
+              CONTENT AREA
+          ════════════════════════════════ */}
           <div className="min-h-[600px]">
             <AnimatePresence mode="wait">
-              {/* OFFERS */}
+              {/* ════ TAB: OFFERS ════ */}
               {activeTab === "offers" && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -440,6 +496,9 @@ export default function ProfilePage() {
                   className="space-y-4"
                 >
                   <h3 className="text-lg font-bold text-white">შეთავაზებები</h3>
+
+                  {/* ── Filter Tabs: მოლოდინში / დათანხმებული / უარყოფილი ── */}
+                  {/* active: bg-gold text-dark, inactive: zinc-400 hover:white */}
                   <div className="flex flex-wrap gap-2">
                     {[
                       {
@@ -458,13 +517,13 @@ export default function ProfilePage() {
                         count: offers.filter((o) => o.status === "ACCEPTED")
                           .length,
                       },
-                      {
-                        id: "DECLINED",
-                        label: "უარყოფილი",
-                        icon: <CircleX className="h-4 w-4" />,
-                        count: offers.filter((o) => o.status === "DECLINED")
-                          .length,
-                      },
+                      // {
+                      //   id: "DECLINED",
+                      //   label: "უარყოფილი",
+                      //   icon: <CircleX className="h-4 w-4" />,
+                      //   count: offers.filter((o) => o.status === "DECLINED")
+                      //     .length,
+                      // },
                     ].map((f) => (
                       <button
                         key={f.id}
@@ -472,11 +531,12 @@ export default function ProfilePage() {
                         className={cn(
                           "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all",
                           offerFilter === f.id
-                            ? "bg-gold text-dark shadow-md"
+                            ? "bg-gold text-dark shadow-md" // ← selected
                             : "text-zinc-400 hover:bg-dark-card hover:text-white",
                         )}
                       >
                         {f.icon} {f.label}
+                        {/* count badge — active=dark/20, inactive=dark-card */}
                         <span
                           className={cn(
                             "ml-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
@@ -491,6 +551,7 @@ export default function ProfilePage() {
                     ))}
                   </div>
 
+                  {/* ── Offer Cards ── */}
                   <div className="space-y-3">
                     {offers
                       .filter(
@@ -508,10 +569,13 @@ export default function ProfilePage() {
                         return (
                           <div
                             key={offer._id}
+                            // ბარათი: hover-ზე border-gold/30
                             className="rounded-xl border border-dark-border bg-dark-card p-4 hover:border-gold/30 transition-all"
                           >
+                            {/* ── Offer Header: avatar + სახელი + listing link ── */}
                             <div className="mb-3 flex items-start justify-between">
                               <div className="flex items-center gap-3">
+                                {/* avatar წრე */}
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-dark text-lg overflow-hidden border border-dark-border">
                                   {otherParty?.avatar ? (
                                     <img
@@ -528,6 +592,7 @@ export default function ProfilePage() {
                                     <p className="text-sm font-semibold text-white">
                                       {otherParty?.name || "უცნობი"}
                                     </p>
+                                    {/* badge: შემოსული=blue, გაგზავნილი=purple */}
                                     <span
                                       className={cn(
                                         "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider",
@@ -546,6 +611,7 @@ export default function ProfilePage() {
                                   </p>
                                 </div>
                               </div>
+                              {/* listing ბმული — პატარა pill დიზაინი */}
                               <Link
                                 href={`/listing/${offer.listing?._id}`}
                                 className="flex items-center gap-1.5 rounded-md bg-dark px-2 py-1 border border-dark-border hover:border-gold/30 transition-colors"
@@ -557,10 +623,13 @@ export default function ProfilePage() {
                               </Link>
                             </div>
 
+                            {/* ── შეთავაზების ტექსტი ── */}
+                            {/* bg-dark/50 + border — ტექსტი გამოყოფილია ბარათის ფონიდან */}
                             <p className="mb-4 rounded-lg bg-dark/50 px-3 py-2 text-sm text-zinc-300 border border-dark-border/50">
                               {offer.description}
                             </p>
 
+                            {/* ── სურათები (თუ გაგზავნილია) ── */}
                             {offer.images?.length > 0 && (
                               <div className="flex gap-2 mb-4">
                                 {offer.images.map((img: string, i: number) => (
@@ -574,47 +643,96 @@ export default function ProfilePage() {
                               </div>
                             )}
 
+                            {/* ── კონტაქტი (მხოლოდ ACCEPTED სტატუსზე) ── */}
+                            {/* green-600/10 ფონი + green border — "წარმატების" ვიზუალი */}
                             {offer.status === "ACCEPTED" && (
                               <div className="mb-4 rounded-lg bg-green-600/10 p-3 border border-green-600/20">
                                 <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-2">
                                   კონტაქტი
                                 </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white">
-                                  <div className="flex items-center gap-2">
-                                    <Mail size={12} className="text-gold/60" />{" "}
-                                    {otherParty?.email}
-                                  </div>
-                                  {otherParty?.phone && (
-                                    <div className="flex items-center gap-2">
-                                      <Phone
-                                        size={12}
-                                        className="text-gold/60"
-                                      />{" "}
-                                      {otherParty.phone}
-                                    </div>
-                                  )}
-                                  {otherParty?.facebook && (
-                                    <div className="flex items-center gap-2">
-                                      <Facebook
-                                        size={12}
-                                        className="text-gold/60"
-                                      />{" "}
-                                      {otherParty.facebook}
-                                    </div>
-                                  )}
-                                  {otherParty?.instagram && (
-                                    <div className="flex items-center gap-2">
-                                      <Instagram
-                                        size={12}
-                                        className="text-gold/60"
-                                      />{" "}
-                                      {otherParty.instagram}
-                                    </div>
-                                  )}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                  {/* კოპირებადი ველების სია */}
+                                  {/* key = offerId + fieldName — უნიკალური Check-ის სწორად გასანათებლად */}
+                                  {[
+                                    {
+                                      key: `${offer._id}-email`,
+                                      icon: (
+                                        <Mail
+                                          size={12}
+                                          className="text-gold/60"
+                                        />
+                                      ),
+                                      value: otherParty?.email,
+                                    },
+                                    {
+                                      key: `${offer._id}-phone`,
+                                      icon: (
+                                        <Phone
+                                          size={12}
+                                          className="text-gold/60"
+                                        />
+                                      ),
+                                      value: otherParty?.phone,
+                                    },
+                                    {
+                                      key: `${offer._id}-facebook`,
+                                      icon: (
+                                        <Facebook
+                                          size={12}
+                                          className="text-gold/60"
+                                        />
+                                      ),
+                                      value: otherParty?.facebook,
+                                    },
+                                    {
+                                      key: `${offer._id}-instagram`,
+                                      icon: (
+                                        <Instagram
+                                          size={12}
+                                          className="text-gold/60"
+                                        />
+                                      ),
+                                      value: otherParty?.instagram,
+                                    },
+                                  ]
+                                    .filter((item) => item.value) // ცარიელი ველები იმალება
+                                    .map((item) => (
+                                      <button
+                                        key={item.key}
+                                        onClick={() =>
+                                          handleCopy(item.key, item.value)
+                                        }
+                                        // hover: green-600/20 ფონი, group trigger-ი copy icon-ისთვის
+                                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-green-600/20 transition-all group text-left w-full"
+                                        title="დასაკოპირებლად დააჭირე"
+                                      >
+                                        {item.icon}
+                                        <span className="text-xs text-white flex-1 truncate">
+                                          {item.value}
+                                        </span>
+                                        {/* copy/check icon — opacity-0 → opacity-100 on hover */}
+                                        {/* კოპირების შემდეგ: Copy → Check (green) 2 წამი */}
+                                        <span className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          {copiedKey === item.key ? (
+                                            <Check
+                                              size={12}
+                                              className="text-green-400"
+                                            />
+                                          ) : (
+                                            <Copy
+                                              size={12}
+                                              className="text-zinc-500"
+                                            />
+                                          )}
+                                        </span>
+                                      </button>
+                                    ))}
                                 </div>
                               </div>
                             )}
 
+                            {/* ── Action Buttons (incoming + pending/thinking) ── */}
+                            {/* თანხმობა=green, დაფიქრება=border/gold hover, უარყოფა=red/20 */}
                             {isIncoming &&
                               (offer.status === "PENDING" ||
                                 offer.status === "THINKING") && (
@@ -628,6 +746,7 @@ export default function ProfilePage() {
                                     <CircleCheck className="h-3.5 w-3.5" />{" "}
                                     თანხმობა
                                   </button>
+                                  {/* "დაფიქრება" მხოლოდ PENDING-ზე — THINKING-ზე უკვე დაჭერილია */}
                                   {offer.status === "PENDING" && (
                                     <button
                                       onClick={() =>
@@ -649,6 +768,7 @@ export default function ProfilePage() {
                                   </button>
                                 </div>
                               )}
+                            {/* გაგზავნილი + pending: მოლოდინის ტექსტი */}
                             {!isIncoming &&
                               (offer.status === "PENDING" ||
                                 offer.status === "THINKING") && (
@@ -659,6 +779,8 @@ export default function ProfilePage() {
                           </div>
                         );
                       })}
+
+                    {/* Empty State */}
                     {offers.filter(
                       (o) =>
                         o.status === offerFilter ||
@@ -674,7 +796,7 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
-              {/* LISTINGS */}
+              {/* ════ TAB: MY LISTINGS ════ */}
               {activeTab === "listings" && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -687,6 +809,7 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-bold text-white">
                       ჩემი განცხადებები
                     </h3>
+                    {/* დამატება ღილაკი — gold background */}
                     <button
                       onClick={() => {
                         setEditingListing(null);
@@ -726,7 +849,7 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
-              {/* SAVED */}
+              {/* ════ TAB: SAVED ════ */}
               {activeTab === "saved" && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -740,12 +863,14 @@ export default function ProfilePage() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {savedListings.map((listing) => (
+                      // მთელ ბარათზე კლიკი → listing გვერდი
                       <div
                         key={listing._id}
                         className="group relative rounded-xl border border-dark-border bg-dark-card overflow-hidden hover:border-gold/30 transition-all cursor-pointer"
                         onClick={() => router.push(`/listing/${listing._id}`)}
                       >
                         <div className="aspect-video relative overflow-hidden bg-dark">
+                          {/* სურათი — hover-ზე scale-105 zoom ეფექტი */}
                           <img
                             src={
                               listing.images[0] ||
@@ -754,6 +879,7 @@ export default function ProfilePage() {
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             referrerPolicy="no-referrer"
                           />
+                          {/* Trash ღილაკი — e.stopPropagation() რომ ბარათი არ გაიხსნას */}
                           <div className="absolute top-2 right-2">
                             <button
                               onClick={async (e) => {
@@ -792,7 +918,7 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
-              {/* ADMIN USERS */}
+              {/* ════ TAB: ADMIN USERS ════ */}
               {activeTab === "admin_users" && user.role === "ADMIN" && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -804,6 +930,7 @@ export default function ProfilePage() {
                   <h3 className="text-lg font-bold text-white">
                     იუზერების კონტროლი
                   </h3>
+                  {/* ტაბლის wrapper — overflow-x-auto მობილზე */}
                   <div className="rounded-xl border border-dark-border bg-dark-card overflow-hidden">
                     <div className="overflow-x-auto no-scrollbar">
                       <table className="w-full text-left border-collapse">
@@ -857,6 +984,7 @@ export default function ProfilePage() {
                                   <span className="text-xs font-black text-white">
                                     {u.balance} ₾
                                   </span>
+                                  {/* +50₾ ღილაკი */}
                                   <button
                                     onClick={() =>
                                       handleUpdateUser(u._id, { balance: 50 })
@@ -868,6 +996,7 @@ export default function ProfilePage() {
                                 </div>
                               </td>
                               <td className="px-4 py-3">
+                                {/* role select — focus:border-gold */}
                                 <select
                                   value={u.role}
                                   onChange={(e) =>
@@ -880,6 +1009,7 @@ export default function ProfilePage() {
                                 </select>
                               </td>
                               <td className="px-4 py-3 text-right">
+                                {/* წაშლა — hover:red */}
                                 <button
                                   onClick={() => handleDeleteUser(u._id)}
                                   className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
@@ -896,7 +1026,7 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
-              {/* SETTINGS */}
+              {/* ════ TAB: SETTINGS ════ */}
               {activeTab === "settings" && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -909,6 +1039,7 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-bold text-white">
                       პარამეტრები
                     </h3>
+                    {/* Admin badge — მხოლოდ admin-ზე ჩანს */}
                     {user.role === "ADMIN" && (
                       <span className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-black rounded-md uppercase tracking-widest border border-red-500/20">
                         Admin Mode
@@ -916,6 +1047,7 @@ export default function ProfilePage() {
                     )}
                   </div>
 
+                  {/* პირადი ინფორმაციის ფორმა */}
                   <section className="rounded-xl border border-dark-border bg-dark-card p-5">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6 flex items-center gap-2">
                       <UserIcon size={14} className="text-gold" /> პირადი
@@ -962,6 +1094,7 @@ export default function ProfilePage() {
                           <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
                             {f.label}
                           </label>
+                          {/* input: focus:border-gold */}
                           <input
                             name={f.name}
                             defaultValue={f.defaultValue}
@@ -977,6 +1110,7 @@ export default function ProfilePage() {
                     </form>
                   </section>
 
+                  {/* საიტის პარამეტრები — admin only */}
                   {user.role === "ADMIN" && siteSettings && (
                     <section className="rounded-xl border border-dark-border bg-dark-card p-5">
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6 flex items-center gap-2">
@@ -1000,11 +1134,13 @@ export default function ProfilePage() {
                           if (res.ok) alert("საიტის პარამეტრები განახლდა!");
                         }}
                       >
+                        {/* ლოგოს ატვირთვა */}
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
                             საიტის ლოგო
                           </label>
                           <div className="flex items-center gap-4">
+                            {/* preview box — 64x64 */}
                             <div className="w-16 h-16 bg-dark rounded-lg border border-dark-border flex items-center justify-center overflow-hidden">
                               {siteSettings.logo ? (
                                 <img
@@ -1079,11 +1215,15 @@ export default function ProfilePage() {
               )}
             </AnimatePresence>
           </div>
-          {/* ── /Content ── */}
+          {/* ════ /CONTENT ════ */}
         </div>
       </main>
 
+      {/* ════════════════════════════════
+          MODALS
+      ════════════════════════════════ */}
       <AnimatePresence>
+        {/* ── Add / Edit Listing Modal ── */}
         {showAddModal && (
           <AddListingModal
             onClose={() => {
@@ -1095,8 +1235,10 @@ export default function ProfilePage() {
           />
         )}
 
+        {/* ── Delete Confirmation Modal ── */}
         {deleteConfirmation.isOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* backdrop blur */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1112,6 +1254,7 @@ export default function ProfilePage() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="relative w-full max-w-sm bg-dark-card border border-dark-border rounded-3xl p-6 shadow-2xl text-center z-10"
             >
+              {/* red trash icon circle */}
               <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
                 <Trash2 size={32} />
               </div>
@@ -1122,6 +1265,7 @@ export default function ProfilePage() {
                 ეს ქმედება შეუქცევადია.
               </p>
               <div className="flex gap-3">
+                {/* გაუქმება — neutral */}
                 <button
                   onClick={() =>
                     setDeleteConfirmation({ isOpen: false, listingId: null })
@@ -1130,6 +1274,7 @@ export default function ProfilePage() {
                 >
                   გაუქმება
                 </button>
+                {/* წაშლა — destructive red */}
                 <button
                   onClick={confirmDeleteListing}
                   className="flex-1 py-3 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-all"
@@ -1141,6 +1286,7 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {/* ── Payment Modal ── */}
         {showPaymentModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div
@@ -1162,6 +1308,7 @@ export default function ProfilePage() {
               >
                 <X size={20} />
               </button>
+              {/* Wallet icon — gold/10 bg */}
               <div className="flex justify-center mb-6">
                 <div className="p-4 bg-gold/10 text-gold rounded-2xl">
                   <Wallet size={32} />
@@ -1176,6 +1323,7 @@ export default function ProfilePage() {
                   {user.balance || 0} ₾
                 </span>
               </p>
+              {/* გაფრთხილება */}
               <div className="bg-dark border border-dark-border rounded-2xl p-5 mb-6">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">⚠️</span>
@@ -1191,15 +1339,30 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-dark rounded-xl border border-dark-border mb-6">
+
+              {/* ── საბანკო ანგარიში — კოპირებადი ── */}
+              {/* hover: border-gold/30, კლიკზე კოპირდება + Check icon 2 წამი */}
+              <button
+                onClick={() => handleCopy("bank-account", "59001123042")}
+                className="flex items-center gap-3 p-4 bg-dark rounded-xl border border-dark-border mb-6 w-full hover:border-gold/30 transition-all group text-left"
+              >
                 <span className="text-xl">📧</span>
-                <div>
+                <div className="flex-1">
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                     საქართველოს ბანკის ანგარიშის ნომერი:
                   </p>
                   <p className="text-sm font-bold text-gold">59001123042</p>
                 </div>
-              </div>
+                {/* copy/check icon — opacity-0 → opacity-100 on hover */}
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  {copiedKey === "bank-account" ? (
+                    <Check size={16} className="text-green-400" />
+                  ) : (
+                    <Copy size={16} className="text-zinc-500" />
+                  )}
+                </span>
+              </button>
+
               <div
                 onClick={() => setShowPaymentModal(false)}
                 className="w-full bg-gold text-dark py-3 rounded-xl font-black text-sm hover:brightness-110 transition-all cursor-pointer text-center"
