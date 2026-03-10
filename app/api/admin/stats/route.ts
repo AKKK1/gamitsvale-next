@@ -9,8 +9,16 @@ export async function GET(request: Request) {
   if (!decoded || decoded.role !== 'ADMIN')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const users = await User.countDocuments();
-  const listings = await Listing.countDocuments();
-  const offers = await Offer.countDocuments();
-  return NextResponse.json({ users, listings, offers });
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [users, listings, offers, todayUsers, todayListings] = await Promise.all([
+    User.countDocuments(),
+    Listing.countDocuments(),
+    Offer.countDocuments(),
+    User.countDocuments({ createdAt: { $gte: todayStart } }),
+    Listing.countDocuments({ createdAt: { $gte: todayStart } }),
+  ]);
+
+  return NextResponse.json({ users, listings, offers, todayUsers, todayListings });
 }

@@ -2,16 +2,20 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Offer } from '@/lib/models';
 import { getUserFromRequest } from '@/lib/auth';
+import mongoose from 'mongoose';
 
 export async function GET(request: Request) {
   await connectDB();
   const decoded = getUserFromRequest(request);
   if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  if (!mongoose.Types.ObjectId.isValid(decoded.id))
+    return NextResponse.json([]);
+
   const offers = await Offer.find({ sender: decoded.id })
     .sort({ createdAt: -1 })
     .populate('receiver', 'name avatar phone instagram facebook email')
-    .populate('listing');
+    .populate({ path: 'listing', match: { _id: { $exists: true } } });
 
-  return NextResponse.json(offers);
+  return NextResponse.json(offers.filter(o => o.listing !== null));
 }

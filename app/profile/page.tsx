@@ -29,7 +29,10 @@ import {
   CircleX,
   Camera,
   Bookmark,
+  X,
 } from "lucide-react";
+
+import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import Link from "next/link";
 
@@ -38,6 +41,7 @@ function cn(...inputs: any[]) {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { user, logout, refresh } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "offers" | "listings" | "saved" | "settings" | "admin_users"
@@ -53,6 +57,7 @@ export default function ProfilePage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [siteSettings, setSiteSettings] = useState<any>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     listingId: string | null;
@@ -68,13 +73,13 @@ export default function ProfilePage() {
     if (user?.role === "ADMIN") {
       fetch("/api/settings")
         .then((r) => r.json())
-        .then(setSiteSettings);
+        .then(setSiteSettings)
+        .catch(() => {});
     }
   }, [user, activeTab]);
 
   const fetchStats = async () => {
-    const res = await fetch("/api/offers/received");
-    const data = await res.json();
+    await fetch("/api/offers/received");
   };
 
   const fetchData = async () => {
@@ -214,9 +219,9 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-[320px_1fr]">
-          {/* Sidebar */}
+          {/* ── Sidebar ── */}
           <div className="space-y-4">
-            {/* Profile Info Card */}
+            {/* Profile Info */}
             <div className="rounded-xl border border-dark-border bg-dark-card p-5">
               <div className="mb-4 flex items-center gap-4">
                 <div className="relative group">
@@ -288,7 +293,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Balance Card */}
+            {/* Balance */}
             <div className="rounded-xl border border-dark-border bg-dark-card p-5">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -301,20 +306,15 @@ export default function ProfilePage() {
                   {user.balance} ₾
                 </span>
               </div>
-              <button
-                onClick={async () => {
-                  const res = await fetch("/api/profile/add-balance", {
-                    method: "POST",
-                  });
-                  if (res.ok) refresh();
-                }}
-                className="w-full rounded-lg bg-gold text-dark py-2.5 text-sm font-semibold hover:bg-gold-hover transition-all"
+              <div
+                onClick={() => setShowPaymentModal(true)}
+                className="w-full rounded-lg bg-gold text-dark py-2.5 text-sm font-semibold hover:bg-gold-hover transition-all cursor-pointer text-center"
               >
                 შევსება
-              </button>
+              </div>
             </div>
 
-            {/* Navigation Menu */}
+            {/* Navigation */}
             <div className="flex flex-col gap-1 rounded-xl border border-dark-border bg-dark-card p-2">
               {[
                 {
@@ -377,7 +377,7 @@ export default function ProfilePage() {
                 </button>
               )}
 
-              <div className="h-px bg-dark-border my-1 mx-2"></div>
+              <div className="h-px bg-dark-border my-1 mx-2" />
 
               <button
                 onClick={async () => {
@@ -394,27 +394,40 @@ export default function ProfilePage() {
             <div className="rounded-xl border border-dark-border bg-dark-card p-5">
               <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">
                 <span>დღიური ლიმიტი</span>
-                <span className="text-white">
-                  {user.dailyPostCount <= 3
-                    ? `${user.dailyPostCount}/3`
-                    : "ლიმიტი შეივსო"}
+                <span
+                  className={cn(
+                    "font-black",
+                    user.dailyPostCount >= 3 ? "text-red-400" : "text-white",
+                  )}
+                >
+                  {user.dailyPostCount}/3
                 </span>
               </div>
               <div className="w-full h-1.5 bg-dark rounded-full overflow-hidden">
                 <div
                   className={cn(
-                    "h-full transition-all",
-                    user.dailyPostCount > 3 ? "bg-red-500/70" : "bg-gold",
+                    "h-full transition-all duration-500",
+                    user.dailyPostCount >= 3
+                      ? "bg-red-500/70"
+                      : user.dailyPostCount === 2
+                        ? "bg-yellow-500/70"
+                        : "bg-gold",
                   )}
                   style={{
                     width: `${Math.min((user.dailyPostCount / 3) * 100, 100)}%`,
                   }}
                 />
               </div>
+              {user.dailyPostCount >= 3 && (
+                <p className="text-[10px] text-red-400 font-bold mt-2 text-center">
+                  დღიური ლიმიტი ამოწურულია
+                </p>
+              )}
             </div>
           </div>
+          {/* ── /Sidebar ── */}
 
-          {/* Content Area */}
+          {/* ── Content ── */}
           <div className="min-h-[600px]">
             <AnimatePresence mode="wait">
               {/* OFFERS */}
@@ -729,7 +742,8 @@ export default function ProfilePage() {
                     {savedListings.map((listing) => (
                       <div
                         key={listing._id}
-                        className="group relative rounded-xl border border-dark-border bg-dark-card overflow-hidden hover:border-gold/30 transition-all"
+                        className="group relative rounded-xl border border-dark-border bg-dark-card overflow-hidden hover:border-gold/30 transition-all cursor-pointer"
+                        onClick={() => router.push(`/listing/${listing._id}`)}
                       >
                         <div className="aspect-video relative overflow-hidden bg-dark">
                           <img
@@ -1065,6 +1079,7 @@ export default function ProfilePage() {
               )}
             </AnimatePresence>
           </div>
+          {/* ── /Content ── */}
         </div>
       </main>
 
@@ -1079,6 +1094,7 @@ export default function ProfilePage() {
             editingListing={editingListing}
           />
         )}
+
         {deleteConfirmation.isOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div
@@ -1088,7 +1104,7 @@ export default function ProfilePage() {
               onClick={() =>
                 setDeleteConfirmation({ isOpen: false, listingId: null })
               }
-              className="absolute inset-0 backdrop-blur-sm"
+              className="absolute inset-0 backdrop-blur-sm bg-black/50"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -1120,6 +1136,75 @@ export default function ProfilePage() {
                 >
                   წაშლა
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPaymentModal(false)}
+              className="absolute inset-0 backdrop-blur-sm bg-black/50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-dark-card border border-dark-border rounded-3xl p-8 shadow-2xl z-10"
+            >
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div className="flex justify-center mb-6">
+                <div className="p-4 bg-gold/10 text-gold rounded-2xl">
+                  <Wallet size={32} />
+                </div>
+              </div>
+              <h2 className="text-xl font-black text-center text-white mb-2">
+                ბალანსის შევსება
+              </h2>
+              <p className="text-sm text-zinc-500 text-center mb-6">
+                მიმდინარე ბალანსი:{" "}
+                <span className="text-gold font-black">
+                  {user.balance || 0} ₾
+                </span>
+              </p>
+              <div className="bg-dark border border-dark-border rounded-2xl p-5 mb-6">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <p className="text-sm font-black text-white mb-2">
+                      გადახდის სისტემა ჯერ არ არის ინტეგრირებული
+                    </p>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      თანხის ჩარიცხვა შესაძლებელია საქართველოს ბანკში სადაც
+                      დანიშნულებაში მიუთითებთ მაილს, და ანგარიშზე დაგიჯდებათ
+                      თანხა რომლითაც დაპოსტავთ VIP და SILVER.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-dark rounded-xl border border-dark-border mb-6">
+                <span className="text-xl">📧</span>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    საქართველოს ბანკის ანგარიშის ნომერი:
+                  </p>
+                  <p className="text-sm font-bold text-gold">59001123042</p>
+                </div>
+              </div>
+              <div
+                onClick={() => setShowPaymentModal(false)}
+                className="w-full bg-gold text-dark py-3 rounded-xl font-black text-sm hover:brightness-110 transition-all cursor-pointer text-center"
+              >
+                გასაგებია
               </div>
             </motion.div>
           </div>

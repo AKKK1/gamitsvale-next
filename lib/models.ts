@@ -17,8 +17,9 @@ const UserSchema = new mongoose.Schema({
   savedListings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
   dailyPostCount: { type: Number, default: 0 },
   lastPostDate: { type: Date, default: Date.now },
+  isBlocked: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
-}, );
+});
 
 const ListingSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -34,8 +35,10 @@ const ListingSchema = new mongoose.Schema({
   isTraded: { type: Boolean, default: false },
   views: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
-  expiresAt: { type: Date }
-}, );
+  expiresAt: { type: Date },
+  serviceWanted: { type: String, default: '' },
+  wantedType: { type: String, enum: ['items', 'service'], default: 'items' },
+});
 
 const OfferSchema = new mongoose.Schema({
   listing: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing', required: true },
@@ -45,7 +48,9 @@ const OfferSchema = new mongoose.Schema({
   images: [{ type: String }],
   status: { type: String, enum: ['PENDING', 'ACCEPTED', 'DECLINED', 'THINKING'], default: 'PENDING' },
   createdAt: { type: Date, default: Date.now }
-}, );
+});
+
+OfferSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 3 });
 
 const NotificationSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -53,7 +58,7 @@ const NotificationSchema = new mongoose.Schema({
   offer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer' },
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
-},);
+});
 
 const SettingsSchema = new mongoose.Schema({
   siteName: { type: String, default: 'GAMITSVALE.GE' },
@@ -65,9 +70,8 @@ const SettingsSchema = new mongoose.Schema({
   facebookUrl: { type: String },
   instagramUrl: { type: String },
   updatedAt: { type: Date, default: Date.now }
-}, );
+});
 
-// ✅ სერვერლეს-ში მოდელი შეიძლება ორჯერ დარეგისტრირდეს — ამიტომ mongoose.models პირველად
 export const User = mongoose.models.User || mongoose.model('User', UserSchema);
 export const Listing = mongoose.models.Listing || mongoose.model('Listing', ListingSchema);
 export const Offer = mongoose.models.Offer || mongoose.model('Offer', OfferSchema);

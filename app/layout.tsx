@@ -15,9 +15,13 @@ export default function RootLayout({
   return (
     <html lang="ka">
       <head>
-        <script src="https://accounts.google.com/gsi/client" async defer />
+        <script
+          src="https://accounts.google.com/gsi/client"
+          async={true}
+          defer={true}
+        />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

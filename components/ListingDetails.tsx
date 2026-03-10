@@ -338,6 +338,39 @@ export default function ListingDetails({
               )}
             </div>
           </div>
+          {/* გაცვლა მინდა */}
+          <div className="bg-dark-card border border-dark-border rounded-2xl p-5">
+            <h3 className="font-bold text-base flex items-center gap-2 mb-3">
+              <RefreshCw size={16} className="text-gold" /> გაცვლა მინდა:
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {listing.wantedType === "service" && listing.serviceWanted ? (
+                <span className="px-3 py-1.5 rounded-lg text-sm font-bold border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 flex items-center gap-2">
+                  🛠️ {listing.serviceWanted}
+                </span>
+              ) : listing.wantedItems?.length > 0 ? (
+                listing.wantedItems.map((item: string, idx: number) => (
+                  <span
+                    key={idx}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-sm font-bold border",
+                      idx === 0
+                        ? "bg-gold/10 text-gold border-gold/20"
+                        : idx === 1
+                          ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                          : "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                    )}
+                  >
+                    {item}
+                  </span>
+                ))
+              ) : (
+                <span className="text-zinc-500 italic text-sm">
+                  მითითებული არ არის
+                </span>
+              )}
+            </div>
+          </div>
 
           {/* აღწერა */}
           <div className="bg-dark-card border border-dark-border rounded-2xl p-5">
