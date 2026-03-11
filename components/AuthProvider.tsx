@@ -21,11 +21,21 @@ export const GEORGIAN_CITIES = [
   "სამტრედია",
 ];
 
+// ── გაფართოებული კატეგორიები ──────────────────────────────────────────────
 export const CATEGORIES = [
-  { id: "electronics", name: "ელექტრონიკა", icon: "📱" },
+  { id: "electronics", name: "ტექნოლოგია და ელექტრონიკა", icon: "📱" },
+  { id: "vehicles", name: "ტრანსპორტი", icon: "🚗" },
+  { id: "realestate", name: "უძრავი ქონება", icon: "🏠" },
+  { id: "clothing", name: "ტანსაცმელი და აქსესუარები", icon: "👗" },
   { id: "home", name: "სახლი და ბაღი", icon: "🏡" },
-  { id: "clothing", name: "ტანსაცმელი", icon: "👕" },
-  { id: "vehicles", name: "ავტომობილები", icon: "🚗" },
+  { id: "agriculture", name: "სოფლის მეურნეობა", icon: "🌾" },
+  { id: "tools", name: "ხელსაწყოები და აღჭურვილობა", icon: "🔧" },
+  { id: "sports", name: "სპორტი და დასვენება", icon: "⚽" },
+  { id: "kids", name: "ბავშვის ნივთები", icon: "🧸" },
+  { id: "books", name: "წიგნები და განათლება", icon: "📚" },
+  { id: "art", name: "ხელოვნება და კოლექცია", icon: "🎨" },
+  { id: "animals", name: "ცხოველები", icon: "🐾" },
+  { id: "beauty", name: "სილამაზე და ჯანმრთელობა", icon: "💄" },
   { id: "services", name: "სერვისები", icon: "🛠️" },
   { id: "other", name: "სხვა", icon: "📦" },
 ];
@@ -85,9 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (response.access_token) {
           const userInfo = await fetch(
             "https://www.googleapis.com/oauth2/v3/userinfo",
-            {
-              headers: { Authorization: `Bearer ${response.access_token}` },
-            },
+            { headers: { Authorization: `Bearer ${response.access_token}` } },
           ).then((r) => r.json());
 
           const res = await fetch("/api/auth/google-success", {

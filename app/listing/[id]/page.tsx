@@ -5,6 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import Header from "@/components/Header";
 import ListingDetails from "@/components/ListingDetails";
 import OfferModal from "@/components/OfferModal";
+import Toast from "@/components/Toast";
 
 export default function ListingPage({
   params,
@@ -16,6 +17,7 @@ export default function ListingPage({
   const [loading, setLoading] = useState(true);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [listingId, setListingId] = useState<string>("");
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.resolve(params).then((p) => setListingId(p.id));
@@ -62,9 +64,13 @@ export default function ListingPage({
         <ListingDetails
           listing={listing}
           user={user}
-          onOffer={() =>
-            user ? setShowOfferModal(true) : alert("გთხოვთ გაიაროთ ავტორიზაცია")
-          }
+          onOffer={() => {
+            if (!user) {
+              setToast("გთხოვთ გაიაროთ ავტორიზაცია 🔐");
+              return;
+            }
+            setShowOfferModal(true);
+          }}
         />
       </main>
       {showOfferModal && (
@@ -73,6 +79,7 @@ export default function ListingPage({
           onClose={() => setShowOfferModal(false)}
         />
       )}
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Bell,
@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Header({
   onAddListing,
@@ -24,11 +25,11 @@ export default function Header({
   onSearch?: (query: string, type: string, filters?: any) => void;
 }) {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [searchType, setSearchType] = useState<"want" | "give" | "service">(
-    "want",
-  );
+  const [searchType, setSearchType] = useState<"want" | "give">("want");
   const [searchQuery, setSearchQuery] = useState("");
   const [settings, setSettings] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState<
@@ -46,18 +47,30 @@ export default function Header({
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
-      .then(setSettings);
+      .then(setSettings)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (user) {
       fetch("/api/notifications")
         .then((r) => r.json())
-        .then(setNotifications);
+        .then(setNotifications)
+        .catch(() => {});
     }
   }, [user]);
 
-  // body scroll lock მობილური მენიუს დროს
+  // ჰომ პეიჯზე დაბრუნებისას reset + refresh
+  useEffect(() => {
+    if (pathname === "/") {
+      setSearchQuery("");
+      setFilters({ city: "", category: "", condition: "" });
+      setSearchType("want");
+      if (onSearch) onSearch("", "want", {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   useEffect(() => {
     document.body.style.overflow = showMobileMenu ? "hidden" : "";
     return () => {
@@ -65,10 +78,10 @@ export default function Header({
     };
   }, [showMobileMenu]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (onSearch) onSearch(searchQuery, searchType, filters);
     setShowFilters(false);
-  };
+  }, [onSearch, searchQuery, searchType, filters]);
 
   const handleLogout = async () => {
     await logout();
@@ -88,17 +101,51 @@ export default function Header({
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  // ── pill toggle — "მინდა" / "გინდა" ──────────────────────────────────────
+  const SearchToggle = ({ small = false }: { small?: boolean }) => (
+    <div
+      className={cn(
+        "flex items-center gap-0.5 border-r border-dark-border shrink-0",
+        small ? "pr-1.5 mr-1" : "pr-2 mr-1",
+      )}
+    >
+      {(["want", "give"] as const).map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => setSearchType(t)}
+          className={cn(
+            "rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap",
+            small ? "px-2 py-1 text-[9px]" : "px-2.5 py-1.5 text-[10px]",
+            searchType === t
+              ? "bg-gold text-dark shadow-sm"
+              : "text-zinc-500 hover:text-zinc-300",
+          )}
+        >
+          {t === "want" ? "მინდა" : "გინდა"}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-dark/80 backdrop-blur-xl border-b border-dark-border">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-8">
           {/* ── ლოგო + კატეგორიები ── */}
-          <div className="flex items-center gap-4 lg:gap-6">
+          <div className="flex items-center gap-4 lg:gap-6 shrink-0">
             <Link
               href="/"
-              className="text-2xl font-black tracking-tighter text-white flex items-center gap-1 shrink-0"
+              onClick={() => {
+                setSearchQuery("");
+                setFilters({ city: "", category: "", condition: "" });
+                setSearchType("want");
+                if (onSearch) onSearch("", "want", {});
+              }}
+              className="text-2xl font-black tracking-tighter text-white flex items-center gap-1"
             >
-              {settings?.logoს ? (
+              {/* logos davamate */}
+              {settings?.logos ? (
                 <img
                   src={settings.logo}
                   alt={settings.siteName}
@@ -156,21 +203,15 @@ export default function Header({
 
           {/* ── საძიებო — desktop only ── */}
           <div className="flex-1 max-w-xl hidden lg:flex items-center bg-dark-card rounded-2xl border border-dark-border p-1 relative">
-            <div className="flex items-center gap-1 px-2 border-r border-dark-border">
-              <select
-                value={searchType}
-                onChange={(e) => setSearchType(e.target.value as any)}
-                className="bg-transparent text-xs font-bold text-zinc-400 outline-none px-2 cursor-pointer"
-              >
-                <option value="want">მინდა</option>
-                <option value="give">გინდა</option>
-                <option value="service">საქმე</option>
-              </select>
-            </div>
+            <SearchToggle />
             <input
               type="text"
-              placeholder="ძიება..."
-              className="flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-zinc-600"
+              placeholder={
+                searchType === "want"
+                  ? "განცხადების სახელი..."
+                  : "რა გინდა გაცვლაში..."
+              }
+              className="flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-zinc-600 min-w-0"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -178,7 +219,7 @@ export default function Header({
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                "p-2 transition-colors",
+                "p-2 shrink-0 transition-colors",
                 showFilters ? "text-gold" : "text-zinc-400 hover:text-gold",
               )}
             >
@@ -186,10 +227,11 @@ export default function Header({
             </button>
             <button
               onClick={handleSearch}
-              className="p-2 text-zinc-400 hover:text-gold transition-colors"
+              className="p-2 shrink-0 text-zinc-400 hover:text-gold transition-colors"
             >
               <Search size={18} />
             </button>
+
             <AnimatePresence>
               {showFilters && (
                 <motion.div
@@ -203,25 +245,19 @@ export default function Header({
                       {
                         label: "ქალაქი",
                         key: "city",
-                        options: GEORGIAN_CITIES.map((c) => ({
-                          value: c,
-                          label: c,
-                        })),
+                        opts: GEORGIAN_CITIES.map((c) => ({ v: c, l: c })),
                       },
                       {
                         label: "კატეგორია",
                         key: "category",
-                        options: CATEGORIES.map((c) => ({
-                          value: c.id,
-                          label: c.name,
-                        })),
+                        opts: CATEGORIES.map((c) => ({ v: c.id, l: c.name })),
                       },
                       {
                         label: "მდგომარეობა",
                         key: "condition",
-                        options: [
-                          { value: "NEW", label: "ახალი" },
-                          { value: "USED", label: "მეორადი" },
+                        opts: [
+                          { v: "NEW", l: "ახალი" },
+                          { v: "USED", l: "მეორადი" },
                         ],
                       },
                     ].map((f) => (
@@ -237,9 +273,9 @@ export default function Header({
                           className="w-full bg-dark border border-dark-border rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-gold/50"
                         >
                           <option value="">ყველა</option>
-                          {f.options.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
+                          {f.opts.map((o) => (
+                            <option key={o.v} value={o.v}>
+                              {o.l}
                             </option>
                           ))}
                         </select>
@@ -258,7 +294,7 @@ export default function Header({
           </div>
 
           {/* ── Actions — desktop only ── */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             {user ? (
               <>
                 <div className="relative">
@@ -295,7 +331,7 @@ export default function Header({
                 </div>
                 <button
                   onClick={onAddListing}
-                  className="bg-gold hover:bg-gold-hover text-dark px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-gold/10"
+                  className="bg-gold hover:bg-gold-hover text-dark px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-gold/10"
                 >
                   <Plus size={18} /> განცხადება
                 </button>
@@ -305,7 +341,7 @@ export default function Header({
                 >
                   <img
                     src={user.avatar || "https://www.gravatar.com/avatar?d=mp"}
-                    className="w-9 h-9 rounded-lg object-cover border border-dark-border"
+                    className="w-9 h-9 rounded-lg object-cover"
                     referrerPolicy="no-referrer"
                   />
                 </Link>
@@ -326,7 +362,7 @@ export default function Header({
                 </button>
                 <button
                   onClick={() => setShowAuthModal("register")}
-                  className="bg-gold text-dark px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all"
+                  className="bg-gold text-dark px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all"
                 >
                   რეგისტრაცია
                 </button>
@@ -334,8 +370,8 @@ export default function Header({
             )}
           </div>
 
-          {/* ── მობილური: Bell + + + Burger ── */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* ── მობილური: + Bell Burger ── */}
+          <div className="flex lg:hidden items-center gap-2 shrink-0">
             <button
               onClick={onAddListing}
               className="bg-gold hover:bg-gold-hover text-dark p-2.5 rounded-xl transition-all"
@@ -372,29 +408,23 @@ export default function Header({
           </div>
         </div>
 
-        {/* ── მობილური საძიებო ── */}
+        {/* ── მობილური საძიებო (pill toggle + input) ── */}
         <div className="lg:hidden px-4 pb-3">
           <div className="flex items-center bg-dark-card rounded-xl border border-dark-border p-1">
-            <select
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value as any)}
-              className="bg-transparent text-xs font-bold text-zinc-400 outline-none px-2 cursor-pointer border-r border-dark-border mr-1"
-            >
-              <option value="want">მინდა</option>
-              <option value="give">გინდა</option>
-              <option value="service">საქმე</option>
-            </select>
+            <SearchToggle small />
             <input
               type="text"
-              placeholder="ძიება..."
-              className="flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-zinc-600"
+              placeholder={
+                searchType === "want" ? "სახელი..." : "გასაცვლელი..."
+              }
+              className="flex-1 bg-transparent px-2 text-sm text-white outline-none placeholder:text-zinc-600 min-w-0"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <button
               onClick={handleSearch}
-              className="p-2 text-zinc-400 hover:text-gold transition-colors"
+              className="p-2 shrink-0 text-zinc-400 hover:text-gold transition-colors"
             >
               <Search size={16} />
             </button>
@@ -402,13 +432,10 @@ export default function Header({
         </div>
       </header>
 
-      {/* ══════════════════════════════════════════
-          მობილური Drawer (მარჯვნიდან შემოდის)
-      ══════════════════════════════════════════ */}
+      {/* ══ მობილური Drawer ══ */}
       <AnimatePresence>
         {showMobileMenu && (
           <>
-            {/* backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -416,7 +443,6 @@ export default function Header({
               onClick={() => setShowMobileMenu(false)}
               className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm lg:hidden"
             />
-            {/* drawer panel */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -424,9 +450,8 @@ export default function Header({
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
               className="fixed top-0 right-0 h-full w-[80vw] max-w-xs bg-dark-card border-l border-dark-border z-[80] flex flex-col lg:hidden"
             >
-              {/* drawer header */}
               <div className="flex items-center justify-between px-5 py-5 border-b border-dark-border shrink-0">
-                <span className="text-base font-black text-white tracking-tight">
+                <span className="text-base font-black text-white">
                   GAMITS<span className="text-gold">VALE</span>.GE
                 </span>
                 <button
@@ -437,9 +462,7 @@ export default function Header({
                 </button>
               </div>
 
-              {/* drawer body */}
               <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-1">
-                {/* user info */}
                 {user && (
                   <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl bg-dark border border-dark-border">
                     <img
@@ -459,8 +482,6 @@ export default function Header({
                     </div>
                   </div>
                 )}
-
-                {/* ნავიგაციის ლინკები */}
                 {[
                   { href: "/", label: "🏠 მთავარი" },
                   { href: "/rules", label: "📋 წესები" },
@@ -474,8 +495,6 @@ export default function Header({
                     {link.label}
                   </Link>
                 ))}
-
-                {/* კატეგორიები */}
                 <div className="pt-2">
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-3 pb-2">
                     კატეგორიები
@@ -494,7 +513,6 @@ export default function Header({
                 </div>
               </div>
 
-              {/* drawer footer */}
               <div className="border-t border-dark-border px-3 py-4 space-y-2 shrink-0">
                 {user ? (
                   <>
@@ -579,7 +597,7 @@ export default function Header({
   );
 }
 
-// ── NotificationDropdown (გამოიყენება desktop + mobile) ────────────────────
+// ── NotificationDropdown ────────────────────────────────────────────────────
 function NotificationDropdown({
   notifications,
   onAction,
@@ -742,6 +760,9 @@ function AuthModal({
     setLoading(false);
   };
 
+  const inp =
+    "w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white";
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <motion.div
@@ -781,7 +802,7 @@ function AuthModal({
               <input
                 required
                 type="text"
-                className="w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white"
+                className={inp}
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -798,7 +819,7 @@ function AuthModal({
                 <input
                   required
                   type="email"
-                  className="w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white"
+                  className={inp}
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -825,7 +846,7 @@ function AuthModal({
                     required
                     type="password"
                     minLength={6}
-                    className="w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white"
+                    className={inp}
                     value={formData.password}
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
@@ -845,7 +866,7 @@ function AuthModal({
                   required
                   type="text"
                   maxLength={6}
-                  className="w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-center text-2xl tracking-[10px] text-white"
+                  className={`${inp} text-center text-2xl tracking-[10px]`}
                   value={formData.code}
                   onChange={(e) =>
                     setFormData({ ...formData, code: e.target.value })
@@ -860,7 +881,7 @@ function AuthModal({
                   required
                   type="password"
                   minLength={6}
-                  className="w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white"
+                  className={inp}
                   value={formData.newPassword}
                   onChange={(e) =>
                     setFormData({ ...formData, newPassword: e.target.value })
@@ -878,7 +899,7 @@ function AuthModal({
                 required
                 type="text"
                 maxLength={6}
-                className="w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-center text-2xl tracking-[10px] text-white"
+                className={`${inp} text-center text-2xl tracking-[10px]`}
                 value={formData.code}
                 onChange={(e) =>
                   setFormData({ ...formData, code: e.target.value })

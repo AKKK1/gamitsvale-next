@@ -6,9 +6,11 @@ import Header from "@/components/Header";
 import ListingCard from "@/components/ListingCard";
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
+import Toast from "@/components/Toast";
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import Link from "next/link";
-import Footer from "./footer/page";
+import Footer from "../app/footer/page";
+
 export default function HomePage() {
   const { user } = useAuth();
   const [listings, setListings] = useState<any[]>([]);
@@ -16,6 +18,7 @@ export default function HomePage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState<any>(null);
   const [editingListing, setEditingListing] = useState<any>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     listingId: string | null;
@@ -26,7 +29,7 @@ export default function HomePage() {
   const fetchListings = async (params?: URLSearchParams) => {
     setLoading(true);
     const res = await fetch(
-      `/api/listings${params ? "?" + params.toString() : ""}`,
+      `/api/listings${params && params.toString() ? "?" + params.toString() : ""}`,
     );
     const data = await res.json();
     setListings(Array.isArray(data) ? data : []);
@@ -48,12 +51,18 @@ export default function HomePage() {
     }
   };
 
-  // VIP და SILVER განცხადებები
+  // ავტორიზაციის helper — alert-ის მაგივრად Toast
+  const requireAuth = (action: () => void) => {
+    if (!user) {
+      setToast("გთხოვთ გაიაროთ ავტორიზაცია 🔐");
+      return;
+    }
+    action();
+  };
+
   const vipListings = listings.filter(
     (l) => l.listingType === "VIP" || l.isVIP,
   );
-
-  // ჩვეულებრივი განცხადებები — SILVER წინ, NORMAL უკან
   const normalListings = listings
     .filter((l) => l.listingType !== "VIP" && !l.isVIP)
     .sort((a, b) => {
@@ -65,15 +74,16 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-dark text-white">
       <Header
-        onAddListing={() =>
-          user ? setShowAddModal(true) : alert("გთხოვთ გაიაროთ ავტორიზაცია")
-        }
-        onSearch={(query, type) => {
+        onAddListing={() => requireAuth(() => setShowAddModal(true))}
+        onSearch={(query, type, filters) => {
           const p = new URLSearchParams();
-          if (query) {
-            p.append("search", query);
+          if (query?.trim()) {
+            p.append("search", query.trim());
             p.append("type", type || "want");
           }
+          if (filters?.city) p.append("city", filters.city);
+          if (filters?.category) p.append("category", filters.category);
+          if (filters?.condition) p.append("condition", filters.condition);
           fetchListings(p);
         }}
       />
@@ -154,9 +164,7 @@ export default function HomePage() {
                     delay={i * 0.05}
                     className="w-[260px] shrink-0"
                     onOffer={() =>
-                      user
-                        ? setShowOfferModal(listing)
-                        : alert("გთხოვთ გაიაროთ ავტორიზაცია")
+                      requireAuth(() => setShowOfferModal(listing))
                     }
                     onEdit={() => {
                       setEditingListing(listing);
@@ -216,11 +224,7 @@ export default function HomePage() {
                   key={listing._id}
                   listing={listing}
                   user={user}
-                  onOffer={() =>
-                    user
-                      ? setShowOfferModal(listing)
-                      : alert("გთხოვთ გაიაროთ ავტორიზაცია")
-                  }
+                  onOffer={() => requireAuth(() => setShowOfferModal(listing))}
                   onEdit={() => {
                     setEditingListing(listing);
                     setShowAddModal(true);
@@ -295,6 +299,9 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+
       <Footer />
     </div>
   );

@@ -47,15 +47,24 @@ export async function POST(request: Request) {
   const user = await User.findById(decoded.id);
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const lastPost = new Date(user.lastPostDate); lastPost.setHours(0, 0, 0, 0);
-  if (today > lastPost) { user.dailyPostCount = 0; user.lastPostDate = new Date(); }
-
-  if (user.dailyPostCount >= CONFIG.LISTINGS.DAILY_LIMIT && user.role !== 'ADMIN')
-    return NextResponse.json({ error: `დღიური ლიმიტი ამოწურულია` }, { status: 403 });
-
   const body = await request.json();
   const { title, category, city, description, condition, listingType } = body;
+
+  // ── დღიური ლიმიტი — მხოლოდ NORMAL განცხადებებზე ──────────────────────
+  // VIP და SILVER ფასიანია (ბალანსიდან იხდის), ამიტომ ლიმიტში არ ითვლება
+  const isNormal = !listingType || listingType === 'NORMAL';
+
+  if (isNormal && user.role !== 'ADMIN') {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const lastPost = new Date(user.lastPostDate || 0); lastPost.setHours(0, 0, 0, 0);
+    if (today > lastPost) {
+      user.dailyPostCount = 0;
+      user.lastPostDate = new Date();
+    }
+    if (user.dailyPostCount >= CONFIG.LISTINGS.DAILY_LIMIT) {
+      return NextResponse.json({ error: 'დღიური ლიმიტი ამოწურულია' }, { status: 403 });
+    }
+  }
 
   if (!title?.trim()) return NextResponse.json({ error: 'სათაური სავალდებულოა' }, { status: 400 });
   if (!category?.trim()) return NextResponse.json({ error: 'კატეგორია სავალდებულოა' }, { status: 400 });
@@ -72,7 +81,10 @@ export async function POST(request: Request) {
     isVIP: listingType === 'VIP'
   });
 
-  user.dailyPostCount += 1;
+  // NORMAL-ზე count-ი იზრდება, VIP/SILVER-ზე მხოლოდ ფული იხდება
+  if (isNormal) {
+    user.dailyPostCount += 1;
+  }
   user.balance -= cost;
   await user.save();
 
