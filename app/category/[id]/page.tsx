@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import ListingCard from "@/components/ListingCard";
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
+import Toast from "@/components/Toast";
+import { Trash2 } from "lucide-react";
 
 export default function CategoryPage({
   params,
@@ -19,6 +21,11 @@ export default function CategoryPage({
   const [showOfferModal, setShowOfferModal] = useState<any>(null);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [categoryId, setCategoryId] = useState<string>("");
+  const [toast, setToast] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    listingId: string | null;
+  }>({ isOpen: false, listingId: null });
 
   useEffect(() => {
     Promise.resolve(params).then((p) => setCategoryId(p.id));
@@ -41,12 +48,27 @@ export default function CategoryPage({
     if (categoryId) fetchListings();
   }, [categoryId]);
 
+  const requireAuth = (action: () => void) => {
+    if (!user) {
+      setToast("გთხოვთ გაიაროთ ავტორიზაცია 🔐");
+      return;
+    }
+    action();
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.listingId) return;
+    await fetch(`/api/listings/${deleteConfirmation.listingId}`, {
+      method: "DELETE",
+    });
+    setDeleteConfirmation({ isOpen: false, listingId: null });
+    fetchListings();
+  };
+
   return (
     <div className="min-h-screen bg-dark text-white">
       <Header
-        onAddListing={() =>
-          user ? setShowAddModal(true) : alert("გთხოვთ გაიაროთ ავტორიზაცია")
-        }
+        onAddListing={() => requireAuth(() => setShowAddModal(true))}
         onSearch={(query, type) => {
           const p = new URLSearchParams();
           if (query) {
@@ -94,22 +116,17 @@ export default function CategoryPage({
                 key={listing._id}
                 listing={listing}
                 user={user}
-                onOffer={() =>
-                  user
-                    ? setShowOfferModal(listing)
-                    : alert("გთხოვთ გაიაროთ ავტორიზაცია")
-                }
+                onOffer={() => requireAuth(() => setShowOfferModal(listing))}
                 onEdit={() => {
                   setEditingListing(listing);
                   setShowAddModal(true);
                 }}
-                onDelete={() => {
-                  if (confirm("ნამდვილად გსურთ წაშლა?")) {
-                    fetch(`/api/listings/${listing._id}`, {
-                      method: "DELETE",
-                    }).then(() => fetchListings());
-                  }
-                }}
+                onDelete={() =>
+                  setDeleteConfirmation({
+                    isOpen: true,
+                    listingId: listing._id,
+                  })
+                }
               />
             ))}
           </div>
@@ -132,6 +149,47 @@ export default function CategoryPage({
           onClose={() => setShowOfferModal(null)}
         />
       )}
+
+      {/* წაშლის დადასტურება */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() =>
+              setDeleteConfirmation({ isOpen: false, listingId: null })
+            }
+          />
+          <div className="relative w-full max-w-sm bg-dark-card border border-dark-border rounded-3xl p-6 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">
+              ნამდვილად გსურთ წაშლა?
+            </h3>
+            <p className="text-xs text-zinc-400 mb-6">
+              ეს ქმედება შეუქცევადია.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, listingId: null })
+                }
+                className="flex-1 py-3 rounded-xl border border-dark-border text-xs font-bold text-zinc-400 hover:text-white transition-all"
+              >
+                გაუქმება
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-all"
+              >
+                წაშლა
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

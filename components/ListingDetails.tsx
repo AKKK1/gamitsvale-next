@@ -41,14 +41,30 @@ export default function ListingDetails({
   }, [user, listing._id]);
 
   const handleSave = async () => {
-    if (!user) return alert("გთხოვთ გაიაროთ ავტორიზაცია");
+    if (!user) {
+      setToast("გთხოვთ გაიაროთ ავტორიზაცია 🔐");
+      return;
+    }
     const res = await fetch(`/api/listings/save/${listing._id}`, {
       method: "POST",
     });
     if (res.ok) {
       const data = await res.json();
       setIsSaved(data.saved);
+      setToast(
+        data.saved
+          ? "განცხადება შენახულია ❤️"
+          : "განცხადება წაიშალა შენახულიდან",
+      );
     }
+  };
+
+  const handleOffer = () => {
+    if (!user) {
+      setToast("გთხოვთ გაიაროთ ავტორიზაცია 🔐");
+      return;
+    }
+    setShowOfferModal(true);
   };
 
   const nextImage = () =>
@@ -121,7 +137,6 @@ export default function ListingDetails({
             )}
           </div>
 
-          {/* Thumbnails */}
           {listing.images?.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2">
               {listing.images.map((img: string, idx: number) => (
@@ -148,7 +163,6 @@ export default function ListingDetails({
 
         {/* ══ მარჯვენა — ინფო ══ */}
         <div className="space-y-6">
-          {/* სათაური + მეტა */}
           <div>
             <div className="flex items-center gap-2 text-sm text-zinc-400 mb-3 flex-wrap">
               <span
@@ -208,11 +222,7 @@ export default function ListingDetails({
               </div>
               {!isOwner && !isExchanged && (
                 <button
-                  onClick={() =>
-                    user
-                      ? setShowOfferModal(true)
-                      : alert("გთხოვთ გაიაროთ ავტორიზაცია")
-                  }
+                  onClick={handleOffer}
                   className="bg-gold text-dark px-5 py-2 rounded-xl font-bold hover:brightness-110 transition-all flex items-center gap-2 text-sm"
                 >
                   <MessageCircle size={16} /> შეთავაზება
@@ -221,7 +231,7 @@ export default function ListingDetails({
             </div>
           </div>
 
-          {/* ── გაცვლა მინდა — მხოლოდ ერთი სექცია ── */}
+          {/* გაცვლა მინდა */}
           <div className="bg-dark-card border border-dark-border rounded-2xl p-5">
             <h3 className="font-bold text-base flex items-center gap-2 mb-3">
               <RefreshCw size={16} className="text-gold" /> გაცვლა მინდა:
