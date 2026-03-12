@@ -37,6 +37,7 @@ interface ListingCardProps {
   user?: any;
   delay?: number;
   className?: string;
+  index?: number;
 }
 
 export default function ListingCard({
@@ -47,7 +48,11 @@ export default function ListingCard({
   user,
   delay = 0,
   className,
+  index = 99,
 }: ListingCardProps) {
+  // პირველი 4 card viewport-ში ჩანს — eager load; დანარჩენი lazy
+  const isAboveFold = index < 4;
+  const isLCP = index === 0;
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(
     user?.savedListings?.includes(listing._id),
@@ -133,7 +138,8 @@ export default function ListingCard({
               }
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               referrerPolicy="no-referrer"
-              loading="lazy"
+              loading={isAboveFold ? "eager" : "lazy"}
+              fetchPriority={isLCP ? "high" : "auto"}
               alt={listing.title}
             />
             {hasMultipleImages && (

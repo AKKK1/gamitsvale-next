@@ -112,8 +112,7 @@ const Footer = () => {
             © {new Date().getFullYear()} GAMITSVALE.GE — ყველა უფლება დაცულია
           </p>
           <p className="text-[11px] text-zinc-600 font-medium">
-            დამზადებულია <span className="text-gold font-black">ACH</span>-ს
-            მიერ
+            დამზადებულია <span className="text-gold font-black">AK</span>-ს მიერ
           </p>
         </div>
       </div>

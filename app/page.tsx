@@ -161,6 +161,7 @@ export default function HomePage() {
                     key={listing._id}
                     listing={listing}
                     user={user}
+                    index={99}
                     delay={i * 0.05}
                     className="w-[260px] shrink-0"
                     onOffer={() =>
@@ -219,11 +220,12 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-              {normalListings.map((listing) => (
+              {normalListings.map((listing, index) => (
                 <ListingCard
                   key={listing._id}
                   listing={listing}
                   user={user}
+                  index={index}
                   onOffer={() => requireAuth(() => setShowOfferModal(listing))}
                   onEdit={() => {
                     setEditingListing(listing);
