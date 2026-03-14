@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: {
@@ -41,15 +42,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ka">
-      <head>
-        <script
-          src="https://accounts.google.com/gsi/client"
-          async={true}
-          defer={true}
-        />
-      </head>
       <body suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
