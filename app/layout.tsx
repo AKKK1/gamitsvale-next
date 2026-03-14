@@ -3,13 +3,35 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "GAMITSVALE.GE — გაცვალე საქართველოში",
+  title: {
+    default: "GAMITSVALE.GE — გაცვლის პლატფორმა",
+    template: "%s | GAMITSVALE.GE",
+  },
   description:
-    "Georgian Swap & Barter Marketplace, ნივთების გაცვლის საიტი სადაც არაფერს ადევს ფასი, ყველაფერი კი საჭიროებებზეა.",
-
+    "საქართველოს პირველი გაცვლის პლატფორმა. გაცვალე ნივთები ფულის გარეშე.",
+  keywords: [
+    "გაცვლა",
+    "barter",
+    "ნივთების გაცვლა",
+    "საქართველო",
+    "გაცვლის საიტი",
+  ],
+  openGraph: {
+    title: "GAMITSVALE.GE - ნივთების გაცვლის პლატფორმა",
+    description: "გაცვალე ნივთები ფულის გარეშე",
+    url: "https://gamitsvale.ge",
+    siteName: "GAMITSVALE.GE",
+    locale: "ka_GE",
+    type: "website",
+    images: [
+      { url: "https://gamitsvale.ge/og-image.jpg", width: 1200, height: 630 },
+    ],
+  },
   icons: {
     icon: "/favicon.svg",
   },
+  twitter: { card: "summary_large_image" },
+  alternates: { canonical: "https://gamitsvale.ge" },
 };
 
 export default function RootLayout({
