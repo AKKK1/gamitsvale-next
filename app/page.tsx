@@ -200,7 +200,7 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
               {[...Array(10)].map((_, i) => (
                 <div
                   key={i}
@@ -219,7 +219,7 @@ export default function HomePage() {
               <p className="text-lg font-bold">განცხადება არ არის</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
               {normalListings.map((listing, index) => (
                 <ListingCard
                   key={listing._id}
