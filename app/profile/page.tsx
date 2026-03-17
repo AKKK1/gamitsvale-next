@@ -637,13 +637,13 @@ export default function ProfilePage() {
                                         onClick={() =>
                                           handleCopy(item.key, item.value)
                                         }
-                                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-green-600/20 transition-all group text-left w-full"
+                                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-green-600/20 active:bg-green-600/30 transition-all text-left w-full min-h-[44px]"
                                       >
                                         {item.icon}
                                         <span className="text-xs text-white flex-1 truncate">
                                           {item.value}
                                         </span>
-                                        <span className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="shrink-0">
                                           {copiedKey === item.key ? (
                                             <Check
                                               size={12}
@@ -1292,7 +1292,7 @@ export default function ProfilePage() {
                   </p>
                   <p className="text-sm font-bold text-gold">59001123042</p>
                 </div>
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <span className="shrink-0">
                   {copiedKey === "bank-account" ? (
                     <Check size={16} className="text-green-400" />
                   ) : (
