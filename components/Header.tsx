@@ -671,7 +671,7 @@ function NotificationDropdown({
         ))}
       </div>
       <Link
-        href="/profile"
+        href="/offers"
         onClick={onClose}
         className="block w-full mt-6 py-3 text-[10px] font-black uppercase tracking-widest text-gold hover:text-white transition-colors border-t border-dark-border text-center"
       >
