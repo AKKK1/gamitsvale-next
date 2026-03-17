@@ -18,7 +18,8 @@ const UserSchema = new mongoose.Schema({
   dailyPostCount: { type: Number, default: 0 },
   lastPostDate: { type: Date, default: Date.now },
   isBlocked: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  facebookId: { type: String, sparse: true },
 });
 
 const ListingSchema = new mongoose.Schema({

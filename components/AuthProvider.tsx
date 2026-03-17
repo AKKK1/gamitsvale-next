@@ -21,7 +21,6 @@ export const GEORGIAN_CITIES = [
   "სამტრედია",
 ];
 
-// ── გაფართოებული კატეგორიები ──────────────────────────────────────────────
 export const CATEGORIES = [
   { id: "electronics", name: "ტექნოლოგია და ელექტრონიკა", icon: "📱" },
   { id: "vehicles", name: "ტრანსპორტი", icon: "🚗" },
@@ -40,6 +39,13 @@ export const CATEGORIES = [
   { id: "other", name: "სხვა", icon: "📦" },
 ];
 
+interface RegisterExtra {
+  lastName?: string;
+  phone: string;
+  instagram?: string;
+  facebook?: string;
+}
+
 interface AuthContextType {
   user: any;
   loading: boolean;
@@ -52,6 +58,7 @@ interface AuthContextType {
     email: string,
     name: string,
     password: string,
+    extra: RegisterExtra,
   ) => Promise<{ success: boolean; error?: string }>;
   verify: (
     email: string,
@@ -135,11 +142,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, error: err.error };
   };
 
-  const register = async (email: string, name: string, password: string) => {
+  const register = async (
+    email: string,
+    name: string,
+    password: string,
+    extra: RegisterExtra,
+  ) => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, name, password }),
+      body: JSON.stringify({
+        email,
+        name,
+        password,
+        lastName: extra.lastName || "",
+        phone: extra.phone,
+        instagram: extra.instagram || "",
+        facebook: extra.facebook || "",
+      }),
     });
     if (res.ok) return { success: true };
     const err = await res.json();
