@@ -142,7 +142,7 @@ export default function Header({
               }}
               className="text-2xl font-black tracking-tighter text-white flex items-center gap-1"
             >
-              {settings?.logo ? (
+              {settings?.logos ? (
                 <img
                   src={settings.logo}
                   alt={settings.siteName}
@@ -738,8 +738,8 @@ function AuthModal({
             }),
           });
           if (res.ok) {
-            setStep("form");
-            setError("");
+            onClose();
+            window.location.href = "/";
           } else {
             const d = await res.json();
             setError(d.error || "პაროლის შეცვლა ვერ მოხერხდა");
