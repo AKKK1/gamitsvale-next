@@ -1290,7 +1290,9 @@ export default function ProfilePage() {
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                     საქართველოს ბანკის ანგარიშის ნომერი:
                   </p>
-                  <p className="text-sm font-bold text-gold">59001123042</p>
+                  <p className="text-sm font-bold text-gold">
+                    GE33BG0000000533946610
+                  </p>
                 </div>
                 <span className="shrink-0">
                   {copiedKey === "bank-account" ? (
