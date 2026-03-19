@@ -63,14 +63,14 @@ const CONTACT = [
     label: "ტელეფონი",
     value: "+995 593 716 080",
     href: "tel:+995593716080",
-    copy: false,
+    copy: true,
   },
   {
     icon: <Facebook size={18} className="text-gold shrink-0" />,
     label: "Facebook ჯგუფი",
     value: "GAMITSVALE.GE — ოფიციალური ჯგუფი",
     href: "https://www.facebook.com/groups/1465431608622052",
-    copy: false,
+    copy: true,
   },
 ];
 
