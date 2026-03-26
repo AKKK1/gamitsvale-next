@@ -1,0 +1,213 @@
+// app/listing/[id]/opengraph-image.tsx
+import { ImageResponse } from "next/og";
+
+export const runtime = "edge";
+export const alt = "GAMITSVALE.GE";
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+const APP_URL = process.env.APP_URL || "https://gamitsvale.ge";
+
+export default async function Image({ params }: { params: { id: string } }) {
+  let listing: any = null;
+  try {
+    const res = await fetch(`${APP_URL}/api/listings/${params.id}`);
+    if (res.ok) listing = await res.json();
+  } catch {}
+
+  const title = listing?.title || "განცხადება";
+  const city = listing?.city || "საქართველო";
+  const image = listing?.images?.[0] || null;
+  const listingType = listing?.listingType || "NORMAL";
+  const wantedItems = listing?.wantedItems || [];
+
+  return new ImageResponse(
+    <div
+      style={{
+        width: "1200px",
+        height: "630px",
+        display: "flex",
+        background: "#0a0a0a",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: "-150px",
+          left: "-100px",
+          width: "600px",
+          height: "600px",
+          borderRadius: "50%",
+          background: "rgba(212,160,23,0.06)",
+          filter: "blur(100px)",
+        }}
+      />
+      <div
+        style={{
+          width: "560px",
+          height: "630px",
+          position: "relative",
+          display: "flex",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}
+      >
+        {image ? (
+          <img
+            src={image}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "#141414",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "120px",
+            }}
+          >
+            📦
+          </div>
+        )}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to right, transparent 50%, #0a0a0a 100%)",
+          }}
+        />
+      </div>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "48px 48px 48px 24px",
+        }}
+      >
+        {listingType !== "NORMAL" && (
+          <div style={{ display: "flex", marginBottom: "16px" }}>
+            <div
+              style={{
+                background: "rgba(212,160,23,0.15)",
+                border: "1px solid rgba(212,160,23,0.4)",
+                borderRadius: "8px",
+                padding: "4px 14px",
+                color: "#D4A017",
+                fontSize: "12px",
+                fontWeight: "900",
+                letterSpacing: "2px",
+              }}
+            >
+              {listingType === "VIP" ? "⭐ VIP" : "🥈 SILVER"}
+            </div>
+          </div>
+        )}
+        <div
+          style={{
+            fontSize: title.length > 25 ? "34px" : "42px",
+            fontWeight: "900",
+            color: "#FFFFFF",
+            lineHeight: 1.15,
+            marginBottom: "14px",
+            letterSpacing: "-0.5px",
+          }}
+        >
+          {title.slice(0, 55)}
+          {title.length > 55 ? "..." : ""}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginBottom: "20px",
+          }}
+        >
+          <span style={{ fontSize: "15px" }}>📍</span>
+          <span style={{ color: "#777777", fontSize: "15px" }}>{city}</span>
+        </div>
+        {wantedItems.length > 0 && (
+          <div style={{ marginBottom: "24px" }}>
+            <div
+              style={{
+                fontSize: "10px",
+                color: "#D4A017",
+                fontWeight: "900",
+                letterSpacing: "2px",
+                marginBottom: "10px",
+              }}
+            >
+              გაცვლა მინდა:
+            </div>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {wantedItems.slice(0, 3).map((item: string, i: number) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "rgba(212,160,23,0.1)",
+                    border: "1px solid rgba(212,160,23,0.2)",
+                    borderRadius: "8px",
+                    padding: "5px 12px",
+                    color: "#D4A017",
+                    fontSize: "13px",
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div
+          style={{
+            width: "100%",
+            height: "1px",
+            background: "rgba(255,255,255,0.07)",
+            marginBottom: "20px",
+          }}
+        />
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span
+            style={{ fontSize: "20px", fontWeight: "900", color: "#FFFFFF" }}
+          >
+            GAMITSVALE
+          </span>
+          <span
+            style={{ color: "#D4A017", fontSize: "20px", fontWeight: "900" }}
+          >
+            .GE
+          </span>
+          <span
+            style={{
+              marginLeft: "8px",
+              fontSize: "11px",
+              color: "#444",
+              letterSpacing: "1px",
+            }}
+          >
+            გაცვლის პლატფორმა
+          </span>
+        </div>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "3px",
+          background: "#D4A017",
+        }}
+      />
+    </div>,
+    { ...size },
+  );
+}
