@@ -1,5 +1,4 @@
 // app/listing/[id]/page.tsx
-// 'use client' არ აქვს — server component!
 
 import { Metadata } from "next";
 import ListingPageClient from "./ListingPageClient";
@@ -45,8 +44,21 @@ export async function generateMetadata({
       siteName: "GAMITSVALE.GE",
       locale: "ka_GE",
       type: "website",
+      images: [
+        {
+          url: `${APP_URL}/listing/${id}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${APP_URL}/listing/${id}/opengraph-image`],
+    },
   };
 }
 
