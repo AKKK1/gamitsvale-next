@@ -1,4 +1,3 @@
-// app/listing/[id]/opengraph-image.tsx
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
@@ -17,9 +16,21 @@ export default async function Image({ params }: { params: { id: string } }) {
 
   const title = listing?.title || "განცხადება";
   const city = listing?.city || "საქართველო";
-  const image = listing?.images?.[0] || null;
   const listingType = listing?.listingType || "NORMAL";
-  const wantedItems = listing?.wantedItems || [];
+  const wantedType = listing?.wantedType || "items";
+  const wantedItems: string[] = listing?.wantedItems || [];
+  const serviceWanted: string = listing?.serviceWanted || "";
+
+  // ფოტოს სრული URL
+  const rawImage = listing?.images?.[0] || null;
+  const image = rawImage
+    ? rawImage.startsWith("http")
+      ? rawImage
+      : `${APP_URL}${rawImage}`
+    : null;
+
+  // ლინკი ფოტოზე
+  const shortLink = `gamitsvale.ge/listing/${params.id.slice(0, 8)}...`;
 
   return new ImageResponse(
     <div
@@ -32,6 +43,7 @@ export default async function Image({ params }: { params: { id: string } }) {
         overflow: "hidden",
       }}
     >
+      {/* ფონის blur ეფექტი */}
       <div
         style={{
           position: "absolute",
@@ -44,6 +56,8 @@ export default async function Image({ params }: { params: { id: string } }) {
           filter: "blur(100px)",
         }}
       />
+
+      {/* მარცხენა — ფოტო */}
       <div
         style={{
           width: "560px",
@@ -74,6 +88,8 @@ export default async function Image({ params }: { params: { id: string } }) {
             📦
           </div>
         )}
+
+        {/* gradient overlay */}
         <div
           style={{
             position: "absolute",
@@ -82,7 +98,40 @@ export default async function Image({ params }: { params: { id: string } }) {
               "linear-gradient(to right, transparent 50%, #0a0a0a 100%)",
           }}
         />
+
+        {/* ლინკი ფოტოზე — ქვედა მარცხენა */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "16px",
+            left: "16px",
+            background: "rgba(0,0,0,0.72)",
+            border: "1px solid rgba(212,160,23,0.5)",
+            borderRadius: "8px",
+            padding: "6px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <span
+            style={{ color: "#D4A017", fontSize: "13px", fontWeight: "700" }}
+          >
+            🔗
+          </span>
+          <span
+            style={{
+              color: "#ffffff",
+              fontSize: "12px",
+              letterSpacing: "0.3px",
+            }}
+          >
+            {shortLink}
+          </span>
+        </div>
       </div>
+
+      {/* მარჯვენა — ტექსტი */}
       <div
         style={{
           flex: 1,
@@ -92,6 +141,7 @@ export default async function Image({ params }: { params: { id: string } }) {
           padding: "48px 48px 48px 24px",
         }}
       >
+        {/* VIP / SILVER badge */}
         {listingType !== "NORMAL" && (
           <div style={{ display: "flex", marginBottom: "16px" }}>
             <div
@@ -110,6 +160,8 @@ export default async function Image({ params }: { params: { id: string } }) {
             </div>
           </div>
         )}
+
+        {/* სათაური */}
         <div
           style={{
             fontSize: title.length > 25 ? "34px" : "42px",
@@ -123,6 +175,8 @@ export default async function Image({ params }: { params: { id: string } }) {
           {title.slice(0, 55)}
           {title.length > 55 ? "..." : ""}
         </div>
+
+        {/* ქალაქი */}
         <div
           style={{
             display: "flex",
@@ -134,7 +188,9 @@ export default async function Image({ params }: { params: { id: string } }) {
           <span style={{ fontSize: "15px" }}>📍</span>
           <span style={{ color: "#777777", fontSize: "15px" }}>{city}</span>
         </div>
-        {wantedItems.length > 0 && (
+
+        {/* გაცვლა — wantedItems ან serviceWanted */}
+        {wantedType === "items" && wantedItems.length > 0 && (
           <div style={{ marginBottom: "24px" }}>
             <div
               style={{
@@ -145,7 +201,7 @@ export default async function Image({ params }: { params: { id: string } }) {
                 marginBottom: "10px",
               }}
             >
-              გაცვლა მინდა:
+              მინდა მივიღო:
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {wantedItems.slice(0, 3).map((item: string, i: number) => (
@@ -166,6 +222,36 @@ export default async function Image({ params }: { params: { id: string } }) {
             </div>
           </div>
         )}
+
+        {wantedType === "service" && serviceWanted && (
+          <div style={{ marginBottom: "24px" }}>
+            <div
+              style={{
+                fontSize: "10px",
+                color: "#D4A017",
+                fontWeight: "900",
+                letterSpacing: "2px",
+                marginBottom: "10px",
+              }}
+            >
+              მინდა მომსახურება:
+            </div>
+            <div
+              style={{
+                background: "rgba(212,160,23,0.1)",
+                border: "1px solid rgba(212,160,23,0.2)",
+                borderRadius: "8px",
+                padding: "5px 12px",
+                color: "#D4A017",
+                fontSize: "13px",
+                display: "flex",
+              }}
+            >
+              {serviceWanted.slice(0, 60)}
+            </div>
+          </div>
+        )}
+
         <div
           style={{
             width: "100%",
@@ -174,6 +260,8 @@ export default async function Image({ params }: { params: { id: string } }) {
             marginBottom: "20px",
           }}
         />
+
+        {/* ლოგო */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span
             style={{ fontSize: "20px", fontWeight: "900", color: "#FFFFFF" }}
@@ -197,6 +285,8 @@ export default async function Image({ params }: { params: { id: string } }) {
           </span>
         </div>
       </div>
+
+      {/* ზედა ოქროსფერი ხაზი */}
       <div
         style={{
           position: "absolute",
