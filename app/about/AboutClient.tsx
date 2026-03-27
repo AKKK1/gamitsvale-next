@@ -54,8 +54,8 @@ const CONTACT = [
   {
     icon: <Mail size={18} className="text-gold shrink-0" />,
     label: "მეილი",
-    value: "akakichachava1@gmail.com",
-    href: "mailto:akakichachava1@gmail.com",
+    value: "gamitsvale@gmail.com",
+    href: "mailto:gamitsvale@gmail.com",
     copy: true,
   },
   {
@@ -295,7 +295,7 @@ export default function AboutClient() {
                 name: "GAMITSVALE.GE",
                 url: "https://gamitsvale.ge",
                 description: "საქართველოს პირველი გაცვლის პლატფორმა",
-                email: "akakichachava1@gmail.com",
+                email: "gamitsvale@gmail.com",
                 telephone: "+995593716080",
                 address: {
                   "@type": "PostalAddress",

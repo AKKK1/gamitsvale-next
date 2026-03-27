@@ -306,7 +306,7 @@ export default function AdvertisePage() {
                   </p>
                 </div>
                 <a
-                  href="mailto:akakichachava1@gmail.com?subject=რეკლამის განთავსება — GAMITSVALE.GE"
+                  href="mailto:gamitsvale@gmail.com?subject=რეკლამის განთავსება — GAMITSVALE.GE"
                   className={`block w-full text-center py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                     zone.highlight
                       ? "bg-gold text-dark hover:brightness-110"
@@ -331,10 +331,10 @@ export default function AdvertisePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="mailto:akakichachava1@gmail.com?subject=რეკლამა — GAMITSVALE.GE"
+              href="mailto:gamitsvale@gmail.com?subject=რეკლამა — GAMITSVALE.GE"
               className="flex items-center justify-center gap-2 px-6 py-3 bg-gold text-dark font-black rounded-xl hover:brightness-110 transition-all text-sm"
             >
-              📧 akakichachava1@gmail.com
+              📧 gamitsvale@gmail.com
             </a>
             <a
               href="tel:+995593716080"
