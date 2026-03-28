@@ -258,8 +258,8 @@ export default function AboutPage() {
               {
                 icon: "📧",
                 label: "მეილი",
-                value: "akakichachava1@gmail.com",
-                href: "mailto:akakichachava1@gmail.com",
+                value: "gamitsvale@gmail.com",
+                href: "mailto:gamitsvale@gmail.com",
               },
               {
                 icon: "📱",

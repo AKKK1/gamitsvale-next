@@ -144,7 +144,7 @@ export default function PrivacyPage() {
                 <span className="text-gold mt-0.5">•</span>
                 გამოგვიგზავნეთ მეილი:{" "}
                 <a
-                  href="mailto:akaki@gamitsvale.ge"
+                  href="mailto:gamitsvale@gmail.com"
                   className="text-gold hover:underline"
                 >
                   gamitsvale@gmail.com
@@ -181,7 +181,7 @@ export default function PrivacyPage() {
               <p>
                 📧{" "}
                 <a
-                  href="mailto:akaki@gamitsvale.ge"
+                  href="gamitsvale@gmail.com"
                   className="text-gold hover:underline"
                 >
                   gamitsvale@gmail.com
