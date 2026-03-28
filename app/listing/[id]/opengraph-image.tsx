@@ -1,6 +1,8 @@
+// app/listing/[id]/opengraph-image.tsx
+
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// ❌ edge runtime ამოღებულია — Buffer არ მუშაობს edge-ზე
 export const alt = "GAMITSVALE.GE";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -23,25 +25,14 @@ export default async function Image({
   } catch {}
 
   const title = listing?.title || "განცხადება";
+  const city = listing?.city || "საქართველო";
   const listingType = listing?.listingType || "NORMAL";
   const wantedType = listing?.wantedType || "items";
   const wantedItems: string[] = listing?.wantedItems || [];
   const serviceWanted: string = listing?.serviceWanted || "";
-  const rawImageUrl = listing?.images?.[0] || null;
 
-  // Cloudinary სურათი base64-ად — edge runtime-ისთვის
-  let imageData: string | null = null;
-  if (rawImageUrl) {
-    try {
-      const imgRes = await fetch(rawImageUrl);
-      if (imgRes.ok) {
-        const buffer = await imgRes.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString("base64");
-        const mime = imgRes.headers.get("content-type") || "image/jpeg";
-        imageData = `data:${mime};base64,${base64}`;
-      }
-    } catch {}
-  }
+  // Cloudinary URL პირდაპირ — Node runtime-ი მას თავად წაიღებს
+  const imageUrl = listing?.images?.[0] || null;
 
   return new ImageResponse(
     <div
@@ -54,6 +45,20 @@ export default async function Image({
         overflow: "hidden",
       }}
     >
+      {/* ფონის blur */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-150px",
+          left: "-100px",
+          width: "600px",
+          height: "600px",
+          borderRadius: "50%",
+          background: "rgba(212,160,23,0.06)",
+          filter: "blur(100px)",
+        }}
+      />
+
       {/* მარცხენა — ფოტო */}
       <div
         style={{
@@ -65,9 +70,10 @@ export default async function Image({
           flexShrink: 0,
         }}
       >
-        {imageData ? (
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={imageData}
+            src={imageUrl}
             width={560}
             height={630}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -87,15 +93,37 @@ export default async function Image({
             📦
           </div>
         )}
-        {/* gradient overlay */}
+
+        {/* gradient */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to right, transparent 50%, #0a0a0a 100%)",
+              "linear-gradient(to right, transparent 40%, #0a0a0a 100%)",
           }}
         />
+
+        {/* ლინკი ფოტოზე */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "16px",
+            left: "16px",
+            background: "rgba(0,0,0,0.75)",
+            border: "1px solid rgba(212,160,23,0.5)",
+            borderRadius: "8px",
+            padding: "6px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <span style={{ color: "#D4A017", fontSize: "13px" }}>🔗</span>
+          <span style={{ color: "#ffffff", fontSize: "12px" }}>
+            gamitsvale.ge/listing/{id.slice(0, 8)}...
+          </span>
+        </div>
       </div>
 
       {/* მარჯვენა — ტექსტი */}
@@ -135,14 +163,27 @@ export default async function Image({
             fontWeight: "900",
             color: "#FFFFFF",
             lineHeight: 1.15,
-            marginBottom: "20px",
+            marginBottom: "12px",
             letterSpacing: "-0.5px",
           }}
         >
           {title.length > 55 ? title.slice(0, 55) + "..." : title}
         </div>
 
-        {/* გაცვლა მინდა — items */}
+        {/* ქალაქი */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginBottom: "20px",
+          }}
+        >
+          <span style={{ fontSize: "15px" }}>📍</span>
+          <span style={{ color: "#777777", fontSize: "15px" }}>{city}</span>
+        </div>
+
+        {/* wantedItems */}
         {wantedType === "items" && wantedItems.length > 0 && (
           <div style={{ marginBottom: "24px" }}>
             <div
@@ -154,7 +195,7 @@ export default async function Image({
                 marginBottom: "10px",
               }}
             >
-              გაცვლა მინდა:
+              მინდა მივიღო:
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {wantedItems.slice(0, 3).map((item: string, i: number) => (
@@ -176,7 +217,7 @@ export default async function Image({
           </div>
         )}
 
-        {/* გაცვლა მინდა — service */}
+        {/* serviceWanted */}
         {wantedType === "service" && serviceWanted && (
           <div style={{ marginBottom: "24px" }}>
             <div
