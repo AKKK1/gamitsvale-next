@@ -27,9 +27,21 @@ export default async function Image({
   const wantedType = listing?.wantedType || "items";
   const wantedItems: string[] = listing?.wantedItems || [];
   const serviceWanted: string = listing?.serviceWanted || "";
+  const rawImageUrl = listing?.images?.[0] || null;
 
-  // Cloudinary URL — პირდაპირ გამოვიყენებთ
-  const image = listing?.images?.[0] || null;
+  // Cloudinary სურათი base64-ად — edge runtime-ისთვის
+  let imageData: string | null = null;
+  if (rawImageUrl) {
+    try {
+      const imgRes = await fetch(rawImageUrl);
+      if (imgRes.ok) {
+        const buffer = await imgRes.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString("base64");
+        const mime = imgRes.headers.get("content-type") || "image/jpeg";
+        imageData = `data:${mime};base64,${base64}`;
+      }
+    } catch {}
+  }
 
   return new ImageResponse(
     <div
@@ -53,11 +65,11 @@ export default async function Image({
           flexShrink: 0,
         }}
       >
-        {image ? (
+        {imageData ? (
           <img
-            src={image}
-            width="560"
-            height="630"
+            src={imageData}
+            width={560}
+            height={630}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
@@ -69,7 +81,7 @@ export default async function Image({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "120px",
+              fontSize: "100px",
             }}
           >
             📦
@@ -130,7 +142,7 @@ export default async function Image({
           {title.length > 55 ? title.slice(0, 55) + "..." : title}
         </div>
 
-        {/* გაცვლა მინდა */}
+        {/* გაცვლა მინდა — items */}
         {wantedType === "items" && wantedItems.length > 0 && (
           <div style={{ marginBottom: "24px" }}>
             <div
@@ -164,6 +176,7 @@ export default async function Image({
           </div>
         )}
 
+        {/* გაცვლა მინდა — service */}
         {wantedType === "service" && serviceWanted && (
           <div style={{ marginBottom: "24px" }}>
             <div
