@@ -7,30 +7,29 @@ export const contentType = "image/png";
 
 const APP_URL = process.env.APP_URL || "https://gamitsvale.ge";
 
-export default async function Image({ params }: { params: { id: string } }) {
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
   let listing: any = null;
   try {
-    const res = await fetch(`${APP_URL}/api/listings/${params.id}`);
+    const res = await fetch(`${APP_URL}/api/listings/${id}`, {
+      cache: "no-store",
+    });
     if (res.ok) listing = await res.json();
   } catch {}
 
   const title = listing?.title || "განცხადება";
-  const city = listing?.city || "საქართველო";
   const listingType = listing?.listingType || "NORMAL";
   const wantedType = listing?.wantedType || "items";
   const wantedItems: string[] = listing?.wantedItems || [];
   const serviceWanted: string = listing?.serviceWanted || "";
 
-  // ფოტოს სრული URL
-  const rawImage = listing?.images?.[0] || null;
-  const image = rawImage
-    ? rawImage.startsWith("http")
-      ? rawImage
-      : `${APP_URL}${rawImage}`
-    : null;
-
-  // ლინკი ფოტოზე
-  const shortLink = `gamitsvale.ge/listing/${params.id.slice(0, 8)}...`;
+  // Cloudinary URL — პირდაპირ გამოვიყენებთ
+  const image = listing?.images?.[0] || null;
 
   return new ImageResponse(
     <div
@@ -43,20 +42,6 @@ export default async function Image({ params }: { params: { id: string } }) {
         overflow: "hidden",
       }}
     >
-      {/* ფონის blur ეფექტი */}
-      <div
-        style={{
-          position: "absolute",
-          top: "-150px",
-          left: "-100px",
-          width: "600px",
-          height: "600px",
-          borderRadius: "50%",
-          background: "rgba(212,160,23,0.06)",
-          filter: "blur(100px)",
-        }}
-      />
-
       {/* მარცხენა — ფოტო */}
       <div
         style={{
@@ -71,6 +56,8 @@ export default async function Image({ params }: { params: { id: string } }) {
         {image ? (
           <img
             src={image}
+            width="560"
+            height="630"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
@@ -88,7 +75,6 @@ export default async function Image({ params }: { params: { id: string } }) {
             📦
           </div>
         )}
-
         {/* gradient overlay */}
         <div
           style={{
@@ -98,37 +84,6 @@ export default async function Image({ params }: { params: { id: string } }) {
               "linear-gradient(to right, transparent 50%, #0a0a0a 100%)",
           }}
         />
-
-        {/* ლინკი ფოტოზე — ქვედა მარცხენა */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "16px",
-            left: "16px",
-            background: "rgba(0,0,0,0.72)",
-            border: "1px solid rgba(212,160,23,0.5)",
-            borderRadius: "8px",
-            padding: "6px 14px",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <span
-            style={{ color: "#D4A017", fontSize: "13px", fontWeight: "700" }}
-          >
-            🔗
-          </span>
-          <span
-            style={{
-              color: "#ffffff",
-              fontSize: "12px",
-              letterSpacing: "0.3px",
-            }}
-          >
-            {shortLink}
-          </span>
-        </div>
       </div>
 
       {/* მარჯვენა — ტექსტი */}
@@ -168,40 +123,26 @@ export default async function Image({ params }: { params: { id: string } }) {
             fontWeight: "900",
             color: "#FFFFFF",
             lineHeight: 1.15,
-            marginBottom: "14px",
+            marginBottom: "20px",
             letterSpacing: "-0.5px",
           }}
         >
-          {title.slice(0, 55)}
-          {title.length > 55 ? "..." : ""}
+          {title.length > 55 ? title.slice(0, 55) + "..." : title}
         </div>
 
-        {/* ქალაქი */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            marginBottom: "20px",
-          }}
-        >
-          <span style={{ fontSize: "15px" }}>📍</span>
-          <span style={{ color: "#777777", fontSize: "15px" }}>{city}</span>
-        </div>
-
-        {/* გაცვლა — wantedItems ან serviceWanted */}
+        {/* გაცვლა მინდა */}
         {wantedType === "items" && wantedItems.length > 0 && (
           <div style={{ marginBottom: "24px" }}>
             <div
               style={{
-                fontSize: "10px",
+                fontSize: "11px",
                 color: "#D4A017",
                 fontWeight: "900",
                 letterSpacing: "2px",
                 marginBottom: "10px",
               }}
             >
-              მინდა მივიღო:
+              გაცვლა მინდა:
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {wantedItems.slice(0, 3).map((item: string, i: number) => (
@@ -209,11 +150,11 @@ export default async function Image({ params }: { params: { id: string } }) {
                   key={i}
                   style={{
                     background: "rgba(212,160,23,0.1)",
-                    border: "1px solid rgba(212,160,23,0.2)",
+                    border: "1px solid rgba(212,160,23,0.25)",
                     borderRadius: "8px",
-                    padding: "5px 12px",
+                    padding: "6px 14px",
                     color: "#D4A017",
-                    fontSize: "13px",
+                    fontSize: "14px",
                   }}
                 >
                   {item}
@@ -227,7 +168,7 @@ export default async function Image({ params }: { params: { id: string } }) {
           <div style={{ marginBottom: "24px" }}>
             <div
               style={{
-                fontSize: "10px",
+                fontSize: "11px",
                 color: "#D4A017",
                 fontWeight: "900",
                 letterSpacing: "2px",
@@ -239,11 +180,11 @@ export default async function Image({ params }: { params: { id: string } }) {
             <div
               style={{
                 background: "rgba(212,160,23,0.1)",
-                border: "1px solid rgba(212,160,23,0.2)",
+                border: "1px solid rgba(212,160,23,0.25)",
                 borderRadius: "8px",
-                padding: "5px 12px",
+                padding: "6px 14px",
                 color: "#D4A017",
-                fontSize: "13px",
+                fontSize: "14px",
                 display: "flex",
               }}
             >
