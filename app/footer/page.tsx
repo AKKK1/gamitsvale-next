@@ -53,6 +53,7 @@ const Footer = () => {
               {[
                 { href: "/about", label: "About Us" },
                 { href: "/advertise", label: "რეკლამაზე დაგვიკავშირდით" },
+                { href: "/privacy", label: "კონფიდენციალურობა" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
