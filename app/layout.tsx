@@ -9,6 +9,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
 };
+import CookieConsent from "@/components/cookie-consent";
 
 export const metadata: Metadata = {
   title: {
@@ -60,6 +61,7 @@ export default function RootLayout({
     <html lang="ka">
       <body suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
+        <CookieConsent />
 
         {/* Google OAuth */}
         <Script
