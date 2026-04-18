@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import Script from "next/script";
-
+import { Analytics } from "@vercel/analytics/next";
 export const viewport: Viewport = {
   themeColor: "#D4A017",
   width: "device-width",
@@ -62,7 +62,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
         <CookieConsent />
-
+        <Analytics />
         {/* Google OAuth */}
         <Script
           src="https://accounts.google.com/gsi/client"
