@@ -1,5 +1,7 @@
 "use client";
 
+// components/ListingDetailsNew.tsx
+
 import React, { useState, useEffect } from "react";
 import {
   MapPin,
@@ -12,33 +14,57 @@ import {
   ChevronRight,
   RefreshCw,
   User,
+  Crown,
+  Gem,
+  Check,
 } from "lucide-react";
 import Toast from "./Toast";
-import { cn, useAuth } from "./AuthProvider";
 import Link from "next/link";
 import OfferModal from "./OfferModal";
 
-interface ListingDetailsProps {
+interface ListingDetailsNewProps {
   listing: any;
   user?: any;
   onOffer?: () => void;
 }
 
-export default function ListingDetails({
+export default function ListingDetailsNew({
   listing,
   user,
   onOffer,
-}: ListingDetailsProps) {
+}: ListingDetailsNewProps) {
   const [toast, setToast] = useState<string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentImg, setCurrentImg] = useState(0);
   const [showOfferModal, setShowOfferModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(
-    user?.savedListings?.includes(listing._id),
-  );
+  const [isSaved, setIsSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setIsSaved(user?.savedListings?.includes(listing._id));
+    setIsSaved(!!user?.savedListings?.includes(listing._id));
   }, [user, listing._id]);
+
+  const owner = typeof listing.owner === "object" ? listing.owner : null;
+  const isOwner = user && user._id === (owner?._id ?? listing.owner);
+  const isExchanged = listing.isTraded;
+  const isVIP = listing.listingType === "VIP" || listing.isVIP;
+  const isSilver = listing.listingType === "SILVER";
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor(diff / 3600000);
+    const mins = Math.floor(diff / 60000);
+    if (days > 0) return `${days} დღის წინ`;
+    if (hours > 0) return `${hours} საათის წინ`;
+    return `${mins} წუთის წინ`;
+  };
+
+  const images = listing.images?.length ? listing.images : [];
+  const hasMultiple = images.length > 1;
+
+  const prev = () =>
+    setCurrentImg((i) => (i - 1 + images.length) % images.length);
+  const next = () => setCurrentImg((i) => (i + 1) % images.length);
 
   const handleSave = async () => {
     if (!user) {
@@ -51,12 +77,15 @@ export default function ListingDetails({
     if (res.ok) {
       const data = await res.json();
       setIsSaved(data.saved);
-      setToast(
-        data.saved
-          ? "განცხადება შენახულია ❤️"
-          : "განცხადება წაიშალა შენახულიდან",
-      );
+      setToast(data.saved ? "განცხადება შენახულია ❤️" : "წაიშალა შენახულიდან");
     }
+  };
+
+  const handleShare = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setToast("ბმული დაკოპირდა! 🔗");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleOffer = () => {
@@ -67,88 +96,115 @@ export default function ListingDetails({
     setShowOfferModal(true);
   };
 
-  const nextImage = () =>
-    setCurrentImageIndex((prev) => (prev + 1) % listing.images.length);
-  const prevImage = () =>
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + listing.images.length) % listing.images.length,
-    );
-
-  const isOwner = user?._id === listing.owner?._id;
-  const isExchanged = listing.isTraded || listing.status === "EXCHANGED";
-
-  const timeAgo = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
-    const days = Math.floor(diff / 86400000);
-    const hours = Math.floor(diff / 3600000);
-    const mins = Math.floor(diff / 60000);
-    if (days > 0) return `${days} დღის წინ`;
-    if (hours > 0) return `${hours} საათის წინ`;
-    return `${mins} წუთის წინ`;
-  };
-
   return (
-    <div className="text-white pb-20">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* ══ მარცხენა — სურათები ══ */}
-        <div className="space-y-4">
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-dark-card border border-dark-border group">
+    <div className="text-gray-900">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-gray-400 mb-8 font-medium flex-wrap">
+        <Link href="/" className="hover:text-green-600 transition-colors">
+          მთავარი
+        </Link>
+        <span>/</span>
+        {listing.category && (
+          <>
+            <Link
+              href={`/category/${listing.category}`}
+              className="hover:text-green-600 transition-colors"
+            >
+              {listing.category}
+            </Link>
+            <span>/</span>
+          </>
+        )}
+        <span className="text-gray-600 truncate max-w-[200px]">
+          {listing.title}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* ═══ მარცხენა — სურათები ═══ */}
+        <div className="space-y-3">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 group">
+            {/* გაცვლილია */}
             {isExchanged && (
-              <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-                <div className="transform -rotate-12 border-4 border-red-500 px-8 py-3 rounded-xl bg-red-500/20">
-                  <span className="text-3xl font-black uppercase tracking-[0.2em] text-red-500">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                <div className="rotate-[-12deg] border-4 border-red-500 px-8 py-3 rounded-xl bg-red-500/20">
+                  <span className="text-2xl font-black uppercase tracking-[0.2em] text-red-500">
                     გაცვლილია
                   </span>
                 </div>
               </div>
             )}
 
-            <img
-              src={
-                listing.images?.[currentImageIndex] ||
-                "https://picsum.photos/seed/item/800/600"
-              }
-              alt={listing.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              referrerPolicy="no-referrer"
-            />
-
-            {listing.images?.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <ChevronRight size={24} />
-                </button>
-              </>
+            {images[currentImg] ? (
+              <img
+                src={images[currentImg]}
+                alt={listing.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-8xl">
+                📦
+              </div>
             )}
 
-            {listing.listingType === "VIP" && (
-              <div className="absolute top-4 left-4 bg-gold text-dark px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                ⭐ VIP
-              </div>
+            {/* VIP / SILVER */}
+            {isVIP && (
+              <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400 text-yellow-900 text-xs font-black uppercase tracking-wider shadow-md z-10">
+                <Crown size={12} /> VIP
+              </span>
+            )}
+            {isSilver && !isVIP && (
+              <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 text-xs font-black uppercase tracking-wider z-10">
+                <Gem size={12} /> SILVER
+              </span>
+            )}
+
+            {/* ნავიგაციის ისრები */}
+            {hasMultiple && (
+              <>
+                <button
+                  onClick={prev}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft size={18} className="text-gray-700" />
+                </button>
+                <button
+                  onClick={next}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight size={18} className="text-gray-700" />
+                </button>
+                {/* Dots */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                  {images.map((_: any, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentImg(i)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === currentImg
+                          ? "bg-green-600 w-4"
+                          : "bg-white/70 hover:bg-white w-1.5"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
-          {listing.images?.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {listing.images.map((img: string, idx: number) => (
+          {/* Thumbnails */}
+          {hasMultiple && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {images.map((img: string, i: number) => (
                 <button
-                  key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={cn(
-                    "relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all",
-                    currentImageIndex === idx
-                      ? "border-gold"
-                      : "border-transparent opacity-60 hover:opacity-100",
-                  )}
+                  key={i}
+                  onClick={() => setCurrentImg(i)}
+                  className={`relative flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
+                    currentImg === i
+                      ? "border-green-500"
+                      : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
                 >
                   <img
                     src={img}
@@ -161,140 +217,151 @@ export default function ListingDetails({
           )}
         </div>
 
-        {/* ══ მარჯვენა — ინფო ══ */}
-        <div className="space-y-6">
+        {/* ═══ მარჯვენა — ინფო ═══ */}
+        <div className="flex flex-col gap-5">
+          {/* სათაური + მეტა */}
           <div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400 mb-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap mb-3">
               <span
-                className={cn(
-                  "px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider border",
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
                   listing.condition === "NEW"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                    : "bg-blue-500/10 text-blue-400 border-blue-500/20",
-                )}
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-blue-50 text-blue-700 border-blue-200"
+                }`}
               >
                 {listing.condition === "NEW" ? "ახალი" : "მეორადი"}
               </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Clock size={13} /> {timeAgo(listing.createdAt)}
+              <span className="text-gray-300">·</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400 font-medium">
+                <Clock size={12} />
+                {timeAgo(listing.createdAt)}
               </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Eye size={13} /> {listing.views || 0} ნახვა
+              <span className="text-gray-300">·</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400 font-medium">
+                <Eye size={12} />
+                {listing.views || 0} ნახვა
               </span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight mb-3">
+
+            <h1 className="text-2xl font-black tracking-tight text-gray-900 mb-3 leading-snug">
               {listing.title}
             </h1>
-            <div className="flex items-center gap-2 text-zinc-400">
-              <MapPin size={16} className="text-[#ce0e0e]" />
-              <span className="font-medium">{listing.city}</span>
+
+            <div className="flex items-center gap-1.5 text-gray-500 text-sm font-medium">
+              <MapPin size={14} className="text-red-400 shrink-0" />
+              {listing.city}
             </div>
           </div>
+          {/* აღწერა */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+            <h3 className="font-bold text-sm text-gray-900 mb-3">აღწერა</h3>
+            <p className="text-gray-600 whitespace-pre-wrap leading-relaxed text-sm">
+              {listing.description}
+            </p>
+          </div>
 
-          {/* მფლობელის ბარათი */}
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-5">
-            <div className="flex items-center justify-between">
+          {/* გამოცვლა მინდა */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+            <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2 mb-3">
+              <RefreshCw size={14} className="text-green-600" />
+              რაში გავცვლი:
+            </h3>
+
+            {listing.wantedType === "service" && listing.serviceWanted ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                🛠️ {listing.serviceWanted}
+              </span>
+            ) : listing.wantedItems?.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {listing.wantedItems.map((item: string, i: number) => (
+                  <span
+                    key={i}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-bold border ${
+                      i === 0
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : i === 1
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-gray-100 text-gray-700 border-gray-200"
+                    }`}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-gray-400 text-sm italic">
+                მითითებული არ არის
+              </span>
+            )}
+          </div>
+
+          {/* მფლობელი */}
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-dark overflow-hidden border border-dark-border shrink-0">
-                  {listing.owner?.avatar ? (
+                <div className="w-11 h-11 rounded-full border-2 border-gray-200 bg-white overflow-hidden shrink-0 flex items-center justify-center">
+                  {owner?.avatar ? (
                     <img
-                      src={listing.owner.avatar}
+                      src={owner.avatar}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg font-bold text-zinc-500">
-                      <User size={20} />
-                    </div>
+                    <User size={20} className="text-gray-400" />
                   )}
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm">
+                  <p className="font-bold text-gray-900 text-sm">
                     @
-                    {listing.owner?.username ||
-                      listing.owner?.name?.split(" ")[0]?.toLowerCase() ||
+                    {owner?.username ||
+                      owner?.name?.split(" ")[0]?.toLowerCase() ||
                       "user"}
                   </p>
-                  <p className="text-xs text-zinc-500">მომხმარებელი</p>
+                  <p className="text-xs text-gray-400">მომხმარებელი</p>
                 </div>
               </div>
+
               {!isOwner && !isExchanged && (
                 <button
                   onClick={handleOffer}
-                  className="bg-gold text-dark px-5 py-2 rounded-xl font-bold hover:brightness-110 transition-all flex items-center gap-2 text-sm"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-all shadow-sm hover:shadow-md active:scale-95"
                 >
-                  <MessageCircle size={16} /> შეთავაზება
+                  <MessageCircle size={15} /> შეთავაზება
                 </button>
               )}
             </div>
           </div>
 
-          {/* გაცვლა მინდა */}
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-5">
-            <h3 className="font-bold text-base flex items-center gap-2 mb-3">
-              <RefreshCw size={16} className="text-gold" /> გაცვლა მინდა:
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {listing.wantedType === "service" && listing.serviceWanted ? (
-                <span className="px-3 py-1.5 rounded-lg text-sm font-bold border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 flex items-center gap-2">
-                  🛠️ {listing.serviceWanted}
-                </span>
-              ) : listing.wantedItems?.length > 0 ? (
-                listing.wantedItems.map((item: string, idx: number) => (
-                  <span
-                    key={idx}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm font-bold border",
-                      idx === 0
-                        ? "bg-gold/10 text-gold border-gold/20"
-                        : idx === 1
-                          ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                          : "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-                    )}
-                  >
-                    {item}
-                  </span>
-                ))
-              ) : (
-                <span className="text-zinc-500 italic text-sm">
-                  მითითებული არ არის
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* აღწერა */}
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-5">
-            <h3 className="font-bold text-base mb-3">აღწერა</h3>
-            <p className="text-zinc-400 whitespace-pre-wrap leading-relaxed text-sm">
-              {listing.description}
-            </p>
-          </div>
-
-          {/* ქმედებები */}
-          <div className="flex gap-3">
+          {/* ღილაკები */}
+          <div className="flex gap-3 mt-auto">
             <button
               onClick={handleSave}
-              className={cn(
-                "flex-1 py-3 rounded-xl font-bold border transition-all flex items-center justify-center gap-2 text-sm",
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border-2 transition-all ${
                 isSaved
-                  ? "bg-red-500 text-white border-red-500"
-                  : "bg-dark-card text-white border-dark-border hover:border-gold hover:text-gold",
-              )}
+                  ? "bg-red-50 text-red-600 border-red-300 hover:bg-red-100"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-green-500 hover:text-green-600"
+              }`}
             >
-              <Heart size={18} className={cn(isSaved && "fill-current")} />
+              <Heart
+                size={16}
+                className={isSaved ? "fill-red-500 text-red-500" : ""}
+              />
               {isSaved ? "შენახულია" : "შენახვა"}
             </button>
+
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setToast("ბმული დაკოპირდა! 🔗");
-              }}
-              className="flex-1 py-3 rounded-xl font-bold border border-dark-border bg-dark-card text-white hover:bg-dark transition-all flex items-center justify-center gap-2 text-sm"
+              onClick={handleShare}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 transition-all"
             >
-              <Share2 size={18} /> გაზიარება
+              {copied ? (
+                <>
+                  <Check size={16} className="text-green-600" /> დაკოპირდა
+                </>
+              ) : (
+                <>
+                  <Share2 size={16} /> გაზიარება
+                </>
+              )}
             </button>
           </div>
         </div>
