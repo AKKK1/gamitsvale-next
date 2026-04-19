@@ -1,20 +1,32 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useAuth, CATEGORIES } from "@/components/AuthProvider";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
 import Header from "@/components/Header";
-import ListingCard from "@/components/ListingCard";
+import ListingCard, {
+  ListingsTabs,
+  type ListingTab,
+} from "@/components/ListingCard";
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
-import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import Footer from "../app/footer/page";
+import HeroSection from "@/components/newDesign/HeroSection";
+import CategoriesSection from "@/components/newDesign/CategoriesSection";
+
+const C = {
+  green: "#1a8a4a",
+  border: "#e8ebe8",
+  text: "#111111",
+  text3: "#999999",
+};
 
 export default function HomePage() {
   const { user } = useAuth();
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ListingTab>("new");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState<any>(null);
   const [editingListing, setEditingListing] = useState<any>(null);
@@ -23,8 +35,6 @@ export default function HomePage() {
     isOpen: boolean;
     listingId: string | null;
   }>({ isOpen: false, listingId: null });
-
-  const vipScrollRef = useRef<HTMLDivElement>(null);
 
   const fetchListings = async (params?: URLSearchParams) => {
     setLoading(true);
@@ -40,6 +50,26 @@ export default function HomePage() {
     fetchListings();
   }, []);
 
+  // ── Tab შეცვლა ────────────────────────────────────────────────────────────
+  const handleTabChange = (tab: ListingTab) => {
+    setActiveTab(tab);
+
+    if (tab === "vip") {
+      const p = new URLSearchParams();
+      p.set("listingType", "VIP");
+      fetchListings(p);
+    } else if (tab === "new") {
+      fetchListings();
+    } else if (tab === "nearby") {
+      // TODO: geolocation — navigator.geolocation.getCurrentPosition() →
+      // reverse geocode → p.set("city", detectedCity) → fetchListings(p)
+      fetchListings();
+    } else if (tab === "popular") {
+      // TODO: API-ზე დაამატე ?sort=popular → Listing.find().sort({ views: -1 })
+      fetchListings();
+    }
+  };
+
   const confirmDeleteListing = async () => {
     if (!deleteConfirmation.listingId) return;
     const res = await fetch(`/api/listings/${deleteConfirmation.listingId}`, {
@@ -51,7 +81,6 @@ export default function HomePage() {
     }
   };
 
-  // ავტორიზაციის helper — alert-ის მაგივრად Toast
   const requireAuth = (action: () => void) => {
     if (!user) {
       setToast("გთხოვთ გაიაროთ ავტორიზაცია 🔐");
@@ -60,19 +89,38 @@ export default function HomePage() {
     action();
   };
 
-  const vipListings = listings.filter(
-    (l) => l.listingType === "VIP" || l.isVIP,
-  );
-  const normalListings = listings
-    .filter((l) => l.listingType !== "VIP" && !l.isVIP)
-    .sort((a, b) => {
-      if (a.listingType === "SILVER" && b.listingType !== "SILVER") return -1;
-      if (a.listingType !== "SILVER" && b.listingType === "SILVER") return 1;
-      return 0;
-    });
+  const handleHeroSearch = (query: string, type: string, filters?: any) => {
+    const p = new URLSearchParams();
+    if (query?.trim()) {
+      p.append("search", query.trim());
+      p.append("type", type || "want");
+    }
+    if (filters?.city) p.append("city", filters.city);
+    if (filters?.category) p.append("category", filters.category);
+    if (filters?.condition) p.append("condition", filters.condition);
+    fetchListings(p);
+    setTimeout(() => {
+      document
+        .getElementById("listings-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  };
+
+  const displayListings =
+    activeTab === "vip"
+      ? listings.filter((l) => l.listingType === "VIP" || l.isVIP)
+      : listings
+          .filter((l) => l.listingType !== "VIP" && !l.isVIP)
+          .sort((a, b) => {
+            if (a.listingType === "SILVER" && b.listingType !== "SILVER")
+              return -1;
+            if (a.listingType !== "SILVER" && b.listingType === "SILVER")
+              return 1;
+            return 0;
+          });
 
   return (
-    <div className="min-h-screen bg-dark text-white">
+    <div className="min-h-screen" style={{ background: "#fff", color: C.text }}>
       <Header
         onAddListing={() => requireAuth(() => setShowAddModal(true))}
         onSearch={(query, type, filters) => {
@@ -88,163 +136,62 @@ export default function HomePage() {
         }}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-4">
-        {/* ── რეკლამის ბანერი ── */}
-        <section className="mb-6">
-          <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-gold/30 bg-dark-card p-6">
-            <span className="absolute right-3 top-3 rounded-md bg-gold/10 px-2 py-0.5 text-xs font-medium text-gold">
-              📢Rules
-            </span>
-            <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-              <div className="flex-1">
-                <h3 className="mb-1 text-lg font-semibold text-white">
-                  გამიცვალეს წესები ნახეთ აქ
-                </h3>
-                <p className="text-sm text-zinc-400">
-                  10,000+ მომხმარებელი ყოველდღიურად — მიიტანეთ თქვენი პროდუქტი
-                  აუდიტორიამდე
-                </p>
-              </div>
-              <Link
-                href="/rules"
-                className="shrink-0 rounded-lg bg-gold-gradient px-6 py-2.5 text-sm font-semibold text-dark transition-all hover:brightness-110"
-              >
-                წესები →
-              </Link>
-            </div>
-          </div>
-        </section>
+      <HeroSection onSearch={handleHeroSearch} />
+      <CategoriesSection />
 
-        {/* ── VIP კარუსელი ── */}
-        {vipListings.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center gap-4 mb-6">
-              <h2 className="text-2xl font-black tracking-tighter flex items-center gap-3">
-                <span className="text-gold">👑</span> VIP{" "}
-                <span className="text-gold">განცხადებები</span>
-              </h2>
-              <span className="px-3 py-1 bg-gold/10 text-gold text-[10px] font-black rounded-lg border border-gold/20 uppercase tracking-widest">
-                ONLY FOR BEST OFFERS
-              </span>
-            </div>
+      {/* ── განცხადებები ── */}
+      <main id="listings-section" className="max-w-7xl mx-auto px-4 py-8">
+        <ListingsTabs activeTab={activeTab} onChange={handleTabChange} />
 
-            <div className="relative rounded-xl border border-gold/20 bg-dark-card/50 p-4">
-              <button
-                onClick={() =>
-                  vipScrollRef.current?.scrollBy({
-                    left: -280,
-                    behavior: "smooth",
-                  })
-                }
-                className="absolute -left-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-dark-border bg-dark-card p-2 text-white shadow-lg hover:border-gold md:block"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                onClick={() =>
-                  vipScrollRef.current?.scrollBy({
-                    left: 280,
-                    behavior: "smooth",
-                  })
-                }
-                className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-dark-border bg-dark-card p-2 text-white shadow-lg hover:border-gold md:block"
-              >
-                <ChevronRight size={16} />
-              </button>
-
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+            {[...Array(10)].map((_, i) => (
               <div
-                ref={vipScrollRef}
-                className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto"
+                key={i}
+                className="rounded-xl overflow-hidden animate-pulse"
+                style={{
+                  border: `1px solid ${C.border}`,
+                  background: "#f8faf8",
+                }}
               >
-                {vipListings.map((listing, i) => (
-                  <ListingCard
-                    key={listing._id}
-                    listing={listing}
-                    user={user}
-                    index={99}
-                    delay={i * 0.05}
-                    className="w-[260px] shrink-0"
-                    onOffer={() =>
-                      requireAuth(() => setShowOfferModal(listing))
-                    }
-                    onEdit={() => {
-                      setEditingListing(listing);
-                      setShowAddModal(true);
-                    }}
-                    onDelete={() =>
-                      setDeleteConfirmation({
-                        isOpen: true,
-                        listingId: listing._id,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── ახალი განცხადებები ── */}
-        <section>
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <h2 className="text-3xl font-black tracking-tighter">
-                ახალი განცხადებები
-              </h2>
-              <div className="h-px w-32 bg-dark-border hidden md:block" />
-            </div>
-            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-              <span className="w-2 h-2 bg-gold rounded-full animate-pulse" />
-              ბოლო 24 საათი
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-              {[...Array(10)].map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-dark-border bg-dark-card overflow-hidden animate-pulse"
-                >
-                  <div className="aspect-[4/3] w-full bg-zinc-800" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-4 bg-zinc-800 rounded w-3/4" />
-                    <div className="h-3 bg-zinc-800 rounded w-1/3" />
-                  </div>
+                <div className="aspect-[4/3] w-full bg-gray-200" />
+                <div className="p-3 space-y-2.5">
+                  <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-1/3" />
+                  <div className="h-10 bg-gray-200 rounded-lg" />
                 </div>
-              ))}
-            </div>
-          ) : normalListings.length === 0 ? (
-            <div className="text-center py-20 text-zinc-500">
-              <p className="text-lg font-bold">განცხადება არ არის</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-              {normalListings.map((listing, index) => (
-                <ListingCard
-                  key={listing._id}
-                  listing={listing}
-                  user={user}
-                  index={index}
-                  onOffer={() => requireAuth(() => setShowOfferModal(listing))}
-                  onEdit={() => {
-                    setEditingListing(listing);
-                    setShowAddModal(true);
-                  }}
-                  onDelete={() =>
-                    setDeleteConfirmation({
-                      isOpen: true,
-                      listingId: listing._id,
-                    })
-                  }
-                />
-              ))}
-            </div>
-          )}
-        </section>
+              </div>
+            ))}
+          </div>
+        ) : displayListings.length === 0 ? (
+          <div className="text-center py-20" style={{ color: C.text3 }}>
+            <p className="text-base font-medium">განცხადება არ არის</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+            {displayListings.map((listing, index) => (
+              <ListingCard
+                key={listing._id}
+                listing={listing}
+                user={user}
+                index={index}
+                onOffer={() => requireAuth(() => setShowOfferModal(listing))}
+                onEdit={() => {
+                  setEditingListing(listing);
+                  setShowAddModal(true);
+                }}
+                onDelete={() =>
+                  setDeleteConfirmation({
+                    isOpen: true,
+                    listingId: listing._id,
+                  })
+                }
+              />
+            ))}
+          </div>
+        )}
       </main>
 
-      {/* ── მოდალები ── */}
       {showAddModal && (
         <AddListingModal
           onClose={() => {
@@ -262,38 +209,47 @@ export default function HomePage() {
         />
       )}
 
-      {/* ── წაშლის დადასტურება ── */}
       {deleteConfirmation.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() =>
               setDeleteConfirmation({ isOpen: false, listingId: null })
             }
           />
-          <div className="relative w-full max-w-sm bg-dark-card border border-dark-border rounded-3xl p-6 shadow-2xl text-center">
-            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-              <Trash2 size={32} />
+          <div
+            className="relative w-full max-w-sm rounded-2xl p-6 shadow-xl text-center"
+            style={{ background: "#fff", border: `1px solid ${C.border}` }}
+          >
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500"
+              style={{ background: "rgba(239,68,68,0.08)" }}
+            >
+              <Trash2 size={28} />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">
+            <h3
+              className="text-[16px] font-bold mb-2"
+              style={{ color: C.text }}
+            >
               ნამდვილად გსურთ წაშლა?
             </h3>
-            <p className="text-xs text-zinc-400 mb-6">
-              ეს ქმედება შეუქცევადია. განცხადება და ყველა დაკავშირებული მონაცემი
-              წაიშლება.
+            <p className="text-[12px] mb-6" style={{ color: C.text3 }}>
+              ეს ქმედება შეუქცევადია.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() =>
                   setDeleteConfirmation({ isOpen: false, listingId: null })
                 }
-                className="flex-1 py-3 rounded-xl border border-dark-border text-xs font-bold text-zinc-400 hover:text-white transition-all"
+                className="flex-1 py-3 rounded-xl text-[12px] font-medium transition-all"
+                style={{ border: `1px solid ${C.border}`, color: C.text3 }}
               >
                 გაუქმება
               </button>
               <button
                 onClick={confirmDeleteListing}
-                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-all"
+                className="flex-1 py-3 rounded-xl text-white text-[12px] font-semibold transition-all"
+                style={{ background: "#ef4444" }}
               >
                 წაშლა
               </button>
@@ -303,7 +259,6 @@ export default function HomePage() {
       )}
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-
       <Footer />
     </div>
   );

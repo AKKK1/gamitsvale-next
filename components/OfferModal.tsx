@@ -9,6 +9,7 @@ import {
   Package,
   AlertCircle,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 
 interface OfferModalProps {
@@ -95,37 +96,35 @@ export default function OfferModal({ listing, onClose }: OfferModalProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 backdrop-blur-sm bg-black/40"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-lg bg-dark-card rounded-3xl border border-dark-border shadow-2xl overflow-hidden z-10"
+        exit={{ opacity: 0, scale: 0.96, y: 16 }}
+        transition={{ type: "spring", damping: 28, stiffness: 320 }}
+        className="relative w-full max-w-md bg-white border border-gray-200 rounded-3xl shadow-2xl overflow-hidden z-10"
       >
-        {/* Header */}
-        <div className="relative px-8 pt-8 pb-6 border-b border-dark-border/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-black tracking-tight text-white">
-                შეთავაზება <span className="text-gold">გაცვლაზე</span>
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                შეავსე ინფორმაცია და გაგზავნე
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-zinc-500 hover:text-white hover:bg-dark rounded-xl transition-all"
-            >
-              <X size={20} />
-            </button>
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-black text-gray-900">
+              შეთავაზება <span className="text-green-600">გაცვლაზე</span>
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              შეავსე ინფორმაცია და გაგზავნე
+            </p>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        <div className="px-8 py-6 space-y-5 max-h-[70vh] overflow-y-auto no-scrollbar">
-          {/* Success state */}
+        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4">
+          {/* Success */}
           <AnimatePresence>
             {success && (
               <motion.div
@@ -133,12 +132,14 @@ export default function OfferModal({ listing, onClose }: OfferModalProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-10 gap-4"
               >
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <CheckCircle2 size={32} className="text-emerald-400" />
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 size={32} className="text-green-600" />
                 </div>
                 <div className="text-center">
-                  <p className="font-black text-white text-lg">გაიგზავნა!</p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="font-black text-gray-900 text-xl mb-1">
+                    გაიგზავნა! 🎉
+                  </p>
+                  <p className="text-sm text-gray-500">
                     შეთავაზება წარმატებით გადაეგზავნა
                   </p>
                 </div>
@@ -147,50 +148,50 @@ export default function OfferModal({ listing, onClose }: OfferModalProps) {
           </AnimatePresence>
 
           {!success && (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Error banner */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error */}
               <AnimatePresence>
                 {error && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl"
+                    exit={{ opacity: 0 }}
+                    className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-2xl"
                   >
                     <AlertCircle
-                      size={18}
-                      className="text-red-400 shrink-0 mt-0.5"
+                      size={15}
+                      className="text-red-500 shrink-0 mt-0.5"
                     />
-                    <div>
-                      <p className="text-sm font-bold text-red-400">{error}</p>
-                    </div>
+                    <p className="text-sm font-bold text-red-600 flex-1">
+                      {error}
+                    </p>
                     <button
                       type="button"
                       onClick={() => setError(null)}
-                      className="ml-auto text-red-400/50 hover:text-red-400"
+                      className="text-red-400 hover:text-red-600"
                     >
-                      <X size={16} />
+                      <X size={14} />
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Listing info */}
-              <div className="flex items-center gap-3 p-4 bg-dark rounded-2xl border border-dark-border">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
-                  <Package size={18} className="text-gold" />
+              {/* განცხადება */}
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                  <Package size={18} className="text-green-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                     განცხადება
                   </p>
-                  <p className="font-bold text-white text-sm truncate">
+                  <p className="font-bold text-gray-900 text-sm truncate">
                     {listing.title}
                   </p>
                 </div>
               </div>
 
-              {/* Limits info */}
+              {/* ლიმიტი */}
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: "ერთ განცხადებაზე", value: "3 შეთავაზება" },
@@ -198,43 +199,46 @@ export default function OfferModal({ listing, onClose }: OfferModalProps) {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="p-3 bg-dark rounded-xl border border-dark-border/50 text-center"
+                    className="p-3 bg-gray-50 rounded-xl border border-gray-200 text-center"
                   >
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">
                       {item.label}
                     </p>
-                    <p className="text-xs font-black text-white">
+                    <p className="text-xs font-black text-gray-900">
                       {item.value}
                     </p>
                   </div>
                 ))}
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  შენი შეთავაზება
+              {/* შეთავაზება */}
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">
+                  შენი შეთავაზება *
                 </label>
                 <textarea
                   required
                   rows={4}
-                  className="w-full px-5 py-4 bg-dark border border-dark-border rounded-2xl outline-none focus:border-gold transition-all font-medium resize-none text-white placeholder:text-zinc-700 text-sm"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-2xl outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all text-sm text-gray-900 placeholder:text-gray-400 resize-none font-medium"
                   placeholder="აღწერე რას სთავაზობ სანაცვლოდ..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
 
-              {/* Images */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  ფოტოები <span className="text-zinc-700">(მაქს 2)</span>
+              {/* ფოტოები */}
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">
+                  ფოტოები{" "}
+                  <span className="text-gray-300 normal-case tracking-normal font-medium">
+                    (მაქს 2)
+                  </span>
                 </label>
                 <div className="flex gap-3">
                   {images.map((img, i) => (
                     <div
                       key={i}
-                      className="relative w-20 h-20 rounded-xl overflow-hidden border border-dark-border group"
+                      className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-gray-200 group"
                     >
                       <img src={img} className="w-full h-full object-cover" />
                       <button
@@ -242,18 +246,16 @@ export default function OfferModal({ listing, onClose }: OfferModalProps) {
                         onClick={() =>
                           setImages(images.filter((_, idx) => idx !== i))
                         }
-                        className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X size={16} />
                       </button>
                     </div>
                   ))}
                   {images.length < 2 && (
-                    <label className="w-20 h-20 rounded-xl border-2 border-dashed border-dark-border flex flex-col items-center justify-center text-zinc-600 hover:border-gold hover:text-gold cursor-pointer transition-all bg-dark/50 gap-1.5">
+                    <label className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-green-500 hover:text-green-600 hover:bg-green-50 cursor-pointer transition-all gap-1">
                       <Camera size={18} />
-                      <span className="text-[8px] font-black uppercase tracking-widest">
-                        ატვირთვა
-                      </span>
+                      <span className="text-[9px] font-bold">ატვირთვა</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -266,28 +268,19 @@ export default function OfferModal({ listing, onClose }: OfferModalProps) {
                 </div>
               </div>
 
-              {/* Submit */}
+              {/* ღილაკი */}
               <button
                 disabled={loading}
-                className="w-full bg-gold text-dark py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-gold/10"
+                className="w-full bg-green-600 text-white py-3.5 rounded-2xl text-sm font-black hover:bg-green-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                      className="w-4 h-4 border-2 border-dark/30 border-t-dark rounded-full"
-                    />
-                    იგზავნება...
-                  </span>
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> იგზავნება...
+                  </>
                 ) : (
-                  <span className="flex items-center gap-2">
-                    <Send size={16} /> გაგზავნა
-                  </span>
+                  <>
+                    <Send size={15} /> გაგზავნა
+                  </>
                 )}
               </button>
             </form>

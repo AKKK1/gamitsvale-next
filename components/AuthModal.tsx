@@ -1,11 +1,8 @@
 "use client";
 
-// ეს კომპონენტი Header.tsx-ში AuthModal ფუნქციას ჩაანაცვლებს
-// ან ცალკე ფაილად შეინახე: components/AuthModal.tsx
-
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 
 interface AuthModalProps {
@@ -34,13 +31,14 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
   const [error, setError] = useState("");
 
   const inp =
-    "w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white placeholder:text-zinc-600";
+    "w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all text-sm text-gray-900 placeholder:text-gray-400";
+  const lbl =
+    "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       if (type === "login") {
         if (step === "forgot") {
@@ -51,8 +49,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
           });
           if (res.ok) setStep("reset");
           else {
-            const data = await res.json();
-            setError(data.error || "კოდის გაგზავნა ვერ მოხერხდა");
+            const d = await res.json();
+            setError(d.error || "კოდის გაგზავნა ვერ მოხერხდა");
           }
         } else if (step === "reset") {
           const res = await fetch("/api/auth/reset-password", {
@@ -68,8 +66,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
             setStep("form");
             setError("");
           } else {
-            const data = await res.json();
-            setError(data.error || "პაროლის შეცვლა ვერ მოხერხდა");
+            const d = await res.json();
+            setError(d.error || "პაროლის შეცვლა ვერ მოხერხდა");
           }
         } else {
           const res = await login(formData.email, formData.password);
@@ -77,7 +75,6 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
           else setError(res.error || "ავტორიზაცია ვერ მოხერხდა");
         }
       } else {
-        // register
         if (step === "form") {
           const res = await register(
             formData.email,
@@ -103,8 +100,11 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
     }
   };
 
-  const handleFacebookLogin = () => {
-    window.location.href = "/api/auth/facebook";
+  const titles: Record<string, string> = {
+    forgot: "პაროლის აღდგენა",
+    reset: "ახალი პაროლი",
+    verify: "ვერიფიკაცია",
+    form: type === "login" ? "შესვლა" : "რეგისტრაცია",
   };
 
   return (
@@ -114,44 +114,35 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 backdrop-blur-sm bg-black/50"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="relative w-full max-w-md bg-dark-card border border-dark-border rounded-3xl shadow-2xl z-10 max-h-[90vh] overflow-y-auto no-scrollbar"
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 16 }}
+        transition={{ type: "spring", damping: 28, stiffness: 320 }}
+        className="relative w-full max-w-md bg-white border border-gray-200 rounded-3xl shadow-2xl z-10 max-h-[90vh] overflow-y-auto"
       >
-        <div className="p-8">
+        <div className="p-6 sm:p-8">
+          {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 text-zinc-500 hover:text-white rounded-full transition-colors"
+            className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
           >
-            <X size={24} />
+            <X size={18} />
           </button>
 
-          <h2 className="text-2xl font-black mb-6 text-center text-white">
-            {step === "forgot"
-              ? "პაროლის აღდგენა"
-              : step === "reset"
-                ? "ახალი პაროლი"
-                : step === "verify"
-                  ? "ვერიფიკაცია"
-                  : type === "login"
-                    ? "შესვლა"
-                    : "რეგისტრაცია"}
+          <h2 className="text-2xl font-black text-gray-900 text-center mb-6">
+            {titles[step]}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* ── REGISTER FORM ── */}
+            {/* REGISTER */}
             {type === "register" && step === "form" && (
               <>
-                {/* სახელი + გვარი */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                      სახელი *
-                    </label>
+                  <div>
+                    <label className={lbl}>სახელი *</label>
                     <input
                       required
                       type="text"
@@ -163,10 +154,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                       }
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                      გვარი
-                    </label>
+                  <div>
+                    <label className={lbl}>გვარი</label>
                     <input
                       type="text"
                       placeholder="მამულაშვილი"
@@ -178,12 +167,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     />
                   </div>
                 </div>
-
-                {/* მეილი */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                    მეილი *
-                  </label>
+                <div>
+                  <label className={lbl}>მეილი *</label>
                   <input
                     required
                     type="email"
@@ -195,12 +180,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     }
                   />
                 </div>
-
-                {/* ტელეფონი */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                    ტელეფონი *
-                  </label>
+                <div>
+                  <label className={lbl}>ტელეფონი *</label>
                   <input
                     required
                     type="tel"
@@ -212,12 +193,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     }
                   />
                 </div>
-
-                {/* პაროლი */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                    პაროლი *
-                  </label>
+                <div>
+                  <label className={lbl}>პაროლი *</label>
                   <input
                     required
                     type="password"
@@ -230,15 +207,13 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     }
                   />
                 </div>
-
-                {/* სოც ქსელები */}
-                <div className="pt-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-3">
+                <div className="pt-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-300 mb-3">
                     სოციალური ქსელები (არასავალდებულო)
                   </p>
                   <div className="space-y-3">
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
                         📸
                       </span>
                       <input
@@ -255,7 +230,7 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                       />
                     </div>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
                         🔵
                       </span>
                       <input
@@ -273,13 +248,11 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
               </>
             )}
 
-            {/* ── LOGIN FORM ── */}
+            {/* LOGIN */}
             {type === "login" && (step === "form" || step === "forgot") && (
               <>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                    მეილი
-                  </label>
+                <div>
+                  <label className={lbl}>მეილი</label>
                   <input
                     required
                     type="email"
@@ -292,15 +265,15 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                   />
                 </div>
                 {step === "form" && (
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center ml-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className={lbl} style={{ margin: 0 }}>
                         პაროლი
                       </label>
                       <button
                         type="button"
                         onClick={() => setStep("forgot")}
-                        className="text-[10px] font-bold text-gold hover:underline"
+                        className="text-[11px] font-bold text-green-600 hover:underline"
                       >
                         დაგავიწყდათ?
                       </button>
@@ -320,13 +293,11 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
               </>
             )}
 
-            {/* ── RESET PASSWORD ── */}
+            {/* RESET */}
             {step === "reset" && (
               <>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                    აღდგენის კოდი
-                  </label>
+                <div>
+                  <label className={lbl}>აღდგენის კოდი</label>
                   <input
                     required
                     type="text"
@@ -338,10 +309,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     }
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                    ახალი პაროლი
-                  </label>
+                <div>
+                  <label className={lbl}>ახალი პაროლი</label>
                   <input
                     required
                     type="password"
@@ -356,17 +325,17 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
               </>
             )}
 
-            {/* ── VERIFY ── */}
+            {/* VERIFY */}
             {step === "verify" && (
-              <div className="space-y-1.5">
-                <p className="text-sm text-zinc-400 text-center mb-4">
+              <div>
+                <p className="text-sm text-gray-500 text-center mb-4">
                   ვერიფიკაციის კოდი გამოგზავნილია{" "}
-                  <span className="text-gold font-bold">{formData.email}</span>
+                  <span className="text-green-600 font-bold">
+                    {formData.email}
+                  </span>
                   -ზე
                 </p>
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                  6-ნიშნა კოდი
-                </label>
+                <label className={lbl}>6-ნიშნა კოდი</label>
                 <input
                   required
                   type="text"
@@ -381,62 +350,68 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
               </div>
             )}
 
+            {/* Error */}
             {error && (
-              <p className="text-xs text-red-400 text-center font-bold bg-red-500/10 py-2 px-3 rounded-lg">
-                {error}
-              </p>
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                <p className="text-xs font-bold text-red-600">{error}</p>
+              </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gold text-dark py-3.5 rounded-xl text-sm font-black hover:brightness-110 transition-all disabled:opacity-50 mt-2 uppercase tracking-widest"
+              className="w-full bg-green-600 text-white py-3.5 rounded-2xl text-sm font-black hover:bg-green-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
             >
-              {loading
-                ? "გთხოვთ დაელოდოთ..."
-                : step === "forgot"
-                  ? "კოდის გაგზავნა"
-                  : step === "reset"
-                    ? "პაროლის შეცვლა"
-                    : step === "verify"
-                      ? "დადასტურება"
-                      : type === "login"
-                        ? "შესვლა"
-                        : "რეგისტრაცია"}
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> გთხოვთ
+                  დაელოდოთ...
+                </>
+              ) : step === "forgot" ? (
+                "კოდის გაგზავნა"
+              ) : step === "reset" ? (
+                "პაროლის შეცვლა"
+              ) : step === "verify" ? (
+                "✓ დადასტურება"
+              ) : type === "login" ? (
+                "შესვლა"
+              ) : (
+                "🚀 რეგისტრაცია"
+              )}
             </button>
 
             {(step === "forgot" || step === "reset") && (
               <button
                 type="button"
                 onClick={() => setStep("form")}
-                className="w-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors text-center mt-2"
+                className="w-full text-xs font-bold text-gray-400 hover:text-green-600 transition-colors text-center"
               >
                 ← უკან
               </button>
             )}
           </form>
 
-          {/* ── Social login — მხოლოდ form step-ზე ── */}
+          {/* Social login */}
           {step === "form" && (
             <>
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-dark-border" />
+                  <div className="w-full border-t border-gray-200" />
                 </div>
-                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-                  <span className="bg-dark-card px-4 text-zinc-500">ან</span>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-4 text-xs font-black uppercase tracking-widest text-gray-300">
+                    ან
+                  </span>
                 </div>
               </div>
-
               <div className="space-y-3">
-                {/* Google */}
                 <button
                   type="button"
                   onClick={() => {
                     loginWithGoogle();
                     onClose();
                   }}
-                  className="w-full flex items-center justify-center gap-3 py-3 border border-dark-border bg-dark rounded-xl text-sm font-bold text-white hover:border-gold/30 transition-all"
+                  className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-200 bg-white rounded-2xl text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all"
                 >
                   <img
                     src="https://www.google.com/favicon.ico"
@@ -445,12 +420,12 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                   />
                   Google-ით შესვლა
                 </button>
-
-                {/* Facebook */}
                 <button
                   type="button"
-                  onClick={handleFacebookLogin}
-                  className="w-full flex items-center justify-center gap-3 py-3 border border-dark-border bg-[#1877F2]/10 rounded-xl text-sm font-bold text-[#1877F2] hover:bg-[#1877F2]/20 hover:border-[#1877F2]/30 transition-all"
+                  onClick={() => {
+                    window.location.href = "/api/auth/facebook";
+                  }}
+                  className="w-full flex items-center justify-center gap-3 py-3 border-2 border-blue-100 bg-blue-50 rounded-2xl text-sm font-bold text-blue-700 hover:bg-blue-100 transition-all"
                 >
                   <svg
                     width="16"

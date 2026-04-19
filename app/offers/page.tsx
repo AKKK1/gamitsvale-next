@@ -19,9 +19,19 @@ import {
 import Link from "next/link";
 import confetti from "canvas-confetti";
 
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
-}
+const C = {
+  bg: "#ffffff",
+  bg2: "#f8faf8",
+  bg3: "#f0f4f0",
+  green: "#1a8a4a",
+  greenLight: "#e6f5ec",
+  greenDark: "#125e33",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+  border: "#e8ebe8",
+  gold: "#c8820a",
+};
 
 export default function OffersPage() {
   const { user } = useAuth();
@@ -72,22 +82,28 @@ export default function OffersPage() {
     if (res.ok) {
       if (status === "ACCEPTED") {
         confetti({
-          particleCount: 150,
+          particleCount: 120,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ["#D4AF37", "#000000", "#FFFFFF"],
+          colors: ["#1a8a4a", "#ffffff", "#c8820a"],
         });
       }
       fetchOffers();
     }
   };
 
-  if (!user)
+  if (!user) {
     return (
-      <div className="min-h-screen bg-dark text-white flex items-center justify-center">
-        <p className="text-zinc-500 font-bold">გთხოვთ გაიაროთ ავტორიზაცია</p>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: C.bg }}
+      >
+        <p className="text-sm font-medium" style={{ color: C.text3 }}>
+          გთხოვთ გაიაროთ ავტორიზაცია
+        </p>
       </div>
     );
+  }
 
   const pendingOffers = offers.filter(
     (o) => o.status === "PENDING" || o.status === "THINKING",
@@ -96,20 +112,36 @@ export default function OffersPage() {
   const filtered = offerFilter === "PENDING" ? pendingOffers : acceptedOffers;
 
   return (
-    <div className="min-h-screen bg-dark text-white">
+    <div
+      className="min-h-screen"
+      style={{
+        background: C.bg,
+        color: C.text,
+        fontFamily: "'Space Grotesk', sans-serif",
+      }}
+    >
       <Header onAddListing={() => {}} />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
-        <div className="mb-6 flex items-center gap-2 text-xs text-zinc-500">
-          <Link href="/" className="hover:text-white transition-colors">
+        <div
+          className="mb-6 flex items-center gap-2 text-xs"
+          style={{ color: C.text3 }}
+        >
+          <Link
+            href="/"
+            style={{ color: C.text3, textDecoration: "none" }}
+            className="hover:underline"
+          >
             მთავარი
           </Link>
           <ChevronRight size={12} />
-          <span className="text-white font-medium">შეთავაზებები</span>
+          <span style={{ color: C.text, fontWeight: 600 }}>შეთავაზებები</span>
         </div>
 
-        <h1 className="text-2xl font-black mb-6">შეთავაზებები</h1>
+        <h1 className="text-2xl font-bold mb-6" style={{ color: C.text }}>
+          შეთავაზებები
+        </h1>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
@@ -117,34 +149,36 @@ export default function OffersPage() {
             {
               id: "PENDING",
               label: "მოლოდინში",
-              icon: <Clock size={15} />,
+              icon: <Clock size={14} />,
               count: pendingOffers.length,
             },
             {
               id: "ACCEPTED",
               label: "დათანხმებული",
-              icon: <CircleCheck size={15} />,
+              icon: <CircleCheck size={14} />,
               count: acceptedOffers.length,
             },
           ].map((f) => (
             <button
               key={f.id}
               onClick={() => setOfferFilter(f.id as any)}
-              className={cn(
-                "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all",
-                offerFilter === f.id
-                  ? "bg-gold text-dark shadow-md"
-                  : "text-zinc-400 bg-dark-card border border-dark-border hover:text-white",
-              )}
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+              style={{
+                background: offerFilter === f.id ? C.green : C.bg2,
+                color: offerFilter === f.id ? "#fff" : C.text2,
+                border: `1px solid ${offerFilter === f.id ? C.green : C.border}`,
+                cursor: "pointer",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
               {f.icon} {f.label}
               <span
-                className={cn(
-                  "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-black",
-                  offerFilter === f.id
-                    ? "bg-dark/20 text-dark"
-                    : "bg-dark text-zinc-400",
-                )}
+                className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+                style={{
+                  background:
+                    offerFilter === f.id ? "rgba(255,255,255,0.25)" : C.bg3,
+                  color: offerFilter === f.id ? "#fff" : C.text3,
+                }}
               >
                 {f.count}
               </span>
@@ -152,29 +186,47 @@ export default function OffersPage() {
           ))}
         </div>
 
-        {/* Offers List */}
+        {/* List */}
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-dark-border bg-dark-card p-4 animate-pulse"
+                className="rounded-xl p-4 animate-pulse"
+                style={{ background: C.bg2, border: `1px solid ${C.border}` }}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-zinc-800" />
+                  <div
+                    className="w-10 h-10 rounded-full"
+                    style={{ background: C.bg3 }}
+                  />
                   <div className="space-y-1.5">
-                    <div className="h-3 bg-zinc-800 rounded w-24" />
-                    <div className="h-2.5 bg-zinc-800 rounded w-16" />
+                    <div
+                      className="h-3 rounded w-24"
+                      style={{ background: C.bg3 }}
+                    />
+                    <div
+                      className="h-2.5 rounded w-16"
+                      style={{ background: C.bg3 }}
+                    />
                   </div>
                 </div>
-                <div className="h-3 bg-zinc-800 rounded w-full mb-2" />
-                <div className="h-3 bg-zinc-800 rounded w-2/3" />
+                <div
+                  className="h-3 rounded w-full mb-2"
+                  style={{ background: C.bg3 }}
+                />
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 rounded-xl border border-dashed border-dark-border bg-dark-card/50">
-            <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest">
+          <div
+            className="text-center py-20 rounded-xl"
+            style={{ border: `1px dashed ${C.border}`, background: C.bg2 }}
+          >
+            <p
+              className="text-sm font-medium uppercase tracking-widest"
+              style={{ color: C.text3 }}
+            >
               შეთავაზებები არ არის
             </p>
           </div>
@@ -189,12 +241,19 @@ export default function OffersPage() {
                   key={offer._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-xl border border-dark-border bg-dark-card p-4 hover:border-gold/30 transition-all"
+                  className="rounded-xl p-4 transition-all"
+                  style={{ background: C.bg2, border: `1px solid ${C.border}` }}
                 >
                   {/* Header */}
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-dark text-lg overflow-hidden border border-dark-border shrink-0">
+                      <div
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-base overflow-hidden shrink-0"
+                        style={{
+                          background: C.bg3,
+                          border: `1px solid ${C.border}`,
+                        }}
+                      >
                         {otherParty?.avatar ? (
                           <img
                             src={otherParty.avatar}
@@ -206,22 +265,24 @@ export default function OffersPage() {
                         )}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-white">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p
+                            className="text-sm font-bold"
+                            style={{ color: C.text }}
+                          >
                             {otherParty?.name || "უცნობი"}
                           </p>
                           <span
-                            className={cn(
-                              "text-[10px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider",
-                              isIncoming
-                                ? "bg-blue-500/10 text-blue-400"
-                                : "bg-purple-500/10 text-purple-400",
-                            )}
+                            className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+                            style={{
+                              background: isIncoming ? C.greenLight : C.bg3,
+                              color: isIncoming ? C.green : C.text3,
+                            }}
                           >
                             {isIncoming ? "შემოსული" : "გაგზავნილი"}
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs" style={{ color: C.text3 }}>
                           {new Date(offer.createdAt).toLocaleDateString(
                             "ka-GE",
                           )}
@@ -230,17 +291,32 @@ export default function OffersPage() {
                     </div>
                     <Link
                       href={`/listing/${offer.listing?._id}`}
-                      className="flex items-center gap-1.5 rounded-lg bg-dark px-2.5 py-1.5 border border-dark-border hover:border-gold/30 transition-colors shrink-0"
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 shrink-0 transition-all"
+                      style={{
+                        background: C.bg3,
+                        border: `1px solid ${C.border}`,
+                        textDecoration: "none",
+                      }}
                     >
                       <span className="text-sm">📦</span>
-                      <span className="max-w-[100px] truncate text-xs text-white font-medium">
+                      <span
+                        className="max-w-[100px] truncate text-xs font-medium"
+                        style={{ color: C.text }}
+                      >
                         {offer.listing?.title || "ნივთი"}
                       </span>
                     </Link>
                   </div>
 
                   {/* Description */}
-                  <p className="mb-3 rounded-lg bg-dark/50 px-3 py-2.5 text-sm text-zinc-300 border border-dark-border/50">
+                  <p
+                    className="mb-3 rounded-lg px-3 py-2.5 text-sm"
+                    style={{
+                      background: C.bg,
+                      border: `1px solid ${C.border}`,
+                      color: C.text2,
+                    }}
+                  >
                     {offer.description}
                   </p>
 
@@ -251,7 +327,8 @@ export default function OffersPage() {
                         <img
                           key={i}
                           src={img}
-                          className="w-16 h-16 rounded-lg object-cover border border-dark-border"
+                          className="w-16 h-16 rounded-lg object-cover"
+                          style={{ border: `1px solid ${C.border}` }}
                           referrerPolicy="no-referrer"
                         />
                       ))}
@@ -260,50 +337,39 @@ export default function OffersPage() {
 
                   {/* Contact — ACCEPTED */}
                   {offer.status === "ACCEPTED" && (
-                    <div className="mb-3 rounded-lg bg-green-600/10 p-3 border border-green-600/20">
-                      <p className="text-[10px] font-black text-green-500 uppercase tracking-widest mb-2">
+                    <div
+                      className="mb-3 rounded-lg p-3"
+                      style={{
+                        background: C.greenLight,
+                        border: `1px solid rgba(26,138,74,0.2)`,
+                      }}
+                    >
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-widest mb-2"
+                        style={{ color: C.green }}
+                      >
                         კონტაქტი
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         {[
                           {
                             key: `${offer._id}-email`,
-                            icon: (
-                              <Mail
-                                size={12}
-                                className="text-gold/60 shrink-0"
-                              />
-                            ),
+                            icon: <Mail size={12} />,
                             value: otherParty?.email,
                           },
                           {
                             key: `${offer._id}-phone`,
-                            icon: (
-                              <Phone
-                                size={12}
-                                className="text-gold/60 shrink-0"
-                              />
-                            ),
+                            icon: <Phone size={12} />,
                             value: otherParty?.phone,
                           },
                           {
                             key: `${offer._id}-facebook`,
-                            icon: (
-                              <Facebook
-                                size={12}
-                                className="text-gold/60 shrink-0"
-                              />
-                            ),
+                            icon: <Facebook size={12} />,
                             value: otherParty?.facebook,
                           },
                           {
                             key: `${offer._id}-instagram`,
-                            icon: (
-                              <Instagram
-                                size={12}
-                                className="text-gold/60 shrink-0"
-                              />
-                            ),
+                            icon: <Instagram size={12} />,
                             value: otherParty?.instagram,
                           },
                         ]
@@ -312,19 +378,27 @@ export default function OffersPage() {
                             <button
                               key={item.key}
                               onClick={() => handleCopy(item.key, item.value)}
-                              className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-green-600/20 active:bg-green-600/30 transition-all text-left w-full min-h-[44px]"
+                              className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full min-h-[44px]"
+                              style={{
+                                background: "rgba(255,255,255,0.6)",
+                                border: `1px solid rgba(26,138,74,0.15)`,
+                                cursor: "pointer",
+                              }}
                             >
-                              {item.icon}
-                              <span className="text-xs text-white flex-1 truncate">
+                              <span style={{ color: C.green }}>
+                                {item.icon}
+                              </span>
+                              <span
+                                className="text-xs flex-1 truncate"
+                                style={{ color: C.text }}
+                              >
                                 {item.value}
                               </span>
-                              <span className="shrink-0">
-                                {copiedKey === item.key ? (
-                                  <Check size={12} className="text-green-400" />
-                                ) : (
-                                  <Copy size={12} className="text-zinc-500" />
-                                )}
-                              </span>
+                              {copiedKey === item.key ? (
+                                <Check size={12} style={{ color: C.green }} />
+                              ) : (
+                                <Copy size={12} style={{ color: C.text3 }} />
+                              )}
                             </button>
                           ))}
                       </div>
@@ -340,7 +414,12 @@ export default function OffersPage() {
                           onClick={() =>
                             handleOfferAction(offer._id, "ACCEPTED")
                           }
-                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-green-600/90 py-2.5 text-xs font-bold text-white hover:bg-green-600 transition-all"
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-semibold text-white transition-all"
+                          style={{
+                            background: C.green,
+                            cursor: "pointer",
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}
                         >
                           <CircleCheck size={14} /> თანხმობა
                         </button>
@@ -349,7 +428,14 @@ export default function OffersPage() {
                             onClick={() =>
                               handleOfferAction(offer._id, "THINKING")
                             }
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-dark-border py-2.5 text-xs font-medium text-zinc-400 hover:border-gold hover:text-gold transition-all"
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-medium transition-all"
+                            style={{
+                              background: C.bg3,
+                              border: `1px solid ${C.border}`,
+                              color: C.text2,
+                              cursor: "pointer",
+                              fontFamily: "'Space Grotesk', sans-serif",
+                            }}
                           >
                             <Clock size={14} /> დაფიქრება
                           </button>
@@ -358,7 +444,13 @@ export default function OffersPage() {
                           onClick={() =>
                             handleOfferAction(offer._id, "DECLINED")
                           }
-                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-500/20 py-2.5 text-xs font-medium text-red-500 hover:bg-red-500/30 transition-all"
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-medium transition-all"
+                          style={{
+                            background: "rgba(239,68,68,0.08)",
+                            color: "#ef4444",
+                            cursor: "pointer",
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}
                         >
                           <CircleX size={14} /> უარყოფა
                         </button>
@@ -368,7 +460,10 @@ export default function OffersPage() {
                   {!isIncoming &&
                     (offer.status === "PENDING" ||
                       offer.status === "THINKING") && (
-                      <div className="text-center py-2 text-xs text-zinc-500 italic bg-dark/30 rounded-lg">
+                      <div
+                        className="text-center py-2 text-xs rounded-lg italic"
+                        style={{ background: C.bg3, color: C.text3 }}
+                      >
                         მოლოდინის რეჟიმში...
                       </div>
                     )}

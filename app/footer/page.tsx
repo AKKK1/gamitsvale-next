@@ -13,7 +13,7 @@ const Footer = () => {
           {/* ── ლოგო + აღწერა ── */}
           <div className="lg:col-span-1">
             <p className="text-xl font-black text-white tracking-tight mb-3">
-              GAMITS<span className="text-gold">VALE</span>.GE
+              GAMITSVALE<span className="text-[#fffff]">.GE</span>
             </p>
             <p className="text-xs text-zinc-500 leading-relaxed">
               საქართველოს პირველი ბარტერული პლატფორმა — გაცვალე ნივთები ფულის
@@ -51,7 +51,7 @@ const Footer = () => {
             </p>
             <ul className="space-y-3">
               {[
-                { href: "/about", label: "About Us" },
+                { href: "/about", label: "ჩვენს შესახებ" },
                 { href: "/advertise", label: "რეკლამაზე დაგვიკავშირდით" },
                 { href: "/legal", label: "კონფიდენციალურობა" },
               ].map((link) => (

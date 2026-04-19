@@ -1,12 +1,25 @@
 "use client";
 
-// app/about/page.tsx
 import Link from "next/link";
+
+const C = {
+  bg: "#ffffff",
+  bg2: "#f8faf8",
+  bg3: "#f0f4f0",
+  green: "#1a8a4a",
+  greenLight: "#e6f5ec",
+  greenDark: "#125e33",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+  border: "#e8ebe8",
+  gold: "#c8820a",
+};
 
 const stats = [
   { value: "10,000+", label: "მომხმარებელი" },
   { value: "15", label: "კატეგორია" },
-  { value: "2024", label: "დაარსდა" },
+  { value: "2026", label: "დაარსდა" },
   { value: "0 ₾", label: "საკომისიო" },
 ];
 
@@ -39,29 +52,46 @@ const faqs = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-dark text-white">
-      {/* Header */}
-      <div className="border-b border-dark-border bg-dark/90 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-xl font-black tracking-tighter">
-            GAMITSVALE<span className="text-gold">.GE</span>
+    <div
+      className="min-h-screen"
+      style={{
+        background: C.bg,
+        color: C.text,
+        fontFamily: "'Space Grotesk', sans-serif",
+      }}
+    >
+      {/* ── Header ── */}
+      <div
+        className="sticky top-0 z-50"
+        style={{ background: C.bg, borderBottom: `1px solid ${C.border}` }}
+      >
+        <div className="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between">
+          <Link
+            href="/"
+            className="text-[17px] font-bold tracking-tight"
+            style={{ color: C.text, textDecoration: "none" }}
+          >
+            GAMITSVALE<span style={{ color: C.green }}>.GE</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link
               href="/rules"
-              className="text-zinc-400 hover:text-white transition-colors hidden sm:block"
+              className="transition-colors text-[13px] font-medium"
+              style={{ color: C.text2, textDecoration: "none" }}
             >
               წესები
             </Link>
             <Link
               href="/advertise"
-              className="text-zinc-400 hover:text-white transition-colors hidden sm:block"
+              className="transition-colors text-[13px] font-medium hidden sm:block"
+              style={{ color: C.text2, textDecoration: "none" }}
             >
               რეკლამა
             </Link>
             <Link
               href="/"
-              className="px-4 py-1.5 bg-gold text-dark font-black rounded-lg text-xs hover:brightness-110 transition-all"
+              className="text-white px-4 py-[7px] rounded-lg text-[13px] font-semibold transition-all"
+              style={{ background: C.green, textDecoration: "none" }}
             >
               მთავარი
             </Link>
@@ -69,33 +99,52 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden py-20 px-4">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-gold/5 blur-[100px]" />
-        </div>
-        <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/30 bg-gold/5 text-gold text-xs font-black uppercase tracking-widest mb-6">
+      {/* ── Hero ── */}
+      <section
+        className="py-16 px-6 text-center"
+        style={{ background: C.bg2, borderBottom: `1px solid ${C.border}` }}
+      >
+        <div className="max-w-3xl mx-auto">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-[5px] rounded-full text-[12px] font-medium mb-6"
+            style={{
+              background: C.greenLight,
+              border: `1px solid rgba(26,138,74,0.2)`,
+              color: C.green,
+            }}
+          >
             🇬🇪 Made in Georgia
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-5 leading-none">
-            გაცვლა <span className="text-gold">გამარტივდა</span>
+          <h1
+            className="text-4xl md:text-5xl font-bold mb-4 leading-tight"
+            style={{ letterSpacing: "-0.5px" }}
+          >
+            გაცვლა <span style={{ color: C.green }}>გამარტივდა</span>
           </h1>
-          <p className="text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">
+          <p
+            className="text-base mb-8 leading-relaxed"
+            style={{ color: C.text2 }}
+          >
             GAMITSVALE.GE — საქართველოს პირველი სპეციალიზებული პლატფორმა
-            ნივთების გასაცვლელად. გაცვალე ტელეფონი, ავტომობილი, ტანსაცმელი ან
-            ნებისმიერი სხვა ნივთი — ფულის გარეშე.
+            ნივთების გასაცვლელად. გაცვალე ტელეფონი, ავტომობილი, ტანსაცმელი —
+            ფულის გარეშე.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
               href="/"
-              className="px-6 py-2.5 bg-gold text-dark font-black rounded-xl hover:brightness-110 transition-all text-sm uppercase tracking-widest"
+              className="text-white px-6 py-3 rounded-lg text-[14px] font-semibold transition-all"
+              style={{ background: C.green, textDecoration: "none" }}
             >
               პლატფორმაზე →
             </Link>
             <a
               href="#contact"
-              className="px-6 py-2.5 border border-dark-border text-zinc-400 font-bold rounded-xl hover:border-gold hover:text-gold transition-all text-sm"
+              className="px-6 py-3 rounded-lg text-[14px] font-medium transition-all"
+              style={{
+                border: `1px solid ${C.border}`,
+                color: C.text2,
+                textDecoration: "none",
+              }}
             >
               კონტაქტი
             </a>
@@ -103,13 +152,21 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-10 px-4 border-y border-dark-border bg-dark-card/20">
+      {/* ── Stats ── */}
+      <section
+        className="py-10 px-6"
+        style={{ borderBottom: `1px solid ${C.border}`, background: C.bg }}
+      >
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((s, i) => (
             <div key={i} className="text-center">
-              <p className="text-3xl font-black text-gold mb-1">{s.value}</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
+              <p className="text-3xl font-bold mb-1" style={{ color: C.green }}>
+                {s.value}
+              </p>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-widest"
+                style={{ color: C.text3 }}
+              >
                 {s.label}
               </p>
             </div>
@@ -117,26 +174,34 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Mission */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
+      {/* ── Mission ── */}
+      <section className="py-16 px-6" style={{ background: C.bg2 }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-gold text-xs font-black uppercase tracking-widest mb-3">
+              <p
+                className="text-[11px] font-bold uppercase tracking-widest mb-3"
+                style={{ color: C.green }}
+              >
                 ჩვენი მისია
               </p>
-              <h2 className="text-3xl font-black mb-4 leading-tight">
-                ყველას შეუძლია <span className="text-gold">გაცვლა</span>
+              <h2
+                className="text-3xl font-bold mb-4 leading-tight"
+                style={{ letterSpacing: "-0.3px" }}
+              >
+                ყველას შეუძლია <span style={{ color: C.green }}>გაცვლა</span>
               </h2>
-              <p className="text-zinc-400 leading-relaxed mb-3 text-sm">
+              <p
+                className="text-sm leading-relaxed mb-3"
+                style={{ color: C.text2 }}
+              >
                 საქართველოში მილიონობით ნივთი გვიყრია სახლში გამოუყენებელი.
                 ამავდროულად ათასობით ადამიანს სჭირდება ის, რაც სხვას ზედმეტი
                 აქვს.
               </p>
-              <p className="text-zinc-400 leading-relaxed text-sm">
+              <p className="text-sm leading-relaxed" style={{ color: C.text2 }}>
                 GAMITSVALE.GE-მ ეს ადამიანები ერთმანეთთან დააახლოვა — პლატფორმა
-                სადაც ნივთების გაცვლა მარტივი, სწრაფი და უსაფრთხოა. გაცვლა
-                თბილისში, ქუთაისში, ბათუმში და მთელ საქართველოში.
+                სადაც ნივთების გაცვლა მარტივი, სწრაფი და უსაფრთხოა.
               </p>
             </div>
             <div className="space-y-3">
@@ -164,14 +229,20 @@ export default function AboutPage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-3 p-4 rounded-xl bg-dark-card border border-dark-border hover:border-gold/20 transition-all"
+                  className="flex items-start gap-3 p-4 rounded-xl transition-all"
+                  style={{ background: C.bg, border: `1px solid ${C.border}` }}
                 >
                   <span className="text-xl shrink-0">{item.icon}</span>
                   <div>
-                    <p className="font-black text-white text-sm mb-0.5">
+                    <p
+                      className="text-sm font-bold mb-0.5"
+                      style={{ color: C.text }}
+                    >
                       {item.title}
                     </p>
-                    <p className="text-xs text-zinc-500">{item.desc}</p>
+                    <p className="text-xs" style={{ color: C.text3 }}>
+                      {item.desc}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -180,10 +251,20 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* SEO Tags */}
-      <section className="py-10 px-4 bg-dark-card/20 border-y border-dark-border">
+      {/* ── SEO Tags ── */}
+      <section
+        className="py-10 px-6"
+        style={{
+          background: C.bg,
+          borderTop: `1px solid ${C.border}`,
+          borderBottom: `1px solid ${C.border}`,
+        }}
+      >
         <div className="max-w-4xl mx-auto">
-          <p className="text-gold text-xs font-black uppercase tracking-widest mb-4 text-center">
+          <p
+            className="text-[11px] font-bold uppercase tracking-widest mb-4 text-center"
+            style={{ color: C.green }}
+          >
             პოპულარული ძიებები
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
@@ -206,7 +287,12 @@ export default function AboutPage() {
             ].map((tag, i) => (
               <span
                 key={i}
-                className="px-3 py-1.5 rounded-full bg-dark border border-dark-border text-zinc-500 text-xs hover:border-gold/30 hover:text-gold transition-all cursor-default"
+                className="px-3 py-1.5 rounded-full text-xs transition-all cursor-default"
+                style={{
+                  background: C.bg2,
+                  border: `1px solid ${C.border}`,
+                  color: C.text3,
+                }}
               >
                 {tag}
               </span>
@@ -215,26 +301,39 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-16 px-4">
+      {/* ── FAQ ── */}
+      <section className="py-16 px-6" style={{ background: C.bg2 }}>
         <div className="max-w-3xl mx-auto">
-          <p className="text-gold text-xs font-black uppercase tracking-widest mb-2 text-center">
+          <p
+            className="text-[11px] font-bold uppercase tracking-widest mb-2 text-center"
+            style={{ color: C.green }}
+          >
             FAQ
           </p>
-          <h2 className="text-3xl font-black text-center mb-8">
+          <h2
+            className="text-3xl font-bold text-center mb-8"
+            style={{ letterSpacing: "-0.3px" }}
+          >
             ხშირი კითხვები
           </h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
               <div
                 key={i}
-                className="p-5 rounded-xl bg-dark-card border border-dark-border hover:border-gold/20 transition-all"
+                className="p-5 rounded-xl transition-all"
+                style={{ background: C.bg, border: `1px solid ${C.border}` }}
               >
-                <p className="font-black text-white text-sm mb-2 flex items-start gap-2">
-                  <span className="text-gold shrink-0">Q.</span>
+                <p
+                  className="font-bold text-sm mb-2 flex items-start gap-2"
+                  style={{ color: C.text }}
+                >
+                  <span style={{ color: C.green }}>Q.</span>
                   {faq.q}
                 </p>
-                <p className="text-zinc-400 text-sm leading-relaxed pl-5">
+                <p
+                  className="text-sm leading-relaxed pl-5"
+                  style={{ color: C.text2 }}
+                >
                   {faq.a}
                 </p>
               </div>
@@ -243,14 +342,26 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Contact */}
-      <section id="contact" className="py-16 px-4 border-t border-dark-border">
+      {/* ── Contact ── */}
+      <section
+        id="contact"
+        className="py-16 px-6"
+        style={{ background: C.bg, borderTop: `1px solid ${C.border}` }}
+      >
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-gold text-xs font-black uppercase tracking-widest mb-2">
+          <p
+            className="text-[11px] font-bold uppercase tracking-widest mb-2"
+            style={{ color: C.green }}
+          >
             კონტაქტი
           </p>
-          <h2 className="text-3xl font-black mb-3">დაგვიკავშირდი</h2>
-          <p className="text-zinc-400 text-sm mb-8">
+          <h2
+            className="text-3xl font-bold mb-3"
+            style={{ letterSpacing: "-0.3px" }}
+          >
+            დაგვიკავშირდი
+          </h2>
+          <p className="text-sm mb-8" style={{ color: C.text2 }}>
             კითხვა, წინადადება ან თანამშრომლობა? ვართ აქ!
           </p>
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
@@ -279,21 +390,32 @@ export default function AboutPage() {
                 href={c.href}
                 target={c.href.startsWith("http") ? "_blank" : undefined}
                 rel="noopener noreferrer"
-                className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-dark-card border border-dark-border hover:border-gold/40 hover:bg-gold/5 transition-all group"
+                className="flex flex-col items-center gap-3 p-5 rounded-2xl transition-all group"
+                style={{
+                  background: C.bg2,
+                  border: `1px solid ${C.border}`,
+                  textDecoration: "none",
+                }}
               >
                 <span className="text-3xl">{c.icon}</span>
                 <div className="text-center">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
+                  <p
+                    className="text-[10px] font-bold uppercase tracking-widest mb-1"
+                    style={{ color: C.text3 }}
+                  >
                     {c.label}
                   </p>
-                  <p className="text-xs font-bold text-white group-hover:text-gold transition-colors break-all">
+                  <p
+                    className="text-xs font-bold break-all"
+                    style={{ color: C.text }}
+                  >
                     {c.value}
                   </p>
                 </div>
               </a>
             ))}
           </div>
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs" style={{ color: C.text3 }}>
             GAMITSVALE.GE © 2024–2025 · All rights reserved
           </p>
         </div>

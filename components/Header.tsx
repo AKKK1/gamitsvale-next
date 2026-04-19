@@ -7,7 +7,6 @@ import {
   Plus,
   LogOut,
   Menu,
-  ChevronDown,
   X,
   Filter,
   User,
@@ -16,6 +15,19 @@ import { motion, AnimatePresence } from "motion/react";
 import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+// ── ფერების კონსტანტები (E დიზაინი) ─────────────────────────────────────────
+const C = {
+  green: "#1a8a4a",
+  greenDark: "#125e33",
+  greenLight: "#e6f5ec",
+  bg: "#ffffff",
+  bgCard: "#f8faf8",
+  border: "#e8ebe8",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+};
 
 export default function Header({
   onAddListing,
@@ -35,7 +47,6 @@ export default function Header({
   const [showAuthModal, setShowAuthModal] = useState<
     "login" | "register" | null
   >(null);
-  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     city: "",
@@ -100,12 +111,14 @@ export default function Header({
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  // ── მინდა / გინდა toggle ──────────────────────────────────────────────────
   const SearchToggle = ({ small = false }: { small?: boolean }) => (
     <div
       className={cn(
-        "flex items-center gap-0.5 border-r border-dark-border shrink-0",
+        "flex items-center gap-0.5 shrink-0",
         small ? "pr-1.5 mr-1" : "pr-2 mr-1",
       )}
+      style={{ borderRight: `1px solid ${C.border}` }}
     >
       {(["want", "give"] as const).map((t) => (
         <button
@@ -113,14 +126,16 @@ export default function Header({
           type="button"
           onClick={() => setSearchType(t)}
           className={cn(
-            "rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap",
-            small ? "px-2 py-1 text-[9px]" : "px-2.5 py-1.5 text-[10px]",
-            searchType === t
-              ? "bg-gold text-dark shadow-sm"
-              : "text-zinc-500 hover:text-zinc-300",
+            "rounded-lg font-bold uppercase tracking-widest transition-all whitespace-nowrap text-[10px]",
+            small ? "px-2 py-1" : "px-2.5 py-1.5",
           )}
+          style={
+            searchType === t
+              ? { background: C.green, color: "#fff" }
+              : { color: C.text3 }
+          }
         >
-          {t === "want" ? "მინდა" : "გინდა"}
+          {t === "want" ? "ვეძებ" : "მაქვს"}
         </button>
       ))}
     </div>
@@ -128,10 +143,18 @@ export default function Header({
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-dark/80 backdrop-blur-xl border-b border-dark-border">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-8">
-          {/* ── ლოგო + კატეგორიები ── */}
-          <div className="flex items-center gap-4 lg:gap-6 shrink-0">
+      {/* ══ HEADER ══ */}
+      <header
+        className="sticky top-0 z-50"
+        style={{
+          background: C.bg,
+          borderBottom: `1px solid ${C.border}`,
+          fontFamily: "'Space Grotesk', sans-serif",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 h-[60px] flex items-center justify-between gap-4 lg:gap-8">
+          {/* ── ლოგო ── */}
+          <div className="flex items-center shrink-0">
             <Link
               href="/"
               onClick={() => {
@@ -140,100 +163,75 @@ export default function Header({
                 setSearchType("want");
                 if (onSearch) onSearch("", "want", {});
               }}
-              className="text-2xl font-black tracking-tighter text-white flex items-center gap-1"
+              className="text-[17px] font-bold tracking-tight"
+              style={{ color: C.text, textDecoration: "none" }}
             >
               {settings?.logos ? (
                 <img
                   src={settings.logo}
                   alt={settings.siteName}
-                  className="h-8 object-contain"
+                  className="h-7 object-contain"
                 />
               ) : (
                 <>
-                  GAMITSVALE<span className="text-gold">.GE</span>
+                  GAMITSVALE<span style={{ color: C.green }}>.GE</span>
                 </>
               )}
             </Link>
-
-            <div className="relative hidden lg:block">
-              <button
-                onClick={() =>
-                  setShowCategoriesDropdown(!showCategoriesDropdown)
-                }
-                className="flex items-center gap-2 px-4 py-2 bg-dark-card border border-dark-border rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
-              >
-                <Menu size={16} />
-                <span>კატეგორიები</span>
-                <ChevronDown
-                  size={14}
-                  className={cn(
-                    "transition-transform",
-                    showCategoriesDropdown && "rotate-180",
-                  )}
-                />
-              </button>
-              <AnimatePresence>
-                {showCategoriesDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 mt-2 w-64 bg-dark-card border border-dark-border rounded-2xl shadow-2xl p-2 z-[60]"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        href={`/category/${cat.id}`}
-                        onClick={() => setShowCategoriesDropdown(false)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
-                      >
-                        <span className="text-lg">{cat.icon}</span>
-                        {cat.name}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </div>
 
           {/* ── საძიებო — desktop ── */}
-          <div className="flex-1 max-w-xl hidden lg:flex items-center bg-dark-card rounded-2xl border border-dark-border p-1 relative">
+          <div
+            className="flex-1 max-w-xl hidden lg:flex items-center rounded-xl p-1 relative"
+            style={{ background: C.bgCard, border: `1px solid ${C.border}` }}
+          >
             <SearchToggle />
             <input
               type="text"
               placeholder={
                 searchType === "want"
-                  ? "განცხადების სახელი..."
-                  : "რა გინდა გაცვლაში..."
+                  ? "რა ნივთს ვეძებ..."
+                  : "რა ნივთი მაქვს..."
               }
-              className="flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-zinc-600 min-w-0"
+              className="flex-1 bg-transparent px-3 text-sm outline-none min-w-0"
+              style={{
+                color: C.text,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={cn(
-                "p-2 shrink-0 transition-colors",
-                showFilters ? "text-gold" : "text-zinc-400 hover:text-gold",
-              )}
+              className="p-2 shrink-0 transition-colors rounded-lg"
+              style={{ color: showFilters ? C.green : C.text3 }}
             >
-              <Filter size={18} />
+              <Filter size={17} />
             </button>
             <button
               onClick={handleSearch}
-              className="p-2 shrink-0 text-zinc-400 hover:text-gold transition-colors"
+              className="p-2 shrink-0 transition-colors rounded-lg"
+              style={{ color: C.text3 }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.color = C.green)
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.color = C.text3)
+              }
             >
-              <Search size={18} />
+              <Search size={17} />
             </button>
+
+            {/* Filters dropdown */}
             <AnimatePresence>
               {showFilters && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full right-0 mt-2 w-full bg-dark-card border border-dark-border rounded-2xl shadow-2xl p-4 z-[60]"
+                  className="absolute top-full right-0 mt-2 w-full rounded-2xl shadow-xl p-4 z-[60]"
+                  style={{ background: C.bg, border: `1px solid ${C.border}` }}
                 >
                   <div className="grid grid-cols-3 gap-4">
                     {[
@@ -257,7 +255,10 @@ export default function Header({
                       },
                     ].map((f) => (
                       <div key={f.key} className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                        <label
+                          className="text-[10px] font-bold uppercase tracking-widest"
+                          style={{ color: C.text3 }}
+                        >
                           {f.label}
                         </label>
                         <select
@@ -265,7 +266,13 @@ export default function Header({
                           onChange={(e) =>
                             setFilters({ ...filters, [f.key]: e.target.value })
                           }
-                          className="w-full bg-dark border border-dark-border rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-gold/50"
+                          className="w-full rounded-lg px-3 py-2 text-xs outline-none"
+                          style={{
+                            background: C.bgCard,
+                            border: `1px solid ${C.border}`,
+                            color: C.text,
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}
                         >
                           <option value="">ყველა</option>
                           {f.opts.map((o) => (
@@ -279,7 +286,16 @@ export default function Header({
                   </div>
                   <button
                     onClick={handleSearch}
-                    className="w-full mt-4 bg-gold text-dark font-black uppercase tracking-widest text-xs py-2 rounded-lg hover:bg-gold-hover transition-colors"
+                    className="w-full mt-4 text-white font-bold uppercase tracking-widest text-xs py-2 rounded-lg transition-colors"
+                    style={{ background: C.green }}
+                    onMouseEnter={(e) =>
+                      ((e.currentTarget as HTMLElement).style.background =
+                        C.greenDark)
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.currentTarget as HTMLElement).style.background =
+                        C.green)
+                    }
                   >
                     ძებნა
                   </button>
@@ -289,9 +305,10 @@ export default function Header({
           </div>
 
           {/* ── Actions — desktop ── */}
-          <div className="hidden lg:flex items-center gap-3 shrink-0">
+          <div className="hidden lg:flex items-center gap-2.5 shrink-0">
             {user ? (
               <>
+                {/* Bell */}
                 <div className="relative">
                   <button
                     onClick={async () => {
@@ -305,11 +322,19 @@ export default function Header({
                         );
                       }
                     }}
-                    className="relative p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+                    className="relative p-2.5 rounded-xl transition-colors"
+                    style={{
+                      border: `1px solid ${C.border}`,
+                      background: C.bgCard,
+                      color: C.text2,
+                    }}
                   >
-                    <Bell size={20} />
+                    <Bell size={19} />
                     {unreadCount > 0 && (
-                      <span className="absolute top-2 right-2 w-4 h-4 bg-gold text-dark text-[10px] font-black flex items-center justify-center rounded-full border-2 border-dark">
+                      <span
+                        className="absolute top-1.5 right-1.5 w-4 h-4 text-[10px] font-bold flex items-center justify-center rounded-full text-white"
+                        style={{ background: C.green }}
+                      >
                         {unreadCount}
                       </span>
                     )}
@@ -324,44 +349,99 @@ export default function Header({
                     )}
                   </AnimatePresence>
                 </div>
+
+                {/* + განცხადება */}
                 <button
                   onClick={onAddListing}
-                  className="bg-gold hover:bg-gold-hover text-dark px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-gold/10"
+                  className="text-white px-5 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-1.5"
+                  style={{ background: C.green }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.greenDark)
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.green)
+                  }
                 >
-                  <Plus size={18} /> განცხადება
+                  <Plus size={14} />
+                  დამატება
                 </button>
+
+                {/* Avatar */}
                 <Link
                   href="/profile"
-                  className="flex items-center p-1 rounded-xl border border-dark-border hover:border-gold/50 transition-all bg-dark-card"
+                  className="flex items-center p-1 rounded-xl transition-all"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    background: C.bgCard,
+                  }}
                 >
                   <img
                     src={user.avatar || "https://www.gravatar.com/avatar?d=mp"}
-                    className="w-9 h-9 rounded-lg object-cover"
+                    className="w-8 h-8 rounded-lg object-cover"
                     referrerPolicy="no-referrer"
                   />
                 </Link>
+
+                {/* Logout */}
                 <button
                   onClick={handleLogout}
-                  className="p-2.5 text-zinc-500 hover:text-red-500 transition-colors bg-dark-card rounded-xl border border-dark-border"
+                  className="p-2.5 rounded-xl transition-colors"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    background: C.bgCard,
+                    color: C.text3,
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = "#ef4444")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = C.text3)
+                  }
                 >
-                  <LogOut size={18} />
+                  <LogOut size={17} />
                 </button>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <>
                 <button
                   onClick={() => setShowAuthModal("login")}
-                  className="rounded-lg border border-dark-border px-4 py-2 text-sm text-zinc-400 hover:border-gold hover:text-gold transition-colors"
+                  className="rounded-lg px-4 py-2 text-[13px] font-medium transition-colors"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    color: C.text2,
+                    background: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      C.text2;
+                    (e.currentTarget as HTMLElement).style.color = C.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      C.border;
+                    (e.currentTarget as HTMLElement).style.color = C.text2;
+                  }}
                 >
                   შესვლა
                 </button>
                 <button
                   onClick={() => setShowAuthModal("register")}
-                  className="bg-gold text-dark px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all"
+                  className="text-white px-5 py-2 rounded-lg text-[13px] font-semibold transition-all"
+                  style={{ background: C.green }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.greenDark)
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.green)
+                  }
                 >
-                  რეგისტრაცია
+                  + განცხადება
                 </button>
-              </div>
+              </>
             )}
           </div>
 
@@ -369,9 +449,10 @@ export default function Header({
           <div className="flex lg:hidden items-center gap-2 shrink-0">
             <button
               onClick={onAddListing}
-              className="bg-gold hover:bg-gold-hover text-dark p-2.5 rounded-xl transition-all"
+              className="p-2.5 rounded-xl text-white transition-all"
+              style={{ background: C.green }}
             >
-              <Plus size={20} />
+              <Plus size={19} />
             </button>
             {user && (
               <button
@@ -384,11 +465,19 @@ export default function Header({
                     );
                   }
                 }}
-                className="relative p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+                className="relative p-2.5 rounded-xl transition-colors"
+                style={{
+                  border: `1px solid ${C.border}`,
+                  background: C.bgCard,
+                  color: C.text2,
+                }}
               >
-                <Bell size={20} />
+                <Bell size={19} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-gold text-dark text-[10px] font-black flex items-center justify-center rounded-full border-2 border-dark">
+                  <span
+                    className="absolute top-1.5 right-1.5 w-4 h-4 text-[10px] font-bold flex items-center justify-center rounded-full text-white"
+                    style={{ background: C.green }}
+                  >
                     {unreadCount}
                   </span>
                 )}
@@ -396,30 +485,43 @@ export default function Header({
             )}
             <button
               onClick={() => setShowMobileMenu(true)}
-              className="p-2.5 text-zinc-400 hover:text-gold transition-colors bg-dark-card rounded-xl border border-dark-border"
+              className="p-2.5 rounded-xl transition-colors"
+              style={{
+                border: `1px solid ${C.border}`,
+                background: C.bgCard,
+                color: C.text2,
+              }}
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
           </div>
         </div>
 
         {/* ── მობილური საძიებო ── */}
         <div className="lg:hidden px-4 pb-3">
-          <div className="flex items-center bg-dark-card rounded-xl border border-dark-border p-1">
+          <div
+            className="flex items-center rounded-xl p-1"
+            style={{ background: C.bgCard, border: `1px solid ${C.border}` }}
+          >
             <SearchToggle small />
             <input
               type="text"
               placeholder={
                 searchType === "want" ? "სახელი..." : "გასაცვლელი..."
               }
-              className="flex-1 bg-transparent px-2 text-sm text-white outline-none placeholder:text-zinc-600 min-w-0"
+              className="flex-1 bg-transparent px-2 text-sm outline-none min-w-0"
+              style={{
+                color: C.text,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <button
               onClick={handleSearch}
-              className="p-2 shrink-0 text-zinc-400 hover:text-gold transition-colors"
+              className="p-2 shrink-0 transition-colors"
+              style={{ color: C.text3 }}
             >
               <Search size={16} />
             </button>
@@ -436,46 +538,75 @@ export default function Header({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowMobileMenu(false)}
-              className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[70] lg:hidden"
+              style={{
+                background: "rgba(0,0,0,0.4)",
+                backdropFilter: "blur(4px)",
+              }}
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
-              className="fixed top-0 right-0 h-full w-[80vw] max-w-xs bg-dark-card border-l border-dark-border z-[80] flex flex-col lg:hidden"
+              className="fixed top-0 right-0 h-full w-[80vw] max-w-xs z-[80] flex flex-col lg:hidden"
+              style={{ background: C.bg, borderLeft: `1px solid ${C.border}` }}
             >
-              <div className="flex items-center justify-between px-5 py-5 border-b border-dark-border shrink-0">
-                <span className="text-base font-black text-white">
-                  GAMITS<span className="text-gold">VALE</span>.GE
+              {/* Drawer header */}
+              <div
+                className="flex items-center justify-between px-5 py-4 shrink-0"
+                style={{ borderBottom: `1px solid ${C.border}` }}
+              >
+                <span
+                  className="text-[16px] font-bold"
+                  style={{ color: C.text }}
+                >
+                  GAMITS<span style={{ color: C.green }}>VALE</span>.GE
                 </span>
                 <button
                   onClick={() => setShowMobileMenu(false)}
-                  className="p-2 text-zinc-500 hover:text-white rounded-xl transition-colors"
+                  className="p-2 rounded-xl transition-colors"
+                  style={{ color: C.text3 }}
                 >
                   <X size={20} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-1">
+
+              {/* Drawer content */}
+              <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                 {user && (
-                  <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl bg-dark border border-dark-border">
+                  <div
+                    className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl"
+                    style={{
+                      background: C.bgCard,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
                     <img
                       src={
                         user.avatar || "https://www.gravatar.com/avatar?d=mp"
                       }
-                      className="w-10 h-10 rounded-xl object-cover border border-dark-border"
+                      className="w-10 h-10 rounded-xl object-cover"
+                      style={{ border: `1px solid ${C.border}` }}
                       referrerPolicy="no-referrer"
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-black text-white truncate">
+                      <p
+                        className="text-sm font-bold truncate"
+                        style={{ color: C.text }}
+                      >
                         {user.name}
                       </p>
-                      <p className="text-[10px] text-zinc-500 truncate">
+                      <p
+                        className="text-[11px] truncate"
+                        style={{ color: C.text3 }}
+                      >
                         {user.email}
                       </p>
                     </div>
                   </div>
                 )}
+
                 {[
                   { href: "/", label: "🏠 მთავარი" },
                   { href: "/rules", label: "📋 წესები" },
@@ -484,41 +615,47 @@ export default function Header({
                     key={link.href}
                     href={link.href}
                     onClick={() => setShowMobileMenu(false)}
-                    className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
+                    className="flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-all"
+                    style={{ color: C.text2, textDecoration: "none" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        C.greenLight;
+                      (e.currentTarget as HTMLElement).style.color = C.green;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        "transparent";
+                      (e.currentTarget as HTMLElement).style.color = C.text2;
+                    }}
                   >
                     {link.label}
                   </Link>
                 ))}
-                <div className="pt-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-3 pb-2">
-                    კატეგორიები
-                  </p>
-                  {CATEGORIES.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/category/${cat.id}`}
-                      onClick={() => setShowMobileMenu(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-gold hover:bg-gold/5 transition-all"
-                    >
-                      <span className="text-base">{cat.icon}</span>
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
               </div>
-              <div className="border-t border-dark-border px-3 py-4 space-y-2 shrink-0">
+
+              {/* Drawer footer */}
+              <div
+                className="px-3 py-4 space-y-2 shrink-0"
+                style={{ borderTop: `1px solid ${C.border}` }}
+              >
                 {user ? (
                   <>
                     <Link
                       href="/profile"
                       onClick={() => setShowMobileMenu(false)}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dark-border text-sm font-black text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium transition-all"
+                      style={{
+                        border: `1px solid ${C.border}`,
+                        color: C.text2,
+                        textDecoration: "none",
+                      }}
                     >
                       <User size={16} /> პროფილი
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-red-500/10 text-sm font-black text-red-500 hover:bg-red-500/20 transition-all"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium text-red-500 transition-all"
+                      style={{ background: "rgba(239,68,68,0.08)" }}
                     >
                       <LogOut size={16} /> გასვლა
                     </button>
@@ -530,7 +667,11 @@ export default function Header({
                         setShowAuthModal("login");
                         setShowMobileMenu(false);
                       }}
-                      className="w-full py-3 rounded-xl border border-dark-border text-sm font-black text-zinc-400 hover:text-gold hover:border-gold/30 transition-all"
+                      className="w-full py-3 rounded-xl text-sm font-medium transition-all"
+                      style={{
+                        border: `1px solid ${C.border}`,
+                        color: C.text2,
+                      }}
                     >
                       შესვლა
                     </button>
@@ -539,9 +680,10 @@ export default function Header({
                         setShowAuthModal("register");
                         setShowMobileMenu(false);
                       }}
-                      className="w-full py-3 rounded-xl bg-gold text-dark text-sm font-black hover:bg-gold-hover transition-all"
+                      className="w-full py-3 rounded-xl text-white text-sm font-semibold transition-all"
+                      style={{ background: C.green }}
                     >
-                      რეგისტრაცია
+                      განცხადება
                     </button>
                   </>
                 )}
@@ -554,7 +696,7 @@ export default function Header({
       {/* შეტყობინებები მობილეზე */}
       <AnimatePresence>
         {showNotifications && (
-          <div className="fixed inset-0 z-[70] flex items-start justify-end p-4 pt-24 lg:hidden">
+          <div className="fixed inset-0 z-[70] flex items-start justify-end p-4 pt-20 lg:hidden">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -605,40 +747,52 @@ function NotificationDropdown({
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      className="absolute top-full right-0 mt-4 w-96 bg-dark-card border border-dark-border rounded-3xl shadow-2xl p-6 z-[60]"
+      className="absolute top-full right-0 mt-3 w-96 rounded-2xl shadow-xl p-5 z-[60]"
+      style={{ background: C.bg, border: `1px solid ${C.border}` }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+      <div className="flex items-center justify-between mb-5">
+        <h4
+          className="text-[11px] font-bold uppercase tracking-widest"
+          style={{ color: C.text3 }}
+        >
           შეტყობინებები
         </h4>
-        <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">
+        <span
+          className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+          style={{ background: C.greenLight, color: C.green }}
+        >
           ახალი
         </span>
       </div>
-      <div className="space-y-4 max-h-96 overflow-y-auto no-scrollbar">
+      <div className="space-y-3 max-h-96 overflow-y-auto">
         {notifications.length === 0 && (
-          <p className="text-xs text-zinc-500 text-center py-4">
+          <p className="text-xs text-center py-4" style={{ color: C.text3 }}>
             შეტყობინება არ არის
           </p>
         )}
         {notifications.map((n) => (
           <div
             key={n._id}
-            className="p-4 rounded-2xl bg-dark/40 border border-dark-border hover:border-gold/30 transition-all"
+            className="p-4 rounded-xl transition-all"
+            style={{ background: C.bgCard, border: `1px solid ${C.border}` }}
           >
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <img
                 src={
                   n.offer?.sender?.avatar ||
                   "https://www.gravatar.com/avatar?d=mp"
                 }
-                className="w-10 h-10 rounded-full border border-dark-border"
+                className="w-9 h-9 rounded-full"
+                style={{ border: `1px solid ${C.border}` }}
               />
               <div className="flex-1">
-                <p className="text-xs font-bold text-white mb-1">
+                <p className="text-xs font-bold mb-1" style={{ color: C.text }}>
                   {n.offer?.sender?.name || "მომხმარებელი"}
                 </p>
-                <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-3">
+                <p
+                  className="text-[11px] line-clamp-2 leading-relaxed mb-3"
+                  style={{ color: C.text2 }}
+                >
                   {n.type === "NEW_OFFER"
                     ? `შემოგთავაზათ: ${n.offer?.description}`
                     : "თქვენი შეთავაზება განახლდა"}
@@ -647,19 +801,26 @@ function NotificationDropdown({
                   <div className="flex gap-2">
                     <button
                       onClick={() => onAction(n.offer._id, "ACCEPTED")}
-                      className="flex-1 py-2 bg-green-600/20 text-green-500 text-[9px] font-black rounded-lg hover:bg-green-600 hover:text-white transition-all border border-green-600/30"
+                      className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all text-white"
+                      style={{ background: "#16a34a" }}
                     >
                       თანხმობა
                     </button>
                     <button
                       onClick={() => onAction(n.offer._id, "THINKING")}
-                      className="flex-1 py-2 bg-zinc-800 text-zinc-400 text-[9px] font-black rounded-lg hover:bg-zinc-700 transition-all border border-zinc-700"
+                      className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all"
+                      style={{
+                        background: C.bgCard,
+                        border: `1px solid ${C.border}`,
+                        color: C.text2,
+                      }}
                     >
                       დაფიქრება
                     </button>
                     <button
                       onClick={() => onAction(n.offer._id, "DECLINED")}
-                      className="flex-1 py-2 bg-red-600/20 text-red-500 text-[9px] font-black rounded-lg hover:bg-red-600 hover:text-white transition-all border border-red-600/30"
+                      className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all text-red-500"
+                      style={{ background: "rgba(239,68,68,0.08)" }}
                     >
                       უარი
                     </button>
@@ -673,9 +834,14 @@ function NotificationDropdown({
       <Link
         href="/offers"
         onClick={onClose}
-        className="block w-full mt-6 py-3 text-[10px] font-black uppercase tracking-widest text-gold hover:text-white transition-colors border-t border-dark-border text-center"
+        className="block w-full mt-5 py-2.5 text-[11px] font-semibold text-center transition-colors"
+        style={{
+          borderTop: `1px solid ${C.border}`,
+          color: C.green,
+          textDecoration: "none",
+        }}
       >
-        ყველას ნახვა
+        ყველას ნახვა →
       </Link>
     </motion.div>
   );
@@ -707,8 +873,15 @@ function AuthModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const inp =
-    "w-full px-4 py-3 bg-dark border border-dark-border rounded-xl outline-none focus:border-gold transition-colors text-sm text-white placeholder:text-zinc-600";
+  const inp = cn(
+    "w-full px-4 py-3 rounded-xl outline-none text-sm transition-colors",
+  );
+  const inpStyle = {
+    background: C.bgCard,
+    border: `1px solid ${C.border}`,
+    color: C.text,
+    fontFamily: "'Space Grotesk', sans-serif",
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -779,6 +952,8 @@ function AuthModal({
     window.location.href = "/api/auth/facebook";
   };
 
+  const labelCls = "text-[10px] font-bold uppercase tracking-widest ml-1";
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <motion.div
@@ -786,22 +961,28 @@ function AuthModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 backdrop-blur-sm bg-black/50"
+        className="absolute inset-0"
+        style={{ backdropFilter: "blur(4px)", background: "rgba(0,0,0,0.3)" }}
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="relative w-full max-w-md bg-dark-card border border-dark-border rounded-3xl shadow-2xl z-10 max-h-[90vh] overflow-y-auto no-scrollbar"
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative w-full max-w-md rounded-2xl shadow-2xl z-10 max-h-[90vh] overflow-y-auto"
+        style={{ background: C.bg, border: `1px solid ${C.border}` }}
       >
         <div className="p-8">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 text-zinc-500 hover:text-white rounded-full transition-colors"
+            className="absolute top-5 right-5 p-2 rounded-full transition-colors"
+            style={{ color: C.text3 }}
           >
-            <X size={24} />
+            <X size={22} />
           </button>
-          <h2 className="text-2xl font-black mb-6 text-center text-white">
+          <h2
+            className="text-2xl font-bold mb-6 text-center"
+            style={{ color: C.text, fontFamily: "'Space Grotesk', sans-serif" }}
+          >
             {step === "forgot"
               ? "პაროლის აღდგენა"
               : step === "reset"
@@ -819,7 +1000,7 @@ function AuthModal({
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                    <label className={labelCls} style={{ color: C.text3 }}>
                       სახელი *
                     </label>
                     <input
@@ -827,6 +1008,7 @@ function AuthModal({
                       type="text"
                       placeholder="გიორგი"
                       className={inp}
+                      style={inpStyle}
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -834,13 +1016,14 @@ function AuthModal({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                    <label className={labelCls} style={{ color: C.text3 }}>
                       გვარი
                     </label>
                     <input
                       type="text"
                       placeholder="მამულაშვილი"
                       className={inp}
+                      style={inpStyle}
                       value={formData.lastName}
                       onChange={(e) =>
                         setFormData({ ...formData, lastName: e.target.value })
@@ -849,7 +1032,7 @@ function AuthModal({
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  <label className={labelCls} style={{ color: C.text3 }}>
                     მეილი *
                   </label>
                   <input
@@ -857,6 +1040,7 @@ function AuthModal({
                     type="email"
                     placeholder="email@gmail.com"
                     className={inp}
+                    style={inpStyle}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -864,7 +1048,7 @@ function AuthModal({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  <label className={labelCls} style={{ color: C.text3 }}>
                     ტელეფონი *
                   </label>
                   <input
@@ -872,6 +1056,7 @@ function AuthModal({
                     type="tel"
                     placeholder="+995 5XX XXX XXX"
                     className={inp}
+                    style={inpStyle}
                     value={formData.phone}
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
@@ -879,7 +1064,7 @@ function AuthModal({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  <label className={labelCls} style={{ color: C.text3 }}>
                     პაროლი *
                   </label>
                   <input
@@ -888,6 +1073,7 @@ function AuthModal({
                     minLength={6}
                     placeholder="მინიმუმ 6 სიმბოლო"
                     className={inp}
+                    style={inpStyle}
                     value={formData.password}
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
@@ -895,18 +1081,22 @@ function AuthModal({
                   />
                 </div>
                 <div className="pt-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-3">
+                  <p
+                    className="text-[10px] font-bold uppercase tracking-widest mb-3"
+                    style={{ color: C.text3 }}
+                  >
                     სოციალური ქსელები (არასავალდებულო)
                   </p>
                   <div className="space-y-3">
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
                         📸
                       </span>
                       <input
                         type="text"
                         placeholder="Instagram username"
                         className={`${inp} pl-10`}
+                        style={inpStyle}
                         value={formData.instagram}
                         onChange={(e) =>
                           setFormData({
@@ -917,13 +1107,14 @@ function AuthModal({
                       />
                     </div>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
                         🔵
                       </span>
                       <input
                         type="text"
                         placeholder="Facebook profile URL"
                         className={`${inp} pl-10`}
+                        style={inpStyle}
                         value={formData.facebook}
                         onChange={(e) =>
                           setFormData({ ...formData, facebook: e.target.value })
@@ -939,7 +1130,7 @@ function AuthModal({
             {type === "login" && (step === "form" || step === "forgot") && (
               <>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  <label className={labelCls} style={{ color: C.text3 }}>
                     მეილი
                   </label>
                   <input
@@ -947,6 +1138,7 @@ function AuthModal({
                     type="email"
                     placeholder="email@gmail.com"
                     className={inp}
+                    style={inpStyle}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -956,13 +1148,14 @@ function AuthModal({
                 {step === "form" && (
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center ml-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                      <label className={labelCls} style={{ color: C.text3 }}>
                         პაროლი
                       </label>
                       <button
                         type="button"
                         onClick={() => setStep("forgot")}
-                        className="text-[10px] font-bold text-gold hover:underline"
+                        className="text-[10px] font-bold transition-colors"
+                        style={{ color: C.green }}
                       >
                         დაგავიწყდათ?
                       </button>
@@ -972,6 +1165,7 @@ function AuthModal({
                       type="password"
                       minLength={6}
                       className={inp}
+                      style={inpStyle}
                       value={formData.password}
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
@@ -986,7 +1180,7 @@ function AuthModal({
             {step === "reset" && (
               <>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  <label className={labelCls} style={{ color: C.text3 }}>
                     აღდგენის კოდი
                   </label>
                   <input
@@ -994,6 +1188,7 @@ function AuthModal({
                     type="text"
                     maxLength={6}
                     className={`${inp} text-center text-2xl tracking-[10px]`}
+                    style={inpStyle}
                     value={formData.code}
                     onChange={(e) =>
                       setFormData({ ...formData, code: e.target.value })
@@ -1001,7 +1196,7 @@ function AuthModal({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  <label className={labelCls} style={{ color: C.text3 }}>
                     ახალი პაროლი
                   </label>
                   <input
@@ -1009,6 +1204,7 @@ function AuthModal({
                     type="password"
                     minLength={6}
                     className={inp}
+                    style={inpStyle}
                     value={formData.newPassword}
                     onChange={(e) =>
                       setFormData({ ...formData, newPassword: e.target.value })
@@ -1021,12 +1217,17 @@ function AuthModal({
             {/* ── VERIFY ── */}
             {step === "verify" && (
               <div className="space-y-1.5">
-                <p className="text-sm text-zinc-400 text-center mb-4">
+                <p
+                  className="text-sm text-center mb-4"
+                  style={{ color: C.text2 }}
+                >
                   კოდი გამოგზავნილია{" "}
-                  <span className="text-gold font-bold">{formData.email}</span>
+                  <span className="font-bold" style={{ color: C.green }}>
+                    {formData.email}
+                  </span>
                   -ზე
                 </p>
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                <label className={labelCls} style={{ color: C.text3 }}>
                   6-ნიშნა კოდი
                 </label>
                 <input
@@ -1035,6 +1236,7 @@ function AuthModal({
                   maxLength={6}
                   placeholder="000000"
                   className={`${inp} text-center text-2xl tracking-[10px]`}
+                  style={inpStyle}
                   value={formData.code}
                   onChange={(e) =>
                     setFormData({ ...formData, code: e.target.value })
@@ -1044,7 +1246,10 @@ function AuthModal({
             )}
 
             {error && (
-              <p className="text-xs text-red-400 text-center font-bold bg-red-500/10 py-2 px-3 rounded-lg">
+              <p
+                className="text-xs text-center font-semibold py-2 px-3 rounded-lg text-red-600"
+                style={{ background: "rgba(239,68,68,0.08)" }}
+              >
                 {error}
               </p>
             )}
@@ -1052,7 +1257,19 @@ function AuthModal({
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gold text-dark py-3.5 rounded-xl text-sm font-black hover:brightness-110 transition-all disabled:opacity-50 mt-2 uppercase tracking-widest"
+              className="w-full text-white py-3.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 mt-2"
+              style={{
+                background: C.green,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+              onMouseEnter={(e) =>
+                !loading &&
+                ((e.currentTarget as HTMLElement).style.background =
+                  C.greenDark)
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = C.green)
+              }
             >
               {loading
                 ? "გთხოვთ დაელოდოთ..."
@@ -1071,7 +1288,8 @@ function AuthModal({
               <button
                 type="button"
                 onClick={() => setStep("form")}
-                className="w-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors text-center mt-2"
+                className="w-full text-[11px] font-semibold text-center mt-2 transition-colors"
+                style={{ color: C.text3 }}
               >
                 ← უკან
               </button>
@@ -1083,10 +1301,18 @@ function AuthModal({
             <>
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-dark-border" />
+                  <div
+                    className="w-full"
+                    style={{ borderTop: `1px solid ${C.border}` }}
+                  />
                 </div>
-                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-                  <span className="bg-dark-card px-4 text-zinc-500">ან</span>
+                <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
+                  <span
+                    className="px-4"
+                    style={{ background: C.bg, color: C.text3 }}
+                  >
+                    ან
+                  </span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -1096,7 +1322,12 @@ function AuthModal({
                     loginWithGoogle();
                     onClose();
                   }}
-                  className="w-full flex items-center justify-center gap-3 py-3 border border-dark-border bg-dark rounded-xl text-sm font-bold text-white hover:border-gold/30 transition-all"
+                  className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    color: C.text,
+                    background: C.bgCard,
+                  }}
                 >
                   <img
                     src="https://www.google.com/favicon.ico"
@@ -1108,7 +1339,11 @@ function AuthModal({
                 <button
                   type="button"
                   onClick={handleFacebookLogin}
-                  className="w-full flex items-center justify-center gap-3 py-3 border border-dark-border bg-[#1877F2]/10 rounded-xl text-sm font-bold text-[#1877F2] hover:bg-[#1877F2]/20 hover:border-[#1877F2]/30 transition-all"
+                  className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-all text-[#1877F2]"
+                  style={{
+                    border: "1px solid rgba(24,119,242,0.2)",
+                    background: "rgba(24,119,242,0.05)",
+                  }}
                 >
                   <svg
                     width="16"

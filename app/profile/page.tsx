@@ -38,9 +38,20 @@ import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import Link from "next/link";
 
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
-}
+const C = {
+  bg: "#ffffff",
+  bg2: "#f8faf8",
+  bg3: "#f0f4f0",
+  green: "#1a8a4a",
+  greenLight: "#e6f5ec",
+  greenDark: "#125e33",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+  border: "#e8ebe8",
+  gold: "#c8820a",
+  goldLight: "#fff8e6",
+};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -49,9 +60,9 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<
     "offers" | "listings" | "saved" | "settings" | "admin_users"
   >("offers");
-  const [offerFilter, setOfferFilter] = useState<
-    "PENDING" | "ACCEPTED" | "DECLINED"
-  >("PENDING");
+  const [offerFilter, setOfferFilter] = useState<"PENDING" | "ACCEPTED">(
+    "PENDING",
+  );
   const [offers, setOffers] = useState<any[]>([]);
   const [listings, setListings] = useState<any[]>([]);
   const [savedListings, setSavedListings] = useState<any[]>([]);
@@ -73,9 +84,7 @@ export default function ProfilePage() {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user) {
-      fetchData();
-    }
+    if (user) fetchData();
     if (user?.role === "ADMIN") {
       fetch("/api/settings")
         .then((r) => r.json())
@@ -112,7 +121,7 @@ export default function ProfilePage() {
         const res = await fetch("/api/admin/users");
         setAdminUsers(await res.json());
       }
-    } catch (err) {}
+    } catch {}
     setLoading(false);
   };
 
@@ -196,7 +205,7 @@ export default function ProfilePage() {
           particleCount: 150,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ["#D4AF37", "#000000", "#FFFFFF"],
+          colors: [C.green, "#ffffff", C.gold],
         });
       }
       fetchData();
@@ -205,35 +214,80 @@ export default function ProfilePage() {
 
   if (!user)
     return (
-      <div className="p-20 text-center font-bold">
-        გთხოვთ გაიაროთ ავტორიზაცია
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: C.bg }}
+      >
+        <p className="text-sm font-medium" style={{ color: C.text3 }}>
+          გთხოვთ გაიაროთ ავტორიზაცია
+        </p>
       </div>
     );
 
-  // დღიური ლიმიტი — მხოლოდ NORMAL პოსტები ითვლება
   const dailyLimit = 3;
 
+  // ── helper styles ──
+  const inp = {
+    background: C.bg2,
+    border: `1px solid ${C.border}`,
+    color: C.text,
+    fontFamily: "'Space Grotesk', sans-serif",
+    outline: "none",
+    width: "100%",
+    padding: "10px 16px",
+    borderRadius: 10,
+    fontSize: 14,
+  } as React.CSSProperties;
+
+  const navBtnBase =
+    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all cursor-pointer w-full text-left";
+
   return (
-    <div className="min-h-screen bg-dark text-white">
+    <div
+      className="min-h-screen"
+      style={{
+        background: C.bg,
+        color: C.text,
+        fontFamily: "'Space Grotesk', sans-serif",
+      }}
+    >
       <Header onAddListing={() => setShowAddModal(true)} />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center gap-2 text-xs text-zinc-500">
-          <Link href="/" className="hover:text-white transition-colors">
+        {/* breadcrumb */}
+        <div
+          className="mb-6 flex items-center gap-2 text-xs"
+          style={{ color: C.text3 }}
+        >
+          <Link
+            href="/"
+            style={{ color: C.text3, textDecoration: "none" }}
+            className="hover:underline"
+          >
             მთავარი
           </Link>
           <ChevronRight size={12} />
-          <span className="text-white font-medium">პროფილი</span>
+          <span style={{ color: C.text, fontWeight: 600 }}>პროფილი</span>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-[320px_1fr]">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-[300px_1fr]">
           {/* ════ SIDEBAR ════ */}
           <div className="space-y-4">
             {/* Profile Card */}
-            <div className="rounded-xl border border-dark-border bg-dark-card p-5">
+            <div
+              className="rounded-xl p-5"
+              style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            >
               <div className="mb-4 flex items-center gap-4">
                 <div className="relative group">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-dark text-2xl font-bold text-gold overflow-hidden border-2 border-dark-border group-hover:border-gold/50 transition-colors">
+                  <div
+                    className="flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold overflow-hidden"
+                    style={{
+                      border: `2px solid ${C.border}`,
+                      background: C.bg3,
+                      color: C.green,
+                    }}
+                  >
                     {user.avatar ? (
                       <img
                         src={user.avatar}
@@ -246,9 +300,14 @@ export default function ProfilePage() {
                   </div>
                   <button
                     onClick={() => avatarInputRef.current?.click()}
-                    className="absolute -bottom-1 -right-1 p-1.5 bg-gold text-dark rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -bottom-1 -right-1 p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{
+                      background: C.green,
+                      color: "#fff",
+                      cursor: "pointer",
+                    }}
                   >
-                    <Camera size={12} />
+                    <Camera size={11} />
                   </button>
                   <input
                     type="file"
@@ -259,10 +318,13 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-base font-bold text-white">
+                  <h2
+                    className="truncate text-base font-bold"
+                    style={{ color: C.text }}
+                  >
                     {user.name}
                   </h2>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs" style={{ color: C.text3 }}>
                     @
                     {user.username ||
                       user.name?.split(" ")[0]?.toLowerCase() ||
@@ -271,171 +333,215 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2.5 text-sm text-zinc-400">
-                  <Mail className="h-4 w-4 shrink-0 text-gold/60" />
-                  <span className="truncate">{user.email}</span>
-                </div>
-                {user.phone && (
-                  <div className="flex items-center gap-2.5 text-sm text-zinc-400">
-                    <Phone className="h-4 w-4 shrink-0 text-gold/60" />
-                    <span>{user.phone}</span>
-                  </div>
-                )}
-                {user.instagram && (
-                  <div className="flex items-center gap-2.5 text-sm text-zinc-400">
-                    <Instagram className="h-4 w-4 shrink-0 text-gold/60" />
-                    <span>@{user.instagram.replace("@", "")}</span>
-                  </div>
-                )}
-                {user.facebook && (
-                  <div className="flex items-center gap-2.5 text-sm text-zinc-400">
-                    <Facebook className="h-4 w-4 shrink-0 text-gold/60" />
-                    <span>{user.facebook.split("/").pop()}</span>
-                  </div>
-                )}
+              <div className="space-y-2">
+                {[
+                  { icon: <Mail size={14} />, val: user.email },
+                  user.phone && { icon: <Phone size={14} />, val: user.phone },
+                  user.instagram && {
+                    icon: <Instagram size={14} />,
+                    val: `@${user.instagram.replace("@", "")}`,
+                  },
+                  user.facebook && {
+                    icon: <Facebook size={14} />,
+                    val: user.facebook.split("/").pop(),
+                  },
+                ]
+                  .filter(Boolean)
+                  .map((item: any, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2.5 text-sm"
+                      style={{ color: C.text2 }}
+                    >
+                      <span style={{ color: C.green, opacity: 0.7 }}>
+                        {item.icon}
+                      </span>
+                      <span className="truncate text-xs">{item.val}</span>
+                    </div>
+                  ))}
               </div>
 
               <button
                 onClick={() => setActiveTab("settings")}
-                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dark-border py-2 text-xs font-medium text-zinc-400 hover:border-gold hover:text-gold transition-colors"
+                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all"
+                style={{
+                  border: `1px solid ${C.border}`,
+                  color: C.text2,
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
               >
-                <PenLine className="h-3.5 w-3.5" /> პროფილის რედაქტირება
+                <PenLine size={13} /> პროფილის რედაქტირება
               </button>
             </div>
 
-            {/* Balance Card */}
-            <div className="rounded-xl border border-dark-border bg-dark-card p-5">
+            {/* Balance */}
+            <div
+              className="rounded-xl p-5"
+              style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            >
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-gold" />
-                  <span className="text-sm font-semibold text-white">
+                  <Wallet size={15} style={{ color: C.gold }} />
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: C.text }}
+                  >
                     ბალანსი
                   </span>
                 </div>
-                <span className="text-lg font-bold text-gold">
+                <span className="text-lg font-bold" style={{ color: C.gold }}>
                   {user.balance} ₾
                 </span>
               </div>
-              <div
+              <button
                 onClick={() => setShowPaymentModal(true)}
-                className="w-full rounded-lg bg-gold text-dark py-2.5 text-sm font-semibold hover:bg-gold-hover transition-all cursor-pointer text-center"
+                className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-all"
+                style={{
+                  background: C.gold,
+                  cursor: "pointer",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
               >
                 შევსება
-              </div>
+              </button>
             </div>
 
-            {/* Navigation */}
-            <div className="flex flex-col gap-1 rounded-xl border border-dark-border bg-dark-card p-2">
+            {/* Nav */}
+            <div
+              className="flex flex-col gap-1 rounded-xl p-2"
+              style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            >
               {[
                 {
                   id: "offers",
-                  icon: <Bell className="h-4 w-4" />,
+                  icon: <Bell size={15} />,
                   label: "შეთავაზებები",
                   badge: offers.filter((o) => o.status === "PENDING").length,
                 },
                 {
                   id: "listings",
-                  icon: <Package className="h-4 w-4" />,
+                  icon: <Package size={15} />,
                   label: "ჩემი განცხადებები",
                 },
                 {
                   id: "saved",
-                  icon: <Bookmark className="h-4 w-4" />,
+                  icon: <Bookmark size={15} />,
                   label: "შენახული",
-                  badge: savedListings.length,
                 },
                 {
                   id: "settings",
-                  icon: <Shield className="h-4 w-4" />,
+                  icon: <Shield size={15} />,
                   label: "პარამეტრები",
                 },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
-                    activeTab === tab.id
-                      ? "bg-gold/10 font-semibold text-gold"
-                      : "text-zinc-400 hover:bg-dark hover:text-white",
-                  )}
+                  className={navBtnBase}
+                  style={{
+                    background:
+                      activeTab === tab.id ? C.greenLight : "transparent",
+                    color: activeTab === tab.id ? C.green : C.text2,
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: activeTab === tab.id ? 600 : 400,
+                  }}
                 >
                   {tab.icon}
-                  <span className="flex-1 text-left">{tab.label}</span>
+                  <span className="flex-1">{tab.label}</span>
                   {tab.badge ? (
-                    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gold/20 px-1.5 text-[10px] font-bold text-gold">
+                    <span
+                      className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+                      style={{ background: C.greenLight, color: C.green }}
+                    >
                       {tab.badge}
                     </span>
                   ) : null}
-                  <ChevronRight className="h-3.5 w-3.5 text-zinc-600" />
+                  <ChevronRight size={13} style={{ color: C.text3 }} />
                 </button>
               ))}
 
               {user.role === "ADMIN" && (
                 <button
                   onClick={() => setActiveTab("admin_users")}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
-                    activeTab === "admin_users"
-                      ? "bg-gold/10 font-semibold text-gold"
-                      : "text-zinc-400 hover:bg-dark hover:text-white",
-                  )}
+                  className={navBtnBase}
+                  style={{
+                    background:
+                      activeTab === "admin_users"
+                        ? C.greenLight
+                        : "transparent",
+                    color: activeTab === "admin_users" ? C.green : C.text2,
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: activeTab === "admin_users" ? 600 : 400,
+                  }}
                 >
-                  <UserIcon className="h-4 w-4" />
-                  <span className="flex-1 text-left">ადმინ პანელი</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-zinc-600" />
+                  <UserIcon size={15} />
+                  <span className="flex-1">ადმინ პანელი</span>
+                  <ChevronRight size={13} style={{ color: C.text3 }} />
                 </button>
               )}
 
-              <div className="h-px bg-dark-border my-1 mx-2" />
+              <div
+                className="h-px mx-2 my-1"
+                style={{ background: C.border }}
+              />
 
               <button
                 onClick={async () => {
                   await logout();
                 }}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-all"
+                className={navBtnBase}
+                style={{
+                  color: "#ef4444",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
               >
-                <LogOut className="h-4 w-4" />
-                <span className="flex-1 text-left">გასვლა</span>
+                <LogOut size={15} />
+                <span className="flex-1">გასვლა</span>
               </button>
             </div>
 
-            {/* Daily Limit Card — მხოლოდ NORMAL პოსტები */}
-            <div className="rounded-xl border border-dark-border bg-dark-card p-5">
-              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
+            {/* Daily limit */}
+            <div
+              className="rounded-xl p-5"
+              style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            >
+              <div
+                className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest mb-1"
+                style={{ color: C.text3 }}
+              >
                 <span>დღიური ლიმიტი</span>
                 <span
-                  className={cn(
-                    "font-black",
-                    user.dailyPostCount >= dailyLimit
-                      ? "text-red-400"
-                      : "text-white",
-                  )}
+                  style={{
+                    color:
+                      user.dailyPostCount >= dailyLimit ? "#ef4444" : C.text,
+                  }}
                 >
                   {user.dailyPostCount}/{dailyLimit}
                 </span>
               </div>
-              <p className="text-[9px] text-zinc-600 mb-3">
+              <p className="text-[9px] mb-3" style={{ color: C.text3 }}>
                 მხოლოდ უფასო განცხადებები
               </p>
-              <div className="w-full h-1.5 bg-dark rounded-full overflow-hidden">
+              <div
+                className="w-full h-1.5 rounded-full overflow-hidden"
+                style={{ background: C.bg3 }}
+              >
                 <div
-                  className={cn(
-                    "h-full transition-all duration-500",
-                    user.dailyPostCount >= dailyLimit
-                      ? "bg-red-500/70"
-                      : user.dailyPostCount === 2
-                        ? "bg-yellow-500/70"
-                        : "bg-gold",
-                  )}
+                  className="h-full transition-all duration-500 rounded-full"
                   style={{
                     width: `${Math.min((user.dailyPostCount / dailyLimit) * 100, 100)}%`,
+                    background:
+                      user.dailyPostCount >= dailyLimit ? "#ef4444" : C.green,
                   }}
                 />
               </div>
               {user.dailyPostCount >= dailyLimit && (
-                <p className="text-[10px] text-red-400 font-bold mt-2 text-center">
+                <p
+                  className="text-[10px] font-bold mt-2 text-center"
+                  style={{ color: "#ef4444" }}
+                >
                   დღიური ლიმიტი ამოწურულია
                 </p>
               )}
@@ -448,19 +554,21 @@ export default function ProfilePage() {
               {/* ── OFFERS ── */}
               {activeTab === "offers" && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
                   key="offers"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  <h3 className="text-lg font-bold text-white">შეთავაზებები</h3>
+                  <h3 className="text-lg font-bold" style={{ color: C.text }}>
+                    შეთავაზებები
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {[
                       {
                         id: "PENDING",
                         label: "მოლოდინში",
-                        icon: <Clock className="h-4 w-4" />,
+                        icon: <Clock size={13} />,
                         count: offers.filter(
                           (o) =>
                             o.status === "PENDING" || o.status === "THINKING",
@@ -469,7 +577,7 @@ export default function ProfilePage() {
                       {
                         id: "ACCEPTED",
                         label: "დათანხმებული",
-                        icon: <CircleCheck className="h-4 w-4" />,
+                        icon: <CircleCheck size={13} />,
                         count: offers.filter((o) => o.status === "ACCEPTED")
                           .length,
                       },
@@ -477,21 +585,25 @@ export default function ProfilePage() {
                       <button
                         key={f.id}
                         onClick={() => setOfferFilter(f.id as any)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all",
-                          offerFilter === f.id
-                            ? "bg-gold text-dark shadow-md"
-                            : "text-zinc-400 hover:bg-dark-card hover:text-white",
-                        )}
+                        className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+                        style={{
+                          background: offerFilter === f.id ? C.green : C.bg2,
+                          color: offerFilter === f.id ? "#fff" : C.text2,
+                          border: `1px solid ${offerFilter === f.id ? C.green : C.border}`,
+                          cursor: "pointer",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}
                       >
                         {f.icon} {f.label}
                         <span
-                          className={cn(
-                            "ml-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
-                            offerFilter === f.id
-                              ? "bg-dark/20 text-dark"
-                              : "bg-dark-card text-zinc-400",
-                          )}
+                          className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+                          style={{
+                            background:
+                              offerFilter === f.id
+                                ? "rgba(255,255,255,0.25)"
+                                : C.bg3,
+                            color: offerFilter === f.id ? "#fff" : C.text3,
+                          }}
                         >
                           {f.count}
                         </span>
@@ -516,11 +628,22 @@ export default function ProfilePage() {
                         return (
                           <div
                             key={offer._id}
-                            className="rounded-xl border border-dark-border bg-dark-card p-4 hover:border-gold/30 transition-all"
+                            className="rounded-xl p-4 transition-all"
+                            style={{
+                              background: C.bg2,
+                              border: `1px solid ${C.border}`,
+                            }}
                           >
+                            {/* header */}
                             <div className="mb-3 flex items-start justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-dark text-lg overflow-hidden border border-dark-border">
+                                <div
+                                  className="flex h-10 w-10 items-center justify-center rounded-full text-base overflow-hidden shrink-0"
+                                  style={{
+                                    background: C.bg3,
+                                    border: `1px solid ${C.border}`,
+                                  }}
+                                >
                                   {otherParty?.avatar ? (
                                     <img
                                       src={otherParty.avatar}
@@ -532,22 +655,29 @@ export default function ProfilePage() {
                                   )}
                                 </div>
                                 <div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm font-semibold text-white">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p
+                                      className="text-sm font-semibold"
+                                      style={{ color: C.text }}
+                                    >
                                       {otherParty?.name || "უცნობი"}
                                     </p>
                                     <span
-                                      className={cn(
-                                        "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider",
-                                        isIncoming
-                                          ? "bg-blue-500/10 text-blue-500"
-                                          : "bg-purple-500/10 text-purple-500",
-                                      )}
+                                      className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+                                      style={{
+                                        background: isIncoming
+                                          ? C.greenLight
+                                          : C.bg3,
+                                        color: isIncoming ? C.green : C.text3,
+                                      }}
                                     >
                                       {isIncoming ? "შემოსული" : "გაგზავნილი"}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-zinc-500">
+                                  <p
+                                    className="text-xs"
+                                    style={{ color: C.text3 }}
+                                  >
                                     {new Date(
                                       offer.createdAt,
                                     ).toLocaleDateString("ka-GE")}
@@ -556,112 +686,129 @@ export default function ProfilePage() {
                               </div>
                               <Link
                                 href={`/listing/${offer.listing?._id}`}
-                                className="flex items-center gap-1.5 rounded-md bg-dark px-2 py-1 border border-dark-border hover:border-gold/30 transition-colors"
+                                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 shrink-0"
+                                style={{
+                                  background: C.bg3,
+                                  border: `1px solid ${C.border}`,
+                                  textDecoration: "none",
+                                }}
                               >
-                                <span className="text-base">📦</span>
-                                <span className="max-w-[120px] truncate text-xs text-white font-medium underline decoration-dotted underline-offset-2">
+                                <span className="text-sm">📦</span>
+                                <span
+                                  className="max-w-[120px] truncate text-xs font-medium"
+                                  style={{ color: C.text }}
+                                >
                                   {offer.listing?.title || "ნივთი"}
                                 </span>
                               </Link>
                             </div>
 
-                            <p className="mb-4 rounded-lg bg-dark/50 px-3 py-2 text-sm text-zinc-300 border border-dark-border/50">
+                            {/* desc */}
+                            <p
+                              className="mb-3 rounded-lg px-3 py-2.5 text-sm"
+                              style={{
+                                background: C.bg,
+                                border: `1px solid ${C.border}`,
+                                color: C.text2,
+                              }}
+                            >
                               {offer.description}
                             </p>
 
+                            {/* images */}
                             {offer.images?.length > 0 && (
-                              <div className="flex gap-2 mb-4">
+                              <div className="flex gap-2 mb-3">
                                 {offer.images.map((img: string, i: number) => (
                                   <img
                                     key={i}
                                     src={img}
-                                    className="w-16 h-16 rounded-lg object-cover border border-dark-border"
+                                    className="w-16 h-16 rounded-lg object-cover"
+                                    style={{ border: `1px solid ${C.border}` }}
                                     referrerPolicy="no-referrer"
                                   />
                                 ))}
                               </div>
                             )}
 
+                            {/* contact */}
                             {offer.status === "ACCEPTED" && (
-                              <div className="mb-4 rounded-lg bg-green-600/10 p-3 border border-green-600/20">
-                                <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-2">
+                              <div
+                                className="mb-3 rounded-lg p-3"
+                                style={{
+                                  background: C.greenLight,
+                                  border: `1px solid rgba(26,138,74,0.2)`,
+                                }}
+                              >
+                                <p
+                                  className="text-[10px] font-bold uppercase tracking-widest mb-2"
+                                  style={{ color: C.green }}
+                                >
                                   კონტაქტი
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                                   {[
                                     {
                                       key: `${offer._id}-email`,
-                                      icon: (
-                                        <Mail
-                                          size={12}
-                                          className="text-gold/60"
-                                        />
-                                      ),
+                                      icon: <Mail size={12} />,
                                       value: otherParty?.email,
                                     },
                                     {
                                       key: `${offer._id}-phone`,
-                                      icon: (
-                                        <Phone
-                                          size={12}
-                                          className="text-gold/60"
-                                        />
-                                      ),
+                                      icon: <Phone size={12} />,
                                       value: otherParty?.phone,
                                     },
                                     {
                                       key: `${offer._id}-facebook`,
-                                      icon: (
-                                        <Facebook
-                                          size={12}
-                                          className="text-gold/60"
-                                        />
-                                      ),
+                                      icon: <Facebook size={12} />,
                                       value: otherParty?.facebook,
                                     },
                                     {
                                       key: `${offer._id}-instagram`,
-                                      icon: (
-                                        <Instagram
-                                          size={12}
-                                          className="text-gold/60"
-                                        />
-                                      ),
+                                      icon: <Instagram size={12} />,
                                       value: otherParty?.instagram,
                                     },
                                   ]
-                                    .filter((item) => item.value)
+                                    .filter((i) => i.value)
                                     .map((item) => (
                                       <button
                                         key={item.key}
                                         onClick={() =>
                                           handleCopy(item.key, item.value)
                                         }
-                                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-green-600/20 active:bg-green-600/30 transition-all text-left w-full min-h-[44px]"
+                                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full min-h-[44px]"
+                                        style={{
+                                          background: "rgba(255,255,255,0.6)",
+                                          border: `1px solid rgba(26,138,74,0.15)`,
+                                          cursor: "pointer",
+                                        }}
                                       >
-                                        {item.icon}
-                                        <span className="text-xs text-white flex-1 truncate">
+                                        <span style={{ color: C.green }}>
+                                          {item.icon}
+                                        </span>
+                                        <span
+                                          className="text-xs flex-1 truncate"
+                                          style={{ color: C.text }}
+                                        >
                                           {item.value}
                                         </span>
-                                        <span className="shrink-0">
-                                          {copiedKey === item.key ? (
-                                            <Check
-                                              size={12}
-                                              className="text-green-400"
-                                            />
-                                          ) : (
-                                            <Copy
-                                              size={12}
-                                              className="text-zinc-500"
-                                            />
-                                          )}
-                                        </span>
+                                        {copiedKey === item.key ? (
+                                          <Check
+                                            size={12}
+                                            style={{ color: C.green }}
+                                          />
+                                        ) : (
+                                          <Copy
+                                            size={12}
+                                            style={{ color: C.text3 }}
+                                          />
+                                        )}
                                       </button>
                                     ))}
                                 </div>
                               </div>
                             )}
 
+                            {/* actions */}
                             {isIncoming &&
                               (offer.status === "PENDING" ||
                                 offer.status === "THINKING") && (
@@ -670,36 +817,56 @@ export default function ProfilePage() {
                                     onClick={() =>
                                       handleOfferAction(offer._id, "ACCEPTED")
                                     }
-                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-green-600/90 py-2 text-xs font-semibold text-white hover:bg-green-600 transition-all"
+                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-semibold text-white"
+                                    style={{
+                                      background: C.green,
+                                      cursor: "pointer",
+                                      fontFamily: "'Space Grotesk', sans-serif",
+                                    }}
                                   >
-                                    <CircleCheck className="h-3.5 w-3.5" />{" "}
-                                    თანხმობა
+                                    <CircleCheck size={13} /> თანხმობა
                                   </button>
                                   {offer.status === "PENDING" && (
                                     <button
                                       onClick={() =>
                                         handleOfferAction(offer._id, "THINKING")
                                       }
-                                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-dark-border py-2 text-xs font-medium text-zinc-400 hover:border-gold hover:text-gold transition-all"
+                                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-medium"
+                                      style={{
+                                        background: C.bg3,
+                                        border: `1px solid ${C.border}`,
+                                        color: C.text2,
+                                        cursor: "pointer",
+                                        fontFamily:
+                                          "'Space Grotesk', sans-serif",
+                                      }}
                                     >
-                                      <Clock className="h-3.5 w-3.5" />{" "}
-                                      დაფიქრება
+                                      <Clock size={13} /> დაფიქრება
                                     </button>
                                   )}
                                   <button
                                     onClick={() =>
                                       handleOfferAction(offer._id, "DECLINED")
                                     }
-                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-500/20 py-2 text-xs font-medium text-red-500 hover:bg-red-500/30 transition-all"
+                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-medium"
+                                    style={{
+                                      background: "rgba(239,68,68,0.08)",
+                                      color: "#ef4444",
+                                      cursor: "pointer",
+                                      fontFamily: "'Space Grotesk', sans-serif",
+                                    }}
                                   >
-                                    <CircleX className="h-3.5 w-3.5" /> უარყოფა
+                                    <CircleX size={13} /> უარყოფა
                                   </button>
                                 </div>
                               )}
                             {!isIncoming &&
                               (offer.status === "PENDING" ||
                                 offer.status === "THINKING") && (
-                                <div className="text-center py-2 text-xs text-zinc-500 italic bg-dark/30 rounded-lg">
+                                <div
+                                  className="text-center py-2 text-xs rounded-lg italic"
+                                  style={{ background: C.bg3, color: C.text3 }}
+                                >
                                   მოლოდინის რეჟიმში...
                                 </div>
                               )}
@@ -711,8 +878,17 @@ export default function ProfilePage() {
                         o.status === offerFilter ||
                         (offerFilter === "PENDING" && o.status === "THINKING"),
                     ).length === 0 && (
-                      <div className="text-center py-20 rounded-xl border border-dashed border-dark-border bg-dark-card/50">
-                        <p className="text-sm text-zinc-500 font-medium uppercase tracking-widest">
+                      <div
+                        className="text-center py-20 rounded-xl"
+                        style={{
+                          border: `1px dashed ${C.border}`,
+                          background: C.bg2,
+                        }}
+                      >
+                        <p
+                          className="text-sm font-medium uppercase tracking-widest"
+                          style={{ color: C.text3 }}
+                        >
                           შეთავაზებები არ არის
                         </p>
                       </div>
@@ -721,17 +897,17 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
-              {/* ── MY LISTINGS ── */}
+              {/* ── LISTINGS ── */}
               {activeTab === "listings" && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
                   key="listings"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold" style={{ color: C.text }}>
                       ჩემი განცხადებები
                     </h3>
                     <button
@@ -739,9 +915,14 @@ export default function ProfilePage() {
                         setEditingListing(null);
                         setShowAddModal(true);
                       }}
-                      className="flex items-center gap-2 rounded-lg bg-gold text-dark px-4 py-2 text-xs font-bold hover:bg-gold-hover transition-all"
+                      className="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold text-white transition-all"
+                      style={{
+                        background: C.green,
+                        cursor: "pointer",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}
                     >
-                      <Plus size={14} /> დამატება
+                      <Plus size={13} /> დამატება
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -763,8 +944,14 @@ export default function ProfilePage() {
                       />
                     ))}
                     {listings.length === 0 && (
-                      <div className="col-span-full text-center py-20 rounded-xl border border-dashed border-dark-border">
-                        <p className="text-sm text-zinc-500 font-medium uppercase tracking-widest">
+                      <div
+                        className="col-span-full text-center py-20 rounded-xl"
+                        style={{ border: `1px dashed ${C.border}` }}
+                      >
+                        <p
+                          className="text-sm font-medium uppercase tracking-widest"
+                          style={{ color: C.text3 }}
+                        >
                           განცხადებები არ არის
                         </p>
                       </div>
@@ -776,23 +963,27 @@ export default function ProfilePage() {
               {/* ── SAVED ── */}
               {activeTab === "saved" && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
                   key="saved"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold" style={{ color: C.text }}>
                     შენახული განცხადებები
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {savedListings.map((listing) => (
                       <div
                         key={listing._id}
-                        className="group relative rounded-xl border border-dark-border bg-dark-card overflow-hidden hover:border-gold/30 transition-all cursor-pointer"
+                        className="group relative rounded-xl overflow-hidden cursor-pointer transition-all"
+                        style={{
+                          background: C.bg2,
+                          border: `1px solid ${C.border}`,
+                        }}
                         onClick={() => router.push(`/listing/${listing._id}`)}
                       >
-                        <div className="aspect-video relative overflow-hidden bg-dark">
+                        <div className="aspect-video relative overflow-hidden">
                           <img
                             src={
                               listing.images[0] ||
@@ -811,26 +1002,42 @@ export default function ProfilePage() {
                                 );
                                 if (res.ok) fetchData();
                               }}
-                              className="p-2 bg-red-500/90 text-white rounded-lg hover:bg-red-500 transition-colors"
+                              className="p-2 rounded-lg text-white transition-colors"
+                              style={{
+                                background: "rgba(239,68,68,0.85)",
+                                cursor: "pointer",
+                              }}
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={13} />
                             </button>
                           </div>
                         </div>
-                        <div className="p-4">
-                          <h4 className="font-bold text-sm text-white mb-1 line-clamp-1">
+                        <div className="p-3">
+                          <h4
+                            className="font-bold text-sm mb-1 line-clamp-1"
+                            style={{ color: C.text }}
+                          >
                             {listing.title}
                           </h4>
-                          <div className="flex items-center gap-1.5 text-[10px] font-medium text-zinc-500 uppercase tracking-widest">
-                            <MapPin size={10} className="text-gold" />{" "}
+                          <div
+                            className="flex items-center gap-1 text-[11px]"
+                            style={{ color: C.text3 }}
+                          >
+                            <MapPin size={10} style={{ color: "#ef4444" }} />{" "}
                             {listing.city}
                           </div>
                         </div>
                       </div>
                     ))}
                     {savedListings.length === 0 && (
-                      <div className="col-span-full text-center py-20 rounded-xl border border-dashed border-dark-border">
-                        <p className="text-sm text-zinc-500 font-medium uppercase tracking-widest">
+                      <div
+                        className="col-span-full text-center py-20 rounded-xl"
+                        style={{ border: `1px dashed ${C.border}` }}
+                      >
+                        <p
+                          className="text-sm font-medium uppercase tracking-widest"
+                          style={{ color: C.text3 }}
+                        >
                           შენახული განცხადებები არ არის
                         </p>
                       </div>
@@ -839,31 +1046,40 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
-              {/* ── ADMIN USERS ── */}
+              {/* ── ADMIN ── */}
               {activeTab === "admin_users" && user.role === "ADMIN" && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  key="admin"
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  key="admin_users"
+                  exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold" style={{ color: C.text }}>
                     იუზერების კონტროლი
                   </h3>
-                  <div className="rounded-xl border border-dark-border bg-dark-card overflow-hidden">
-                    <div className="overflow-x-auto no-scrollbar">
-                      <table className="w-full text-left border-collapse">
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{
+                      border: `1px solid ${C.border}`,
+                      background: C.bg2,
+                    }}
+                  >
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
                         <thead>
-                          <tr className="border-b border-dark-border bg-dark/30">
+                          <tr
+                            style={{
+                              borderBottom: `1px solid ${C.border}`,
+                              background: C.bg3,
+                            }}
+                          >
                             {["იუზერი", "ბალანსი", "როლი", "მოქმედება"].map(
                               (h) => (
                                 <th
                                   key={h}
-                                  className={cn(
-                                    "px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500",
-                                    h === "მოქმედება" && "text-right",
-                                  )}
+                                  className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                                  style={{ color: C.text3 }}
                                 >
                                   {h}
                                 </th>
@@ -875,11 +1091,17 @@ export default function ProfilePage() {
                           {adminUsers.map((u) => (
                             <tr
                               key={u._id}
-                              className="border-b border-dark-border/50 hover:bg-dark/20 transition-colors"
+                              style={{ borderBottom: `1px solid ${C.border}` }}
                             >
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 rounded-lg bg-dark flex items-center justify-center overflow-hidden border border-dark-border">
+                                  <div
+                                    className="h-8 w-8 rounded-lg flex items-center justify-center overflow-hidden"
+                                    style={{
+                                      background: C.bg3,
+                                      border: `1px solid ${C.border}`,
+                                    }}
+                                  >
                                     {u.avatar ? (
                                       <img
                                         src={u.avatar}
@@ -890,10 +1112,16 @@ export default function ProfilePage() {
                                     )}
                                   </div>
                                   <div>
-                                    <p className="text-xs font-bold text-white">
+                                    <p
+                                      className="text-xs font-bold"
+                                      style={{ color: C.text }}
+                                    >
                                       {u.name}
                                     </p>
-                                    <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
+                                    <p
+                                      className="text-[10px]"
+                                      style={{ color: C.text3 }}
+                                    >
                                       {u.email}
                                     </p>
                                   </div>
@@ -901,14 +1129,21 @@ export default function ProfilePage() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-black text-white">
+                                  <span
+                                    className="text-xs font-bold"
+                                    style={{ color: C.text }}
+                                  >
                                     {u.balance} ₾
                                   </span>
                                   <button
                                     onClick={() =>
                                       handleUpdateUser(u._id, { balance: 50 })
                                     }
-                                    className="p-1 text-gold hover:bg-gold/10 rounded-md transition-colors"
+                                    className="p-1 rounded-md transition-colors"
+                                    style={{
+                                      color: C.green,
+                                      cursor: "pointer",
+                                    }}
                                   >
                                     <Plus size={12} />
                                   </button>
@@ -920,16 +1155,23 @@ export default function ProfilePage() {
                                   onChange={(e) =>
                                     handleRoleChange(u._id, e.target.value)
                                   }
-                                  className="bg-dark border border-dark-border text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md outline-none focus:border-gold text-white transition-all"
+                                  className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md outline-none"
+                                  style={{
+                                    background: C.bg3,
+                                    border: `1px solid ${C.border}`,
+                                    color: C.text,
+                                    fontFamily: "'Space Grotesk', sans-serif",
+                                  }}
                                 >
                                   <option value="USER">USER</option>
                                   <option value="ADMIN">ADMIN</option>
                                 </select>
                               </td>
-                              <td className="px-4 py-3 text-right">
+                              <td className="px-4 py-3">
                                 <button
                                   onClick={() => handleDeleteUser(u._id)}
-                                  className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                  className="p-2 rounded-lg transition-all"
+                                  style={{ color: C.text3, cursor: "pointer" }}
                                 >
                                   <Trash2 size={14} />
                                 </button>
@@ -946,27 +1188,43 @@ export default function ProfilePage() {
               {/* ── SETTINGS ── */}
               {activeTab === "settings" && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
                   key="settings"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
                   className="space-y-6"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold" style={{ color: C.text }}>
                       პარამეტრები
                     </h3>
                     {user.role === "ADMIN" && (
-                      <span className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-black rounded-md uppercase tracking-widest border border-red-500/20">
+                      <span
+                        className="px-3 py-1 text-[10px] font-bold rounded-md uppercase tracking-widest"
+                        style={{
+                          background: "rgba(239,68,68,0.08)",
+                          color: "#ef4444",
+                          border: "1px solid rgba(239,68,68,0.2)",
+                        }}
+                      >
                         Admin Mode
                       </span>
                     )}
                   </div>
 
-                  {/* პირადი ინფო ფორმა */}
-                  <section className="rounded-xl border border-dark-border bg-dark-card p-5">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6 flex items-center gap-2">
-                      <UserIcon size={14} className="text-gold" /> პირადი
+                  {/* personal */}
+                  <section
+                    className="rounded-xl p-6"
+                    style={{
+                      background: C.bg2,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <h4
+                      className="text-[10px] font-bold uppercase tracking-widest mb-6 flex items-center gap-2"
+                      style={{ color: C.text3 }}
+                    >
+                      <UserIcon size={13} style={{ color: C.green }} /> პირადი
                       ინფორმაცია
                     </h4>
                     <form
@@ -992,25 +1250,32 @@ export default function ProfilePage() {
                         }
                       }}
                     >
-                      {/* ── username ── */}
+                      {/* username */}
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                        <label
+                          className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                          style={{ color: C.text3 }}
+                        >
                           Username
                         </label>
                         <div className="relative">
                           <AtSign
-                            size={14}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                            size={13}
+                            className="absolute left-3 top-1/2 -translate-y-1/2"
+                            style={{ color: C.text3 }}
                           />
                           <input
                             name="username"
                             defaultValue={user.username || ""}
                             type="text"
                             placeholder="username"
-                            className="w-full pl-8 pr-4 py-2.5 bg-dark border border-dark-border rounded-lg outline-none focus:border-gold transition-all text-sm text-white placeholder:text-zinc-700"
+                            style={{ ...inp, paddingLeft: 32 }}
                           />
                         </div>
-                        <p className="text-[10px] text-zinc-600 ml-1">
+                        <p
+                          className="text-[10px] ml-1"
+                          style={{ color: C.text3 }}
+                        >
                           ქარდზე სახელის ნაცვლად გამოჩნდება
                         </p>
                       </div>
@@ -1036,7 +1301,10 @@ export default function ProfilePage() {
                         },
                       ].map((f) => (
                         <div key={f.name} className="space-y-1.5">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                          <label
+                            className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                            style={{ color: C.text3 }}
+                          >
                             {f.label}
                           </label>
                           <input
@@ -1044,33 +1312,55 @@ export default function ProfilePage() {
                             defaultValue={f.defaultValue}
                             type="text"
                             placeholder={f.placeholder}
-                            className="w-full px-4 py-2.5 bg-dark border border-dark-border rounded-lg outline-none focus:border-gold transition-all text-sm text-white placeholder:text-zinc-700"
+                            style={inp}
                           />
                         </div>
                       ))}
 
                       {settingsError && (
-                        <p className="text-xs text-red-500 font-bold">
+                        <p
+                          className="text-xs font-bold"
+                          style={{ color: "#ef4444" }}
+                        >
                           {settingsError}
                         </p>
                       )}
                       {settingsSuccess && (
-                        <p className="text-xs text-green-500 font-bold">
+                        <p
+                          className="text-xs font-bold"
+                          style={{ color: C.green }}
+                        >
                           {settingsSuccess}
                         </p>
                       )}
 
-                      <button className="w-full bg-gold text-dark py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all">
+                      <button
+                        className="w-full text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                        style={{
+                          background: C.green,
+                          cursor: "pointer",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}
+                      >
                         ცვლილებების შენახვა
                       </button>
                     </form>
                   </section>
 
-                  {/* Admin: site settings */}
+                  {/* admin site settings */}
                   {user.role === "ADMIN" && siteSettings && (
-                    <section className="rounded-xl border border-dark-border bg-dark-card p-5">
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6 flex items-center gap-2">
-                        <Globe size={14} className="text-gold" /> საიტის
+                    <section
+                      className="rounded-xl p-6"
+                      style={{
+                        background: C.bg2,
+                        border: `1px solid ${C.border}`,
+                      }}
+                    >
+                      <h4
+                        className="text-[10px] font-bold uppercase tracking-widest mb-6 flex items-center gap-2"
+                        style={{ color: C.text3 }}
+                      >
+                        <Globe size={13} style={{ color: C.green }} /> საიტის
                         პარამეტრები
                       </h4>
                       <form
@@ -1091,11 +1381,20 @@ export default function ProfilePage() {
                         }}
                       >
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
-                            საიტის ლოგო
+                          <label
+                            className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                            style={{ color: C.text3 }}
+                          >
+                            ლოგო
                           </label>
                           <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-dark rounded-lg border border-dark-border flex items-center justify-center overflow-hidden">
+                            <div
+                              className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden"
+                              style={{
+                                background: C.bg3,
+                                border: `1px solid ${C.border}`,
+                              }}
+                            >
                               {siteSettings.logo ? (
                                 <img
                                   src={siteSettings.logo}
@@ -1103,15 +1402,22 @@ export default function ProfilePage() {
                                 />
                               ) : (
                                 <ImageIcon
-                                  className="text-zinc-700"
-                                  size={24}
+                                  size={22}
+                                  style={{ color: C.text3 }}
                                 />
                               )}
                             </div>
                             <button
                               type="button"
                               onClick={() => logoInputRef.current?.click()}
-                              className="px-4 py-2 bg-dark border border-dark-border text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-lg hover:border-gold hover:text-gold transition-all"
+                              className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all"
+                              style={{
+                                background: C.bg3,
+                                border: `1px solid ${C.border}`,
+                                color: C.text2,
+                                cursor: "pointer",
+                                fontFamily: "'Space Grotesk', sans-serif",
+                              }}
                             >
                               შეცვლა
                             </button>
@@ -1139,7 +1445,10 @@ export default function ProfilePage() {
                           },
                         ].map((f) => (
                           <div key={f.name} className="space-y-1.5">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                            <label
+                              className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                              style={{ color: C.text3 }}
+                            >
                               {f.label}
                             </label>
                             {f.type === "textarea" ? (
@@ -1147,19 +1456,26 @@ export default function ProfilePage() {
                                 name={f.name}
                                 defaultValue={f.defaultValue}
                                 rows={3}
-                                className="w-full px-4 py-2.5 bg-dark border border-dark-border rounded-lg outline-none focus:border-gold transition-all text-sm text-white resize-none"
+                                style={{ ...inp, resize: "none" }}
                               />
                             ) : (
                               <input
                                 name={f.name}
                                 defaultValue={f.defaultValue}
                                 type="text"
-                                className="w-full px-4 py-2.5 bg-dark border border-dark-border rounded-lg outline-none focus:border-gold transition-all text-sm text-white"
+                                style={inp}
                               />
                             )}
                           </div>
                         ))}
-                        <button className="w-full bg-gold text-dark py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-gold-hover transition-all">
+                        <button
+                          className="w-full text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest"
+                          style={{
+                            background: C.green,
+                            cursor: "pointer",
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}
+                        >
                           საიტის განახლება
                         </button>
                       </form>
@@ -1194,21 +1510,32 @@ export default function ProfilePage() {
               onClick={() =>
                 setDeleteConfirmation({ isOpen: false, listingId: null })
               }
-              className="absolute inset-0 backdrop-blur-sm bg-black/50"
+              className="absolute inset-0"
+              style={{
+                background: "rgba(0,0,0,0.3)",
+                backdropFilter: "blur(4px)",
+              }}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative w-full max-w-sm bg-dark-card border border-dark-border rounded-3xl p-6 shadow-2xl text-center z-10"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm rounded-2xl p-6 shadow-xl text-center z-10"
+              style={{ background: C.bg, border: `1px solid ${C.border}` }}
             >
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                <Trash2 size={32} />
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444" }}
+              >
+                <Trash2 size={26} />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">
+              <h3
+                className="text-base font-bold mb-2"
+                style={{ color: C.text }}
+              >
                 ნამდვილად გსურთ წაშლა?
               </h3>
-              <p className="text-xs text-zinc-500 mb-6">
+              <p className="text-xs mb-6" style={{ color: C.text3 }}>
                 ეს ქმედება შეუქცევადია.
               </p>
               <div className="flex gap-3">
@@ -1216,13 +1543,25 @@ export default function ProfilePage() {
                   onClick={() =>
                     setDeleteConfirmation({ isOpen: false, listingId: null })
                   }
-                  className="flex-1 py-3 rounded-xl border border-dark-border text-xs font-bold text-zinc-400 hover:text-white hover:bg-dark transition-all"
+                  className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    color: C.text2,
+                    background: "transparent",
+                    cursor: "pointer",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
                 >
                   გაუქმება
                 </button>
                 <button
                   onClick={confirmDeleteListing}
-                  className="flex-1 py-3 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-all"
+                  className="flex-1 py-3 rounded-xl text-white text-sm font-semibold transition-all"
+                  style={{
+                    background: "#ef4444",
+                    cursor: "pointer",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
                 >
                   წაშლა
                 </button>
@@ -1238,76 +1577,112 @@ export default function ProfilePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowPaymentModal(false)}
-              className="absolute inset-0 backdrop-blur-sm bg-black/50"
+              className="absolute inset-0"
+              style={{
+                background: "rgba(0,0,0,0.3)",
+                backdropFilter: "blur(4px)",
+              }}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md bg-dark-card border border-dark-border rounded-3xl p-8 shadow-2xl z-10"
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md rounded-3xl p-8 shadow-2xl z-10"
+              style={{ background: C.bg, border: `1px solid ${C.border}` }}
             >
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white rounded-full transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full transition-colors"
+                style={{ color: C.text3, cursor: "pointer" }}
               >
                 <X size={20} />
               </button>
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-gold/10 text-gold rounded-2xl">
-                  <Wallet size={32} />
+                <div
+                  className="p-4 rounded-2xl"
+                  style={{ background: "rgba(200,130,10,0.1)", color: C.gold }}
+                >
+                  <Wallet size={30} />
                 </div>
               </div>
-              <h2 className="text-xl font-black text-center text-white mb-2">
+              <h2
+                className="text-xl font-bold text-center mb-2"
+                style={{ color: C.text }}
+              >
                 ბალანსის შევსება
               </h2>
-              <p className="text-sm text-zinc-500 text-center mb-6">
+              <p
+                className="text-sm text-center mb-6"
+                style={{ color: C.text2 }}
+              >
                 მიმდინარე ბალანსი:{" "}
-                <span className="text-gold font-black">
+                <span className="font-bold" style={{ color: C.gold }}>
                   {user.balance || 0} ₾
                 </span>
               </p>
-              <div className="bg-dark border border-dark-border rounded-2xl p-5 mb-6">
+              <div
+                className="rounded-xl p-4 mb-5"
+                style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+              >
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">⚠️</span>
+                  <span className="text-xl">⚠️</span>
                   <div>
-                    <p className="text-sm font-black text-white mb-2">
+                    <p
+                      className="text-sm font-bold mb-1"
+                      style={{ color: C.text }}
+                    >
                       გადახდის სისტემა ჯერ არ არის ინტეგრირებული
                     </p>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
-                      თანხის ჩარიცხვა შესაძლებელია საქართველოს ბანკში სადაც
-                      დანიშნულებაში მიუთითებთ მაილს, და ანგარიშზე დაგიჯდებათ
-                      თანხა რომლითაც დაპოსტავთ VIP და SILVER.
+                    <p
+                      className="text-xs leading-relaxed"
+                      style={{ color: C.text2 }}
+                    >
+                      თანხის ჩარიცხვა შესაძლებელია საქართველოს ბანკის
+                      გადარიცხვით. დანიშნულებაში მიუთითეთ თქვენი მეილი.
                     </p>
                   </div>
                 </div>
               </div>
               <button
-                onClick={() => handleCopy("bank-account", "59001123042")}
-                className="flex items-center gap-3 p-4 bg-dark rounded-xl border border-dark-border mb-6 w-full hover:border-gold/30 transition-all group text-left"
+                onClick={() =>
+                  handleCopy("bank-account", "GE33BG0000000533946610")
+                }
+                className="flex items-center gap-3 p-4 rounded-xl w-full transition-all text-left mb-5"
+                style={{
+                  background: C.bg2,
+                  border: `1px solid ${C.border}`,
+                  cursor: "pointer",
+                }}
               >
-                <span className="text-xl">📧</span>
+                <span className="text-xl">🏦</span>
                 <div className="flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                    საქართველოს ბანკის ანგარიშის ნომერი:
+                  <p
+                    className="text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: C.text3 }}
+                  >
+                    ანგარიშის ნომერი
                   </p>
-                  <p className="text-sm font-bold text-gold">
+                  <p className="text-sm font-bold" style={{ color: C.gold }}>
                     GE33BG0000000533946610
                   </p>
                 </div>
-                <span className="shrink-0">
-                  {copiedKey === "bank-account" ? (
-                    <Check size={16} className="text-green-400" />
-                  ) : (
-                    <Copy size={16} className="text-zinc-500" />
-                  )}
-                </span>
+                {copiedKey === "bank-account" ? (
+                  <Check size={16} style={{ color: C.green }} />
+                ) : (
+                  <Copy size={16} style={{ color: C.text3 }} />
+                )}
               </button>
-              <div
+              <button
                 onClick={() => setShowPaymentModal(false)}
-                className="w-full bg-gold text-dark py-3 rounded-xl font-black text-sm hover:brightness-110 transition-all cursor-pointer text-center"
+                className="w-full text-white py-3 rounded-xl font-semibold text-sm text-center"
+                style={{
+                  background: C.green,
+                  cursor: "pointer",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}
               >
                 გასაგებია
-              </div>
+              </button>
             </motion.div>
           </div>
         )}
