@@ -1,3 +1,4 @@
+// components/ListingCard.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,13 +10,14 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
-  Infinity,
   Clock,
 } from "lucide-react";
 import { cn } from "./AuthProvider";
 import Toast from "./Toast";
 
-// ── E დიზაინის ფერები ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎨 კონსტანტები: ფერები
+// ─────────────────────────────────────────────────────────────────────────────
 const C = {
   green: "#1a8a4a",
   greenDark: "#125e33",
@@ -29,7 +31,28 @@ const C = {
   gold: "#c8820a",
 };
 
-// ── Skeleton ────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// ⏰ დროის ფორმატირება: "2 სთ წინ", "3 დღ წინ"
+// ─────────────────────────────────────────────────────────────────────────────
+function timeAgo(date: string) {
+  if (!date) return "";
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1) return "ახლახანს";
+  if (mins < 60) return `${mins} წთ წინ`;
+  if (hours < 24) return `${hours} სთ წინ`;
+  if (days < 7) return `${days} დღ წინ`;
+  return new Date(date).toLocaleDateString("ka-GE", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 💀 Skeleton: ჩატვირთვის ეფექტი
+// ─────────────────────────────────────────────────────────────────────────────
 export function ListingCardSkeleton() {
   return (
     <div
@@ -49,15 +72,18 @@ export function ListingCardSkeleton() {
   );
 }
 
-// ── გაცვლის პერიოდის helper ─────────────────────────────────────────────────
-// listing-ს ექნება: tradePeriod: "permanent" | "temporary"
-//                   tradeDuration?: number  (მაგ. 2)
-//                   tradeUnit?: "day" | "week" | "month" | "year"
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔁 TradePeriodBadge: გაცვლის პერიოდის ბეჯის ჩვენება
+// ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+// ─────────────────────────────────────────────────────────────────────────────
 function TradePeriodBadge({ listing }: { listing: any }) {
+  // ▼▼▼ მონაცემის წაკითხვა listing ობიექტიდან (MongoDB-დან მოდის) ▼▼▼
+  // თუ tradePeriod არ არის ან არის "permanent" → მუდმივი გაცვლა
   const isPermanent =
     !listing.tradePeriod || listing.tradePeriod === "permanent";
 
   if (isPermanent) {
+    // მუდმივი გაცვლა: მწვანე ბეჯი "♾ მუდმივი"
     return (
       <span
         className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md"
@@ -68,6 +94,7 @@ function TradePeriodBadge({ listing }: { listing: any }) {
     );
   }
 
+  // დროებითი გაცვლა: ნაცრისფერი ბეჯი დროით
   const unitMap: Record<string, string> = {
     day: "დღე",
     week: "კვ.",
@@ -82,14 +109,20 @@ function TradePeriodBadge({ listing }: { listing: any }) {
       style={{ background: "#f0f4f0", color: C.text3 }}
     >
       ⏳ {listing.tradeDuration} {unit}
+      {/* მაგალითი: ⏳ 2 თვე, ⏳ 1 კვ., ⏳ 6 თვე */}
     </span>
   );
 }
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+// 🔁 TradePeriodBadge - დასრულებულია
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-// ── Props ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 🧩 Props ინტერფეისი
+// ─────────────────────────────────────────────────────────────────────────────
 interface ListingCardProps {
   listing: any;
-  onOffer?: () => void; // დარჩება — გამოიყენება ListingDetails-ში
+  onOffer?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   user?: any;
@@ -98,7 +131,9 @@ interface ListingCardProps {
   index?: number;
 }
 
-// ── კარდი ───────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 🧩 კომპონენტი: ListingCard
+// ─────────────────────────────────────────────────────────────────────────────
 export default function ListingCard({
   listing,
   onOffer,
@@ -138,21 +173,18 @@ export default function ListingCard({
         setIsSaved(data.saved);
         setToast(data.saved ? "განცხადება შენახულია ❤️" : "განცხადება წაიშალა");
       }
-    } catch (err) {
-      console.error("Failed to save listing", err);
-    }
+    } catch {}
   };
 
   const hasMultipleImages = listing.images && listing.images.length > 1;
-
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % listing.images.length);
+    setCurrentImageIndex((p) => (p + 1) % listing.images.length);
   };
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentImageIndex(
-      (prev) => (prev - 1 + listing.images.length) % listing.images.length,
+      (p) => (p - 1 + listing.images.length) % listing.images.length,
     );
   };
 
@@ -161,18 +193,16 @@ export default function ListingCard({
   const isOwner =
     user && (user._id === listing.owner?._id || user.role === "ADMIN");
 
-  // ── ბორდერი ტიპის მიხედვით ──────────────────────────────────────────────
   const cardBorder =
     type === "VIP"
       ? `2px solid ${C.gold}`
       : type === "SILVER"
         ? "1px solid #C0C0C0"
         : `1px solid ${C.border}`;
-
   const cardHoverShadow =
     type === "VIP"
       ? "0 8px 28px rgba(200,130,10,0.12)"
-      : `0 8px 28px rgba(26,138,74,0.08)`;
+      : "0 8px 28px rgba(26,138,74,0.08)";
 
   return (
     <>
@@ -209,24 +239,30 @@ export default function ListingCard({
                     : C.border;
           }}
         >
-          {/* ── გაცვლილია overlay ── */}
+          {/* გაცვლილია overlay */}
           {isExchanged && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[2px]"
+              style={{ background: "rgba(255,255,255,0.6)" }}
+            >
               <div
                 className="transform -rotate-12 px-5 py-2 rounded-xl"
                 style={{
                   border: "3px solid #ef4444",
-                  background: "rgba(239,68,68,0.15)",
+                  background: "rgba(239,68,68,0.1)",
                 }}
               >
-                <span className="text-xl font-bold uppercase tracking-[0.15em] text-red-500">
+                <span
+                  className="text-xl font-bold uppercase tracking-[0.15em]"
+                  style={{ color: "#ef4444" }}
+                >
                   გაცვლილია
                 </span>
               </div>
             </div>
           )}
 
-          {/* ── სურათი ── */}
+          {/* სურათი */}
           <div
             className="relative aspect-[4/3] w-full overflow-hidden shrink-0 group/carousel"
             style={{ background: "#f0f4f0" }}
@@ -243,7 +279,22 @@ export default function ListingCard({
               alt={listing.title}
             />
 
-            {/* ── სურათების carousel ── */}
+            {/* ▼▼▼ დრო (ზედა-მარჯვენა) - შექმნის თარიღი ▼▼▼ */}
+            {listing.createdAt && (
+              <span
+                className="absolute top-2 right-2 z-20 flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md"
+                style={{
+                  background: "rgba(255,255,255,0.88)",
+                  color: C.text3,
+                  border: `1px solid ${C.border}`,
+                }}
+              >
+                <Clock size={9} />
+                {timeAgo(listing.createdAt)}
+              </span>
+            )}
+
+            {/* carousel */}
             {hasMultipleImages && (
               <>
                 <button
@@ -276,7 +327,7 @@ export default function ListingCard({
               </>
             )}
 
-            {/* ── VIP / SILVER badge ── */}
+            {/* VIP / SILVER badge */}
             {type === "VIP" && (
               <span
                 className="absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-bold z-20 shadow"
@@ -297,11 +348,11 @@ export default function ListingCard({
               </span>
             )}
 
-            {/* ── შენახვა ბეჯი ── (მხოლოდ არ-owner-ისთვის) */}
+            {/* შენახვა — მხოლოდ არ-owner */}
             {!isOwner && (
               <button
                 onClick={handleSave}
-                className="absolute right-2 top-2 z-20 p-1.5 rounded-full shadow transition-all"
+                className="absolute right-2 bottom-2 z-20 p-1.5 rounded-full shadow transition-all"
                 style={{
                   background: isSaved ? "#ef4444" : "rgba(255,255,255,0.85)",
                   color: isSaved ? "#fff" : C.text3,
@@ -333,12 +384,11 @@ export default function ListingCard({
             )}
           </div>
 
-          {/* ── ინფო სექცია ── */}
+          {/* ინფო */}
           <div
             className="p-3 flex flex-col flex-1 gap-2"
             style={{ background: C.bg }}
           >
-            {/* სათაური */}
             <h3
               className="font-semibold text-[13px] line-clamp-1"
               style={{ color: C.text }}
@@ -346,7 +396,6 @@ export default function ListingCard({
               {listing.title}
             </h3>
 
-            {/* ქალაქი */}
             <div
               className="flex items-center gap-1 text-[11px]"
               style={{ color: C.text3 }}
@@ -367,7 +416,7 @@ export default function ListingCard({
                 className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
                 style={{ color: C.green }}
               >
-                <RefreshCw size={8} /> რაში გავცვლი?
+                <RefreshCw size={8} /> გამოცვლა მინდა
               </p>
               <div className="flex flex-wrap gap-1 min-h-[18px]">
                 {listing.wantedType === "service" && listing.serviceWanted ? (
@@ -398,15 +447,19 @@ export default function ListingCard({
               </div>
             </div>
 
-            {/* footer: პერიოდი + owner actions */}
+            {/* footer */}
             <div
               className="flex items-center justify-between pt-1.5 mt-auto"
               style={{ borderTop: `1px solid ${C.border}` }}
             >
-              {/* გაცვლის პერიოდი */}
+              {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
+              {/* 🔁 გაცვლის პერიოდის ბეჯი: აქ გამოიძახება TradePeriodBadge */}
+              {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
               <TradePeriodBadge listing={listing} />
+              {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
+              {/* 🔁 გაცვლის პერიოდის ბეჯი - დასრულებულია */}
+              {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
 
-              {/* Owner actions */}
               {isOwner ? (
                 <div className="flex items-center gap-1.5">
                   <button
@@ -438,9 +491,6 @@ export default function ListingCard({
                   </button>
                 </div>
               ) : (
-                /* არ-owner-ისთვის — ღილაკი ამოღებულია.
-                   შეთავაზება ხდება განცხადების დეტალებიდან (/listing/[id]).
-                   TODO: თუ სწრაფი preview გინდა კარდზევე, აქ დაამატე ghost ბეჯი */
                 <span
                   className="text-[10px] font-medium px-2 py-0.5 rounded-md"
                   style={{ background: C.bgCard, color: C.text3 }}
@@ -458,27 +508,20 @@ export default function ListingCard({
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ListingsTabs — VIP / ახალი / ახლოს / პოპულარული tabs UI
-// გამოიყენება page.tsx-ში, განცხადებების სიის ზემოთ
-// ══════════════════════════════════════════════════════════════════════════════
-
+// ─────────────────────────────────────────────────────────────────────────────
+// 🧩 ListingsTabs: ტაბების კომპონენტი
+// ─────────────────────────────────────────────────────────────────────────────
 export type ListingTab = "vip" | "new" | "nearby" | "popular";
-
 interface ListingsTabsProps {
   activeTab: ListingTab;
   onChange: (tab: ListingTab) => void;
 }
-
 const TABS: { id: ListingTab; label: string }[] = [
   { id: "vip", label: "⭐ VIP განცხადებები" },
   { id: "new", label: "🆕 ახალი" },
-  // TODO: "nearby" — საჭიროა geolocation API ან მომხმარებლის ქალაქი პროფილიდან
   { id: "nearby", label: "📍 ჩემს ახლოს" },
-  // TODO: "popular" — საჭიროა views/saves კოლექტება API-ზე და დალაგება
   { id: "popular", label: "🔥 პოპულარული" },
 ];
-
 export function ListingsTabs({ activeTab, onChange }: ListingsTabsProps) {
   return (
     <div
@@ -493,14 +536,14 @@ export function ListingsTabs({ activeTab, onChange }: ListingsTabsProps) {
           style={{
             background: "transparent",
             border: "none",
+            cursor: "pointer",
+            fontFamily: "'Space Grotesk', sans-serif",
+            marginBottom: -1,
             borderBottom:
               activeTab === tab.id
                 ? `2px solid ${C.green}`
                 : "2px solid transparent",
             color: activeTab === tab.id ? C.green : C.text3,
-            marginBottom: -1,
-            fontFamily: "'Space Grotesk', sans-serif",
-            cursor: "pointer",
           }}
         >
           {tab.label}

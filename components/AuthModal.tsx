@@ -146,7 +146,7 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     <input
                       required
                       type="text"
-                      placeholder="გიორგი"
+                      placeholder="სახელი"
                       className={inp}
                       value={formData.name}
                       onChange={(e) =>
@@ -158,7 +158,7 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                     <label className={lbl}>გვარი</label>
                     <input
                       type="text"
-                      placeholder="მამულაშვილი"
+                      placeholder="გვარი"
                       className={inp}
                       value={formData.lastName}
                       onChange={(e) =>

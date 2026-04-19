@@ -1,9 +1,13 @@
+// app/api/listings/route.ts
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Listing, User } from '@/lib/models';
 import { getUserFromRequest } from '@/lib/auth';
 import { CONFIG } from '@/lib/config';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔍 GET: განცხადებების მიღება (ფილტრებით)
+// ─────────────────────────────────────────────────────────────────────────────
 export async function GET(request: Request) {
   await connectDB();
   const { searchParams } = new URL(request.url);
@@ -39,6 +43,9 @@ export async function GET(request: Request) {
   return NextResponse.json(listings);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ➕ POST: ახალი განცხადების შექმნა
+// ─────────────────────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   await connectDB();
   const decoded = getUserFromRequest(request);
@@ -48,10 +55,16 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
   const body = await request.json();
+  
+  console.log("📦 API RECEIVED body:", {
+    tradePeriod: body.tradePeriod,
+    tradeDuration: body.tradeDuration,
+    tradeUnit: body.tradeUnit,
+  });
+
   const { title, category, city, description, condition, listingType } = body;
 
-  // ── დღიური ლიმიტი — მხოლოდ NORMAL განცხადებებზე ──────────────────────
-  // VIP და SILVER ფასიანია (ბალანსიდან იხდის), ამიტომ ლიმიტში არ ითვლება
+  // ── დღიური ლიმიტი ──────────────────────────────────────────────────
   const isNormal = !listingType || listingType === 'NORMAL';
 
   if (isNormal && user.role !== 'ADMIN') {
@@ -66,22 +79,52 @@ export async function POST(request: Request) {
     }
   }
 
+  // ── ვალიდაცია ───────────────────────────────────────────────────────
   if (!title?.trim()) return NextResponse.json({ error: 'სათაური სავალდებულოა' }, { status: 400 });
   if (!category?.trim()) return NextResponse.json({ error: 'კატეგორია სავალდებულოა' }, { status: 400 });
   if (!city?.trim()) return NextResponse.json({ error: 'ქალაქი სავალდებულოა' }, { status: 400 });
   if (!description?.trim()) return NextResponse.json({ error: 'აღწერა სავალდებულოა' }, { status: 400 });
 
+  // ── ფასი ────────────────────────────────────────────────────────────
   const cost = CONFIG.PRICING[listingType as keyof typeof CONFIG.PRICING] ?? 0;
   if (user.balance < cost)
     return NextResponse.json({ error: 'ბალანსი არ არის საკმარისი' }, { status: 403 });
 
+  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+  // 🔁 გაცვლის პერიოდის ველების დამუშავება
+  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+  
+  // 1. ვქმნით "სუფთა" ობიექტს გარეშე გაცვლის ველების
+  const { tradePeriod: _, tradeDuration: __, tradeUnit: ___, ...cleanBody } = body;
+  
+  // 2. ვამუშავებთ გაცვლის პერიოდს
+  const tradePeriod = body.tradePeriod === 'temporary' ? 'temporary' : 'permanent';
+  
+  const tradeDuration = tradePeriod === 'temporary' 
+    ? Math.max(1, Math.min(999, parseInt(body.tradeDuration) || 1))
+    : null;
+    
+  const tradeUnit = tradePeriod === 'temporary' 
+    ? ['day', 'week', 'month', 'year'].includes(body.tradeUnit) 
+      ? body.tradeUnit 
+      : 'month'
+    : null;
+  
+  console.log("💾 WILL SAVE trade fields:", { tradePeriod, tradeDuration, tradeUnit });
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+  // ▼▼▼ შექმნა ▼▼▼
   const listing = await Listing.create({
-    ...body,
+    ...cleanBody,  // ◄── cleanBody, არა body!
     owner: decoded.id,
-    isVIP: listingType === 'VIP'
+    isVIP: listingType === 'VIP',
+    tradePeriod,   // ◄── ცალკე დამატება
+    tradeDuration, // ◄── ცალკე დამატება
+    tradeUnit,     // ◄── ცალკე დამატება
   });
 
-  // NORMAL-ზე count-ი იზრდება, VIP/SILVER-ზე მხოლოდ ფული იხდება
+  console.log("✅ SAVED listing._id:", listing._id, "tradePeriod:", listing.tradePeriod);
+
   if (isNormal) {
     user.dailyPostCount += 1;
   }

@@ -1,7 +1,5 @@
 "use client";
 
-// components/ListingDetailsNew.tsx
-
 import React, { useState, useEffect } from "react";
 import {
   MapPin,
@@ -14,57 +12,88 @@ import {
   ChevronRight,
   RefreshCw,
   User,
-  Crown,
-  Gem,
-  Check,
 } from "lucide-react";
 import Toast from "./Toast";
+import { cn, useAuth } from "./AuthProvider";
 import Link from "next/link";
 import OfferModal from "./OfferModal";
 
-interface ListingDetailsNewProps {
+const C = {
+  bg: "#ffffff",
+  bg2: "#f8faf8",
+  bg3: "#f0f4f0",
+  green: "#1a8a4a",
+  greenLight: "#e6f5ec",
+  greenDark: "#125e33",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+  border: "#e8ebe8",
+  gold: "#c8820a",
+  goldLight: "#fff8e6",
+};
+
+// ── გაცვლის პერიოდი ──────────────────────────────────────────────────────────
+function TradePeriodInfo({ listing }: { listing: any }) {
+  const isPermanent =
+    !listing.tradePeriod || listing.tradePeriod === "permanent";
+  const unitMap: Record<string, string> = {
+    day: "დღე",
+    week: "კვირა",
+    month: "თვე",
+    year: "წელი",
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className="text-[11px] font-bold uppercase tracking-widest"
+        style={{ color: C.text3 }}
+      >
+        გაცვლის ვადა:
+      </span>
+      {isPermanent ? (
+        <span
+          className="inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg"
+          style={{ background: C.greenLight, color: C.green }}
+        >
+          ♾ მუდმივი
+        </span>
+      ) : (
+        <span
+          className="inline-flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg"
+          style={{ background: C.bg3, color: C.text2 }}
+        >
+          <Clock size={12} />
+          {listing.tradeDuration}{" "}
+          {unitMap[listing.tradeUnit] || listing.tradeUnit}
+        </span>
+      )}
+    </div>
+  );
+}
+
+interface ListingDetailsProps {
   listing: any;
   user?: any;
   onOffer?: () => void;
 }
 
-export default function ListingDetailsNew({
+export default function ListingDetails({
   listing,
   user,
   onOffer,
-}: ListingDetailsNewProps) {
+}: ListingDetailsProps) {
   const [toast, setToast] = useState<string | null>(null);
-  const [currentImg, setCurrentImg] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showOfferModal, setShowOfferModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isSaved, setIsSaved] = useState(
+    user?.savedListings?.includes(listing._id),
+  );
 
   useEffect(() => {
-    setIsSaved(!!user?.savedListings?.includes(listing._id));
+    setIsSaved(user?.savedListings?.includes(listing._id));
   }, [user, listing._id]);
-
-  const owner = typeof listing.owner === "object" ? listing.owner : null;
-  const isOwner = user && user._id === (owner?._id ?? listing.owner);
-  const isExchanged = listing.isTraded;
-  const isVIP = listing.listingType === "VIP" || listing.isVIP;
-  const isSilver = listing.listingType === "SILVER";
-
-  const timeAgo = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
-    const days = Math.floor(diff / 86400000);
-    const hours = Math.floor(diff / 3600000);
-    const mins = Math.floor(diff / 60000);
-    if (days > 0) return `${days} დღის წინ`;
-    if (hours > 0) return `${hours} საათის წინ`;
-    return `${mins} წუთის წინ`;
-  };
-
-  const images = listing.images?.length ? listing.images : [];
-  const hasMultiple = images.length > 1;
-
-  const prev = () =>
-    setCurrentImg((i) => (i - 1 + images.length) % images.length);
-  const next = () => setCurrentImg((i) => (i + 1) % images.length);
 
   const handleSave = async () => {
     if (!user) {
@@ -77,15 +106,12 @@ export default function ListingDetailsNew({
     if (res.ok) {
       const data = await res.json();
       setIsSaved(data.saved);
-      setToast(data.saved ? "განცხადება შენახულია ❤️" : "წაიშალა შენახულიდან");
+      setToast(
+        data.saved
+          ? "განცხადება შენახულია ❤️"
+          : "განცხადება წაიშალა შენახულიდან",
+      );
     }
-  };
-
-  const handleShare = async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setToast("ბმული დაკოპირდა! 🔗");
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleOffer = () => {
@@ -96,115 +122,118 @@ export default function ListingDetailsNew({
     setShowOfferModal(true);
   };
 
-  return (
-    <div className="text-gray-900">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-8 font-medium flex-wrap">
-        <Link href="/" className="hover:text-green-600 transition-colors">
-          მთავარი
-        </Link>
-        <span>/</span>
-        {listing.category && (
-          <>
-            <Link
-              href={`/category/${listing.category}`}
-              className="hover:text-green-600 transition-colors"
-            >
-              {listing.category}
-            </Link>
-            <span>/</span>
-          </>
-        )}
-        <span className="text-gray-600 truncate max-w-[200px]">
-          {listing.title}
-        </span>
-      </div>
+  const nextImage = () =>
+    setCurrentImageIndex((p) => (p + 1) % listing.images.length);
+  const prevImage = () =>
+    setCurrentImageIndex(
+      (p) => (p - 1 + listing.images.length) % listing.images.length,
+    );
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* ═══ მარცხენა — სურათები ═══ */}
-        <div className="space-y-3">
-          <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 group">
-            {/* გაცვლილია */}
+  const isOwner = user?._id === listing.owner?._id;
+  const isExchanged = listing.isTraded || listing.status === "EXCHANGED";
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor(diff / 3600000);
+    const mins = Math.floor(diff / 60000);
+    if (days > 0) return `${days} დღის წინ`;
+    if (hours > 0) return `${hours} საათის წინ`;
+    return `${mins} წუთის წინ`;
+  };
+
+  return (
+    <div
+      style={{ color: C.text, fontFamily: "'Space Grotesk', sans-serif" }}
+      className="pb-20"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* ══ სურათები ══ */}
+        <div className="space-y-4">
+          <div
+            className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl group"
+            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+          >
             {isExchanged && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-                <div className="rotate-[-12deg] border-4 border-red-500 px-8 py-3 rounded-xl bg-red-500/20">
-                  <span className="text-2xl font-black uppercase tracking-[0.2em] text-red-500">
+              <div
+                className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[2px]"
+                style={{ background: "rgba(255,255,255,0.7)" }}
+              >
+                <div
+                  className="transform -rotate-12 px-8 py-3 rounded-xl"
+                  style={{
+                    border: "3px solid #ef4444",
+                    background: "rgba(239,68,68,0.08)",
+                  }}
+                >
+                  <span
+                    className="text-3xl font-black uppercase tracking-[0.2em]"
+                    style={{ color: "#ef4444" }}
+                  >
                     გაცვლილია
                   </span>
                 </div>
               </div>
             )}
 
-            {images[currentImg] ? (
-              <img
-                src={images[currentImg]}
-                alt={listing.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-8xl">
-                📦
-              </div>
-            )}
+            <img
+              src={
+                listing.images?.[currentImageIndex] ||
+                "https://picsum.photos/seed/item/800/600"
+              }
+              alt={listing.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              referrerPolicy="no-referrer"
+            />
 
-            {/* VIP / SILVER */}
-            {isVIP && (
-              <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400 text-yellow-900 text-xs font-black uppercase tracking-wider shadow-md z-10">
-                <Crown size={12} /> VIP
-              </span>
-            )}
-            {isSilver && !isVIP && (
-              <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 text-xs font-black uppercase tracking-wider z-10">
-                <Gem size={12} /> SILVER
-              </span>
-            )}
-
-            {/* ნავიგაციის ისრები */}
-            {hasMultiple && (
+            {listing.images?.length > 1 && (
               <>
                 <button
-                  onClick={prev}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.85)",
+                    color: C.text,
+                    border: `1px solid ${C.border}`,
+                  }}
                 >
-                  <ChevronLeft size={18} className="text-gray-700" />
+                  <ChevronLeft size={24} />
                 </button>
                 <button
-                  onClick={next}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.85)",
+                    color: C.text,
+                    border: `1px solid ${C.border}`,
+                  }}
                 >
-                  <ChevronRight size={18} className="text-gray-700" />
+                  <ChevronRight size={24} />
                 </button>
-                {/* Dots */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                  {images.map((_: any, i: number) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentImg(i)}
-                      className={`h-1.5 rounded-full transition-all ${
-                        i === currentImg
-                          ? "bg-green-600 w-4"
-                          : "bg-white/70 hover:bg-white w-1.5"
-                      }`}
-                    />
-                  ))}
-                </div>
               </>
+            )}
+
+            {listing.listingType === "VIP" && (
+              <div
+                className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1 text-white"
+                style={{ background: C.gold }}
+              >
+                ⭐ VIP
+              </div>
             )}
           </div>
 
-          {/* Thumbnails */}
-          {hasMultiple && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {images.map((img: string, i: number) => (
+          {listing.images?.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {listing.images.map((img: string, idx: number) => (
                 <button
-                  key={i}
-                  onClick={() => setCurrentImg(i)}
-                  className={`relative flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
-                    currentImg === i
-                      ? "border-green-500"
-                      : "border-transparent opacity-60 hover:opacity-100"
-                  }`}
+                  key={idx}
+                  onClick={() => setCurrentImageIndex(idx)}
+                  className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all"
+                  style={{
+                    border: `2px solid ${currentImageIndex === idx ? C.green : C.border}`,
+                    opacity: currentImageIndex === idx ? 1 : 0.55,
+                  }}
                 >
                   <img
                     src={img}
@@ -217,151 +246,236 @@ export default function ListingDetailsNew({
           )}
         </div>
 
-        {/* ═══ მარჯვენა — ინფო ═══ */}
-        <div className="flex flex-col gap-5">
-          {/* სათაური + მეტა */}
+        {/* ══ ინფო ══ */}
+        <div className="space-y-5">
+          {/* badge + სათაური */}
           <div>
-            <div className="flex items-center gap-2 flex-wrap mb-3">
+            <div
+              className="flex items-center gap-2 text-sm mb-3 flex-wrap"
+              style={{ color: C.text3 }}
+            >
               <span
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                className="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider"
+                style={
                   listing.condition === "NEW"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-blue-50 text-blue-700 border-blue-200"
-                }`}
+                    ? {
+                        background: C.greenLight,
+                        color: C.green,
+                        border: `1px solid rgba(26,138,74,0.2)`,
+                      }
+                    : {
+                        background: C.bg3,
+                        color: C.text3,
+                        border: `1px solid ${C.border}`,
+                      }
+                }
               >
                 {listing.condition === "NEW" ? "ახალი" : "მეორადი"}
               </span>
-              <span className="text-gray-300">·</span>
-              <span className="flex items-center gap-1 text-xs text-gray-400 font-medium">
-                <Clock size={12} />
-                {timeAgo(listing.createdAt)}
+              <span>•</span>
+              <span className="flex items-center gap-1 text-xs">
+                <Clock size={13} /> {timeAgo(listing.createdAt)}
               </span>
-              <span className="text-gray-300">·</span>
-              <span className="flex items-center gap-1 text-xs text-gray-400 font-medium">
-                <Eye size={12} />
-                {listing.views || 0} ნახვა
+              <span>•</span>
+              <span className="flex items-center gap-1 text-xs">
+                <Eye size={13} /> {listing.views || 0} ნახვა
               </span>
             </div>
-
-            <h1 className="text-2xl font-black tracking-tight text-gray-900 mb-3 leading-snug">
+            <h1
+              className="text-3xl font-black tracking-tight mb-3"
+              style={{ color: C.text, letterSpacing: "-0.5px" }}
+            >
               {listing.title}
             </h1>
-
-            <div className="flex items-center gap-1.5 text-gray-500 text-sm font-medium">
-              <MapPin size={14} className="text-red-400 shrink-0" />
-              {listing.city}
+            <div className="flex items-center gap-2" style={{ color: C.text2 }}>
+              <MapPin size={16} style={{ color: "#ef4444" }} />
+              <span className="font-medium text-sm">{listing.city}</span>
             </div>
           </div>
+
+          {/* ── გაცვლის ვადა ── */}
+          <div
+            className="rounded-xl px-4 py-3 flex items-center gap-3"
+            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+          >
+            <TradePeriodInfo listing={listing} />
+          </div>
+
           {/* აღწერა */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <h3 className="font-bold text-sm text-gray-900 mb-3">აღწერა</h3>
-            <p className="text-gray-600 whitespace-pre-wrap leading-relaxed text-sm">
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+          >
+            <h3 className="font-bold text-base mb-3" style={{ color: C.text }}>
+              აღწერა
+            </h3>
+            <p
+              className="whitespace-pre-wrap leading-relaxed text-sm"
+              style={{ color: C.text2 }}
+            >
               {listing.description}
             </p>
           </div>
 
-          {/* გამოცვლა მინდა */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2 mb-3">
-              <RefreshCw size={14} className="text-green-600" />
-              რაში გავცვლი:
+          {/* გაცვლა მინდა */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+          >
+            <h3
+              className="font-bold text-base flex items-center gap-2 mb-3"
+              style={{ color: C.text }}
+            >
+              <RefreshCw size={16} style={{ color: C.green }} /> გაცვლა მინდა:
             </h3>
-
-            {listing.wantedType === "service" && listing.serviceWanted ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                🛠️ {listing.serviceWanted}
-              </span>
-            ) : listing.wantedItems?.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {listing.wantedItems.map((item: string, i: number) => (
+            <div className="flex flex-wrap gap-2">
+              {listing.wantedType === "service" && listing.serviceWanted ? (
+                <span
+                  className="px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2"
+                  style={{
+                    background: C.greenLight,
+                    color: C.green,
+                    border: `1px solid rgba(26,138,74,0.2)`,
+                  }}
+                >
+                  🛠️ {listing.serviceWanted}
+                </span>
+              ) : listing.wantedItems?.length > 0 ? (
+                listing.wantedItems.map((item: string, idx: number) => (
                   <span
-                    key={i}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-bold border ${
-                      i === 0
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : i === 1
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-gray-100 text-gray-700 border-gray-200"
-                    }`}
+                    key={idx}
+                    className="px-3 py-1.5 rounded-lg text-sm font-bold"
+                    style={
+                      idx === 0
+                        ? {
+                            background: C.goldLight,
+                            color: C.gold,
+                            border: `1px solid rgba(200,130,10,0.2)`,
+                          }
+                        : idx === 1
+                          ? {
+                              background: C.greenLight,
+                              color: C.green,
+                              border: `1px solid rgba(26,138,74,0.2)`,
+                            }
+                          : {
+                              background: C.bg3,
+                              color: C.text2,
+                              border: `1px solid ${C.border}`,
+                            }
+                    }
                   >
                     {item}
                   </span>
-                ))}
-              </div>
-            ) : (
-              <span className="text-gray-400 text-sm italic">
-                მითითებული არ არის
-              </span>
-            )}
+                ))
+              ) : (
+                <span className="italic text-sm" style={{ color: C.text3 }}>
+                  მითითებული არ არის
+                </span>
+              )}
+            </div>
           </div>
 
           {/* მფლობელი */}
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-            <div className="flex items-center justify-between gap-3">
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+          >
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full border-2 border-gray-200 bg-white overflow-hidden shrink-0 flex items-center justify-center">
-                  {owner?.avatar ? (
+                <div
+                  className="w-11 h-11 rounded-full overflow-hidden shrink-0"
+                  style={{ border: `1px solid ${C.border}`, background: C.bg3 }}
+                >
+                  {listing.owner?.avatar ? (
                     <img
-                      src={owner.avatar}
+                      src={listing.owner.avatar}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <User size={20} className="text-gray-400" />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User size={20} style={{ color: C.text3 }} />
+                    </div>
                   )}
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 text-sm">
+                  <p className="font-bold text-sm" style={{ color: C.text }}>
                     @
-                    {owner?.username ||
-                      owner?.name?.split(" ")[0]?.toLowerCase() ||
+                    {listing.owner?.username ||
+                      listing.owner?.name?.split(" ")[0]?.toLowerCase() ||
                       "user"}
                   </p>
-                  <p className="text-xs text-gray-400">მომხმარებელი</p>
+                  <p className="text-xs" style={{ color: C.text3 }}>
+                    მომხმარებელი
+                  </p>
                 </div>
               </div>
-
               {!isOwner && !isExchanged && (
                 <button
                   onClick={handleOffer}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-all shadow-sm hover:shadow-md active:scale-95"
+                  className="px-5 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm text-white"
+                  style={{
+                    background: C.green,
+                    cursor: "pointer",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.greenDark)
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.green)
+                  }
                 >
-                  <MessageCircle size={15} /> შეთავაზება
+                  <MessageCircle size={16} /> შეთავაზება
                 </button>
               )}
             </div>
           </div>
 
-          {/* ღილაკები */}
-          <div className="flex gap-3 mt-auto">
+          {/* ქმედებები */}
+          <div className="flex gap-3">
             <button
               onClick={handleSave}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border-2 transition-all ${
+              className="flex-1 py-3 rounded-xl font-bold border transition-all flex items-center justify-center gap-2 text-sm"
+              style={
                 isSaved
-                  ? "bg-red-50 text-red-600 border-red-300 hover:bg-red-100"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-green-500 hover:text-green-600"
-              }`}
+                  ? {
+                      background: "#ef4444",
+                      color: "#fff",
+                      border: "1px solid #ef4444",
+                      cursor: "pointer",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }
+                  : {
+                      background: C.bg2,
+                      color: C.text2,
+                      border: `1px solid ${C.border}`,
+                      cursor: "pointer",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }
+              }
             >
-              <Heart
-                size={16}
-                className={isSaved ? "fill-red-500 text-red-500" : ""}
-              />
+              <Heart size={18} className={cn(isSaved && "fill-current")} />
               {isSaved ? "შენახულია" : "შენახვა"}
             </button>
-
             <button
-              onClick={handleShare}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 transition-all"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setToast("ბმული დაკოპირდა! 🔗");
+              }}
+              className="flex-1 py-3 rounded-xl font-bold border transition-all flex items-center justify-center gap-2 text-sm"
+              style={{
+                background: C.bg2,
+                color: C.text2,
+                border: `1px solid ${C.border}`,
+                cursor: "pointer",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
-              {copied ? (
-                <>
-                  <Check size={16} className="text-green-600" /> დაკოპირდა
-                </>
-              ) : (
-                <>
-                  <Share2 size={16} /> გაზიარება
-                </>
-              )}
+              <Share2 size={18} /> გაზიარება
             </button>
           </div>
         </div>

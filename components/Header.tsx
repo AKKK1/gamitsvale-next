@@ -439,7 +439,7 @@ export default function Header({
                       C.green)
                   }
                 >
-                  + განცხადება
+                  რეგისტრაცია
                 </button>
               </>
             )}
@@ -1006,7 +1006,7 @@ function AuthModal({
                     <input
                       required
                       type="text"
-                      placeholder="გიორგი"
+                      placeholder="სახელი"
                       className={inp}
                       style={inpStyle}
                       value={formData.name}
@@ -1021,7 +1021,7 @@ function AuthModal({
                     </label>
                     <input
                       type="text"
-                      placeholder="მამულაშვილი"
+                      placeholder="გვარი"
                       className={inp}
                       style={inpStyle}
                       value={formData.lastName}

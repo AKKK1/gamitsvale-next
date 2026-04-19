@@ -10,17 +10,52 @@ import ListingCard, {
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
-import { Trash2 } from "lucide-react";
+import { Trash2, MapPin } from "lucide-react";
 import Footer from "../app/footer/page";
 import HeroSection from "@/components/newDesign/HeroSection";
 import CategoriesSection from "@/components/newDesign/CategoriesSection";
 
 const C = {
   green: "#1a8a4a",
+  greenLight: "#e6f5ec",
   border: "#e8ebe8",
   text: "#111111",
   text3: "#999999",
 };
+
+// ── ქალაქი კოორდინატებით (10 ქ.) ──────────────────────────────────────────
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  თბილისი: { lat: 41.6938, lng: 44.8015 },
+  ქუთაისი: { lat: 42.2679, lng: 42.6938 },
+  ბათუმი: { lat: 41.6168, lng: 41.6367 },
+  რუსთავი: { lat: 41.5495, lng: 44.9998 },
+  ზუგდიდი: { lat: 42.5088, lng: 41.871 },
+  გორი: { lat: 41.9853, lng: 44.1138 },
+  ფოთი: { lat: 42.1489, lng: 41.672 },
+  თელავი: { lat: 41.9174, lng: 45.4722 },
+  ხაშური: { lat: 41.9953, lng: 43.5913 },
+  სამტრედია: { lat: 42.1595, lng: 42.3407 },
+};
+
+// კილომეტრებში მანძილი (Haversine)
+function distKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// მომხმარებლის კოორდინატებიდან ახლომდებარე ქალაქები (10 კმ radius)
+function nearbyCities(userLat: number, userLng: number, radius = 10): string[] {
+  return Object.entries(CITY_COORDS)
+    .filter(([, c]) => distKm(userLat, userLng, c.lat, c.lng) <= radius)
+    .map(([name]) => name);
+}
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -31,6 +66,9 @@ export default function HomePage() {
   const [showOfferModal, setShowOfferModal] = useState<any>(null);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [geoStatus, setGeoStatus] = useState<
+    "idle" | "loading" | "done" | "denied"
+  >("idle");
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     listingId: string | null;
@@ -39,7 +77,7 @@ export default function HomePage() {
   const fetchListings = async (params?: URLSearchParams) => {
     setLoading(true);
     const res = await fetch(
-      `/api/listings${params && params.toString() ? "?" + params.toString() : ""}`,
+      `/api/listings${params?.toString() ? "?" + params.toString() : ""}`,
     );
     const data = await res.json();
     setListings(Array.isArray(data) ? data : []);
@@ -50,7 +88,7 @@ export default function HomePage() {
     fetchListings();
   }, []);
 
-  // ── Tab შეცვლა ────────────────────────────────────────────────────────────
+  // ── Tab შეცვლა ──────────────────────────────────────────────────────────
   const handleTabChange = (tab: ListingTab) => {
     setActiveTab(tab);
 
@@ -60,13 +98,41 @@ export default function HomePage() {
       fetchListings(p);
     } else if (tab === "new") {
       fetchListings();
-    } else if (tab === "nearby") {
-      // TODO: geolocation — navigator.geolocation.getCurrentPosition() →
-      // reverse geocode → p.set("city", detectedCity) → fetchListings(p)
-      fetchListings();
     } else if (tab === "popular") {
-      // TODO: API-ზე დაამატე ?sort=popular → Listing.find().sort({ views: -1 })
-      fetchListings();
+      const p = new URLSearchParams();
+      p.set("sort", "popular");
+      fetchListings(p);
+    } else if (tab === "nearby") {
+      // ── გეოლოკაცია ──
+      if (!navigator.geolocation) {
+        setToast("გეოლოკაცია არ არის მხარდაჭერილი ამ ბრაუზერში");
+        fetchListings();
+        return;
+      }
+      setGeoStatus("loading");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          const cities = nearbyCities(latitude, longitude, 100);
+          setGeoStatus("done");
+          if (cities.length === 0) {
+            setToast("ახლომდებარე ქალაქი ვერ მოიძებნა");
+            fetchListings();
+            return;
+          }
+          const p = new URLSearchParams();
+          // ყველა ახლომდებარე ქალაქი გადაეცემა API-ს
+          cities.forEach((c) => p.append("city", c));
+          fetchListings(p);
+          setToast(`📍 ნაჩვენებია ${cities.join(", ")}-ის განცხადებები`);
+        },
+        () => {
+          setGeoStatus("denied");
+          setToast("გეოლოკაციაზე წვდომა აკრძალულია — ნებართვა მიეცი ბრაუზერს");
+          fetchListings();
+        },
+        { timeout: 8000, maximumAge: 300000 },
+      );
     }
   };
 
@@ -99,11 +165,13 @@ export default function HomePage() {
     if (filters?.category) p.append("category", filters.category);
     if (filters?.condition) p.append("condition", filters.condition);
     fetchListings(p);
-    setTimeout(() => {
-      document
-        .getElementById("listings-section")
-        ?.scrollIntoView({ behavior: "smooth" });
-    }, 300);
+    setTimeout(
+      () =>
+        document
+          .getElementById("listings-section")
+          ?.scrollIntoView({ behavior: "smooth" }),
+      300,
+    );
   };
 
   const displayListings =
@@ -139,9 +207,20 @@ export default function HomePage() {
       <HeroSection onSearch={handleHeroSearch} />
       <CategoriesSection />
 
-      {/* ── განცხადებები ── */}
+      {/* განცხადებები */}
       <main id="listings-section" className="max-w-7xl mx-auto px-4 py-8">
         <ListingsTabs activeTab={activeTab} onChange={handleTabChange} />
+
+        {/* geo loading indicator */}
+        {activeTab === "nearby" && geoStatus === "loading" && (
+          <div
+            className="flex items-center gap-2 mb-4 text-sm"
+            style={{ color: C.text3 }}
+          >
+            <MapPin size={14} style={{ color: C.green }} />
+            <span>მდებარეობა განისაზღვრება...</span>
+          </div>
+        )}
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
@@ -165,7 +244,11 @@ export default function HomePage() {
           </div>
         ) : displayListings.length === 0 ? (
           <div className="text-center py-20" style={{ color: C.text3 }}>
-            <p className="text-base font-medium">განცხადება არ არის</p>
+            <p className="text-base font-medium">
+              {activeTab === "nearby" && geoStatus === "done"
+                ? "ახლომდებარე განცხადება ვერ მოიძებნა"
+                : "განცხადება არ არის"}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
@@ -242,14 +325,19 @@ export default function HomePage() {
                   setDeleteConfirmation({ isOpen: false, listingId: null })
                 }
                 className="flex-1 py-3 rounded-xl text-[12px] font-medium transition-all"
-                style={{ border: `1px solid ${C.border}`, color: C.text3 }}
+                style={{
+                  border: `1px solid ${C.border}`,
+                  color: C.text3,
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
               >
                 გაუქმება
               </button>
               <button
                 onClick={confirmDeleteListing}
                 className="flex-1 py-3 rounded-xl text-white text-[12px] font-semibold transition-all"
-                style={{ background: "#ef4444" }}
+                style={{ background: "#ef4444", cursor: "pointer" }}
               >
                 წაშლა
               </button>

@@ -1,3 +1,4 @@
+// components/AddListingModal.tsx
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -11,10 +12,44 @@ import {
   Image as ImageIcon,
   AlertCircle,
   CheckCircle2,
-  Loader2,
+  Clock,
 } from "lucide-react";
 import { GEORGIAN_CITIES, CATEGORIES, cn } from "./AuthProvider";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎨 კონსტანტები: ფერები და სტილები
+// ─────────────────────────────────────────────────────────────────────────────
+const C = {
+  bg: "#ffffff",
+  bg2: "#f8faf8",
+  bg3: "#f0f4f0",
+  green: "#1a8a4a",
+  greenLight: "#e6f5ec",
+  greenDark: "#125e33",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+  border: "#e8ebe8",
+  gold: "#c8820a",
+  goldLight: "#fff8e6",
+};
+
+// საერთო სტილი input-ებისთვის
+const inp: React.CSSProperties = {
+  background: C.bg2,
+  border: `1px solid ${C.border}`,
+  color: C.text,
+  fontFamily: "'Space Grotesk', sans-serif",
+  outline: "none",
+  width: "100%",
+  padding: "10px 16px",
+  borderRadius: 10,
+  fontSize: 13,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🧩 კომპონენტი: AddListingModal
+// ─────────────────────────────────────────────────────────────────────────────
 export default function AddListingModal({
   onClose,
   onRefresh,
@@ -24,6 +59,9 @@ export default function AddListingModal({
   onRefresh: () => void;
   editingListing?: any;
 }) {
+  // ───────────────────────────────────────────────────────────────────────────
+  // 📦 STATE: ფორმის მონაცემები
+  // ───────────────────────────────────────────────────────────────────────────
   const [form, setForm] = useState({
     title: "",
     category: "",
@@ -35,12 +73,43 @@ export default function AddListingModal({
     wantedType: "items" as "items" | "service",
     images: [] as string[],
     listingType: "NORMAL",
+
+    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+    // 🔁 გაცვლის პერიოდის ველები (STATE-ში)
+    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+
+    /**
+     * გაცვლის ტიპი:
+     * - "permanent" = მუდმივი გაცვლა (დეფოლტი)
+     * - "temporary" = დროებითი გაცვლა
+     */
+    tradePeriod: "permanent" as "permanent" | "temporary",
+
+    /**
+     * ხანგრძლივობის რიცხვითი მნიშვნელობა (დეფოლტი: 1)
+     * მაგალითი: 2, 3, 6...
+     */
+    tradeDuration: 1,
+
+    /**
+     * დროის ერთეული: day | week | month | year
+     * მაგალითი: "month" → "2 თვე"
+     */
+    tradeUnit: "month" as "day" | "week" | "month" | "year",
+
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+    // 🔁 გაცვლის პერიოდის ველები - დასრულებულია
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 🔄 რედაქტირებისას: მონაცემების ჩატვირთვა MongoDB-დან
+  // ───────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (editingListing) {
       setForm({
@@ -58,13 +127,23 @@ export default function AddListingModal({
         wantedType: editingListing.wantedType || "items",
         images: editingListing.images || [],
         listingType: editingListing.listingType || "NORMAL",
+
+        // ▼▼▼ გაცვლის პერიოდის ველების ჩატვირთვა ▼▼▼
+        tradePeriod: editingListing.tradePeriod || "permanent",
+        tradeDuration: editingListing.tradeDuration || 1,
+        tradeUnit: editingListing.tradeUnit || "month",
+        // ▲▲▲ გაცვლის პერიოდის ველების ჩატვირთვა ▲▲▲
       });
     }
   }, [editingListing]);
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 🖼️ ფოტოს ატვირთვა (Cloudinary)
+  // ───────────────────────────────────────────────────────────────────────────
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
+
     const toBase64 = (file: File): Promise<string> =>
       new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -92,6 +171,7 @@ export default function AddListingModal({
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+
     try {
       const base64List = await Promise.all(
         Array.from(files)
@@ -117,9 +197,14 @@ export default function AddListingModal({
     }
   };
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 📤 ფორმის გაგზავნა API-ში (POST/PATCH)
+  // ───────────────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // ვალიდაცია
     if (form.images.length === 0)
       return setError("გთხოვთ ატვირთოთ მინიმუმ 1 ფოტო");
     if (!form.title.trim()) return setError("სათაური სავალდებულოა");
@@ -130,11 +215,16 @@ export default function AddListingModal({
       return setError("სერვისის აღწერა სავალდებულოა");
 
     setLoading(true);
+
     try {
       const url = editingListing
         ? `/api/listings/${editingListing._id}`
         : "/api/listings";
       const method = editingListing ? "PATCH" : "POST";
+
+      // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+      // 🔁 API-ში გაგზავნა: გაცვლის პერიოდის ველები
+      // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -146,8 +236,21 @@ export default function AddListingModal({
               : [],
           serviceWanted:
             form.wantedType === "service" ? form.serviceWanted : "",
+
+          // გაცვლის პერიოდი: ყოველთვის იგზავნება
+          tradePeriod: form.tradePeriod,
+
+          // tradeDuration და tradeUnit იგზავნება მხოლოდ "temporary"-სთვის
+          // "permanent"-ის შემთხვევაში იგზავნება null (როგორც უნდა იყოს MongoDB-ში)
+          tradeDuration:
+            form.tradePeriod === "temporary" ? form.tradeDuration : null,
+          tradeUnit: form.tradePeriod === "temporary" ? form.tradeUnit : null,
         }),
       });
+      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+      // 🔁 API-ში გაგზავნა: დასრულებულია
+      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
       if (res.ok) {
         setSuccess(true);
         setTimeout(() => {
@@ -165,35 +268,22 @@ export default function AddListingModal({
     }
   };
 
-  const inp =
-    "w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all text-sm text-gray-900 placeholder:text-gray-400";
-  const lbl =
-    "block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5";
+  // სტილი ლეიბლებისთვის
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: C.text3,
+    marginLeft: 4,
+    display: "block",
+    marginBottom: 4,
+    fontFamily: "'Space Grotesk', sans-serif",
+  };
 
-  const listingTypes = [
-    {
-      id: "NORMAL",
-      name: "უფასო",
-      price: "0 ₾",
-      desc: "სტანდარტული",
-      icon: <ImageIcon size={13} className="text-gray-400" />,
-    },
-    {
-      id: "SILVER",
-      name: "SILVER",
-      price: "25 ₾",
-      desc: "გამორჩეული",
-      icon: <ShieldCheck size={13} className="text-gray-500" />,
-    },
-    {
-      id: "VIP",
-      name: "VIP",
-      price: "50 ₾",
-      desc: "პირველი ადგილი",
-      icon: <Star size={13} className="text-yellow-500" />,
-    },
-  ];
-
+  // ───────────────────────────────────────────────────────────────────────────
+  // 🎨 JSX: რენდერი
+  // ───────────────────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <motion.div
@@ -201,35 +291,42 @@ export default function AddListingModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        className="absolute inset-0"
+        style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }}
       />
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 16 }}
-        transition={{ type: "spring", damping: 28, stiffness: 320 }}
-        className="relative w-full max-w-2xl bg-white border border-gray-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10"
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10"
+        style={{ background: C.bg, border: `1px solid ${C.border}` }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 shrink-0">
+        <div
+          className="flex items-center justify-between p-5 shrink-0"
+          style={{ borderBottom: `1px solid ${C.border}`, background: C.bg2 }}
+        >
           <div>
-            <h2 className="text-lg font-black text-gray-900">
+            <h2 className="text-lg font-bold" style={{ color: C.text }}>
               {editingListing ? "განცხადების რედაქტირება" : "ახალი განცხადება"}
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: C.text3 }}>
               შეავსე ყველა სავალდებულო ველი
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: C.text3, cursor: "pointer" }}
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="px-6 py-5 overflow-y-auto">
+        <div className="p-5 overflow-y-auto">
+          {/* Success */}
           <AnimatePresence>
             {success && (
               <motion.div
@@ -237,14 +334,17 @@ export default function AddListingModal({
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-16 gap-4"
               >
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                  <CheckCircle2 size={32} className="text-green-600" />
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{ background: C.greenLight }}
+                >
+                  <CheckCircle2 size={32} style={{ color: C.green }} />
                 </div>
                 <div className="text-center">
-                  <p className="font-black text-gray-900 text-xl mb-1">
+                  <p className="font-bold text-lg" style={{ color: C.text }}>
                     {editingListing ? "განახლდა!" : "გამოქვეყნდა!"}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs mt-1" style={{ color: C.text3 }}>
                     {editingListing
                       ? "განცხადება წარმატებით განახლდა"
                       : "განცხადება წარმატებით დაემატა"}
@@ -260,22 +360,30 @@ export default function AddListingModal({
               <AnimatePresence>
                 {error && (
                   <motion.div
-                    initial={{ opacity: 0, y: -8 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-start gap-3 p-4 rounded-xl"
+                    style={{
+                      background: "rgba(239,68,68,0.06)",
+                      border: "1px solid rgba(239,68,68,0.2)",
+                    }}
                   >
                     <AlertCircle
-                      size={15}
-                      className="text-red-500 shrink-0 mt-0.5"
+                      size={16}
+                      style={{ color: "#ef4444" }}
+                      className="shrink-0 mt-0.5"
                     />
-                    <p className="text-sm font-bold text-red-600 flex-1">
+                    <p
+                      className="text-sm font-bold flex-1"
+                      style={{ color: "#ef4444" }}
+                    >
                       {error}
                     </p>
                     <button
                       type="button"
                       onClick={() => setError(null)}
-                      className="text-red-400 hover:text-red-600"
+                      style={{ color: "#ef4444", cursor: "pointer" }}
                     >
                       <X size={14} />
                     </button>
@@ -284,61 +392,70 @@ export default function AddListingModal({
               </AnimatePresence>
 
               {/* Listing Type */}
-              <div>
-                <p className={lbl}>განცხადების ტიპი</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {listingTypes.map((type) => (
-                    <button
-                      key={type.id}
-                      type="button"
-                      onClick={() => setForm({ ...form, listingType: type.id })}
-                      className={cn(
-                        "p-3.5 rounded-2xl border-2 text-left transition-all",
-                        form.listingType === type.id
-                          ? type.id === "VIP"
-                            ? "border-yellow-400 bg-yellow-50"
-                            : type.id === "SILVER"
-                              ? "border-gray-400 bg-gray-50"
-                              : "border-green-500 bg-green-50"
-                          : "border-gray-200 bg-white hover:border-gray-300",
-                      )}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  {
+                    id: "NORMAL",
+                    name: "უფასო",
+                    price: "0 ₾",
+                    icon: <ImageIcon size={14} />,
+                  },
+                  {
+                    id: "SILVER",
+                    name: "SILVER",
+                    price: "25 ₾",
+                    icon: <ShieldCheck size={14} />,
+                  },
+                  {
+                    id: "VIP",
+                    name: "VIP",
+                    price: "50 ₾",
+                    icon: <Star size={14} style={{ color: C.gold }} />,
+                  },
+                ].map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setForm({ ...form, listingType: type.id })}
+                    className="p-3 rounded-xl transition-all text-left flex flex-col gap-1"
+                    style={{
+                      border: `1px solid ${form.listingType === type.id ? C.green : C.border}`,
+                      background:
+                        form.listingType === type.id ? C.greenLight : C.bg2,
+                      cursor: "pointer",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="text-[10px] font-bold uppercase tracking-widest"
+                        style={{
+                          color:
+                            form.listingType === type.id ? C.green : C.text3,
+                        }}
+                      >
+                        {type.name}
+                      </span>
+                      {type.icon}
+                    </div>
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: C.text }}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span
-                          className={cn(
-                            "text-[10px] font-black uppercase tracking-wider",
-                            form.listingType === type.id
-                              ? type.id === "VIP"
-                                ? "text-yellow-700"
-                                : type.id === "SILVER"
-                                  ? "text-gray-700"
-                                  : "text-green-700"
-                              : "text-gray-400",
-                          )}
-                        >
-                          {type.name}
-                        </span>
-                        {type.icon}
-                      </div>
-                      <p className="text-base font-black text-gray-900">
-                        {type.price}
-                      </p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">
-                        {type.desc}
-                      </p>
-                    </button>
-                  ))}
-                </div>
+                      {type.price}
+                    </span>
+                  </button>
+                ))}
               </div>
 
-              {/* სათაური + კატეგორია */}
+              {/* Title & Category */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={lbl}>სათაური *</label>
+                  <label style={labelStyle}>სათაური</label>
                   <input
                     required
-                    className={inp}
                     placeholder="მაგ: iPhone 13 Pro"
+                    style={inp}
                     value={form.title}
                     onChange={(e) =>
                       setForm({ ...form, title: e.target.value })
@@ -346,36 +463,36 @@ export default function AddListingModal({
                   />
                 </div>
                 <div>
-                  <label className={lbl}>კატეგორია *</label>
+                  <label style={labelStyle}>კატეგორია</label>
                   <select
                     required
-                    className={cn(inp, "appearance-none")}
+                    style={{ ...inp, appearance: "none" }}
                     value={form.category}
                     onChange={(e) =>
                       setForm({ ...form, category: e.target.value })
                     }
                   >
-                    <option value="">აირჩიე კატეგორია</option>
+                    <option value="">აირჩიე</option>
                     {CATEGORIES.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.icon} {c.name}
+                        {c.name}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* ქალაქი + მდგომარეობა */}
+              {/* City & Condition */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={lbl}>ქალაქი *</label>
+                  <label style={labelStyle}>ქალაქი</label>
                   <select
                     required
-                    className={cn(inp, "appearance-none")}
+                    style={{ ...inp, appearance: "none" }}
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                   >
-                    <option value="">აირჩიე ქალაქი</option>
+                    <option value="">აირჩიე</option>
                     {GEORGIAN_CITIES.map((c) => (
                       <option key={c} value={c}>
                         {c}
@@ -384,38 +501,37 @@ export default function AddListingModal({
                   </select>
                 </div>
                 <div>
-                  <label className={lbl}>მდგომარეობა *</label>
+                  <label style={labelStyle}>მდგომარეობა</label>
                   <div className="flex gap-2">
-                    {[
-                      { id: "NEW", label: "✨ ახალი" },
-                      { id: "USED", label: "📦 მეორადი" },
-                    ].map((cond) => (
+                    {["NEW", "USED"].map((cond) => (
                       <button
-                        key={cond.id}
+                        key={cond}
                         type="button"
-                        onClick={() => setForm({ ...form, condition: cond.id })}
-                        className={cn(
-                          "flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all",
-                          form.condition === cond.id
-                            ? "bg-green-50 border-green-500 text-green-700"
-                            : "bg-white border-gray-200 text-gray-500 hover:border-gray-300",
-                        )}
+                        onClick={() => setForm({ ...form, condition: cond })}
+                        className="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all"
+                        style={{
+                          background: form.condition === cond ? C.green : C.bg2,
+                          color: form.condition === cond ? "#fff" : C.text2,
+                          border: `1px solid ${form.condition === cond ? C.green : C.border}`,
+                          cursor: "pointer",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}
                       >
-                        {cond.label}
+                        {cond === "NEW" ? "ახალი" : "მეორადი"}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* აღწერა */}
+              {/* Description */}
               <div>
-                <label className={lbl}>აღწერა *</label>
+                <label style={labelStyle}>აღწერა</label>
                 <textarea
                   required
                   rows={3}
-                  className={cn(inp, "resize-none")}
                   placeholder="დაწვრილებით აღწერე ნივთი..."
+                  style={{ ...inp, resize: "none" }}
                   value={form.description}
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
@@ -423,13 +539,103 @@ export default function AddListingModal({
                 />
               </div>
 
-              {/* გაცვლა */}
+              {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
+              {/* 🔁 გაცვლის პერიოდის ველები (UI) */}
+              {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className={lbl} style={{ margin: 0 }}>
-                    რაში გინდა გაცვლა?
-                  </label>
-                  <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+                <label style={labelStyle} className="flex items-center gap-1">
+                  <Clock size={11} /> რამდენი ხნით?
+                </label>
+                <div className="flex gap-2 mb-3">
+                  {[
+                    { id: "permanent", label: "♾ მუდმივად" },
+                    { id: "temporary", label: "⏳ დროებით" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() =>
+                        setForm({ ...form, tradePeriod: opt.id as any })
+                      }
+                      className="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        background:
+                          form.tradePeriod === opt.id ? C.green : C.bg2,
+                        color: form.tradePeriod === opt.id ? "#fff" : C.text2,
+                        border: `1px solid ${form.tradePeriod === opt.id ? C.green : C.border}`,
+                        cursor: "pointer",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* დროებითი გაცვლის ველები: ჩნდება მხოლოდ თუ tradePeriod === "temporary" */}
+                <AnimatePresence>
+                  {form.tradePeriod === "temporary" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex gap-2 overflow-hidden"
+                    >
+                      <div className="flex-1">
+                        <input
+                          type="number"
+                          min={1}
+                          max={999}
+                          value={form.tradeDuration}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              tradeDuration: Math.max(
+                                1,
+                                parseInt(e.target.value) || 1,
+                              ),
+                            })
+                          }
+                          style={{ ...inp, width: "100%" }}
+                          placeholder="1"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <select
+                          value={form.tradeUnit}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              tradeUnit: e.target.value as any,
+                            })
+                          }
+                          style={{ ...inp, appearance: "none", width: "100%" }}
+                        >
+                          <option value="day">დღე</option>
+                          <option value="week">კვირა</option>
+                          <option value="month">თვე</option>
+                          <option value="year">წელი</option>
+                        </select>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
+              {/* 🔁 გაცვლის პერიოდის ველები (UI) - დასრულებულია */}
+              {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
+
+              {/* Wanted toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label style={labelStyle}>რაში გინდა გაცვლა?</label>
+                  <div
+                    className="flex gap-1 p-1 rounded-lg"
+                    style={{
+                      background: C.bg3,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
                     {[
                       { id: "items", label: "📦 ნივთი" },
                       { id: "service", label: "🛠️ სერვისი" },
@@ -438,44 +644,43 @@ export default function AddListingModal({
                         key={t.id}
                         type="button"
                         onClick={() =>
-                          setForm({
-                            ...form,
-                            wantedType: t.id as "items" | "service",
-                          })
+                          setForm({ ...form, wantedType: t.id as any })
                         }
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                          form.wantedType === t.id
-                            ? "bg-white text-green-700 shadow-sm border border-gray-200"
-                            : "text-gray-500 hover:text-gray-700",
-                        )}
+                        className="px-3 py-1.5 rounded-md text-xs font-bold transition-all"
+                        style={{
+                          background:
+                            form.wantedType === t.id ? C.green : "transparent",
+                          color: form.wantedType === t.id ? "#fff" : C.text2,
+                          cursor: "pointer",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}
                       >
                         {t.label}
                       </button>
                     ))}
                   </div>
                 </div>
-
-                {form.wantedType === "items" ? (
+                {form.wantedType === "items" && (
                   <div className="grid grid-cols-3 gap-2">
                     {[0, 1, 2].map((i) => (
                       <input
                         key={i}
-                        className={cn(inp, "text-xs")}
                         placeholder={`ვარიანტი ${i + 1}`}
+                        style={{ ...inp, fontSize: 12 }}
                         value={form.wantedItems[i] || ""}
                         onChange={(e) => {
-                          const newItems = [...form.wantedItems];
-                          newItems[i] = e.target.value;
-                          setForm({ ...form, wantedItems: newItems });
+                          const n = [...form.wantedItems];
+                          n[i] = e.target.value;
+                          setForm({ ...form, wantedItems: n });
                         }}
                       />
                     ))}
                   </div>
-                ) : (
+                )}
+                {form.wantedType === "service" && (
                   <input
-                    className={inp}
                     placeholder="მაგ: ავტომობილის შეკეთება, ვებ დიზაინი..."
+                    style={{ ...inp, fontSize: 12 }}
                     value={form.serviceWanted}
                     onChange={(e) =>
                       setForm({ ...form, serviceWanted: e.target.value })
@@ -484,19 +689,15 @@ export default function AddListingModal({
                 )}
               </div>
 
-              {/* ფოტოები */}
+              {/* Photos */}
               <div>
-                <label className={lbl}>
-                  ფოტოები{" "}
-                  <span className="text-gray-300 normal-case tracking-normal font-medium">
-                    (მაქს 5)
-                  </span>
-                </label>
+                <label style={labelStyle}>ფოტოები (მაქს 5)</label>
                 <div className="flex flex-wrap gap-3">
                   {form.images.map((img, i) => (
                     <div
                       key={i}
-                      className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-gray-200 group"
+                      className="relative w-16 h-16 rounded-lg overflow-hidden group"
+                      style={{ border: `1px solid ${C.border}` }}
                     >
                       <img src={img} className="w-full h-full object-cover" />
                       <button
@@ -507,7 +708,11 @@ export default function AddListingModal({
                             images: prev.images.filter((_, idx) => idx !== i),
                           }))
                         }
-                        className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                        style={{
+                          background: "rgba(239,68,68,0.8)",
+                          cursor: "pointer",
+                        }}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -517,10 +722,15 @@ export default function AddListingModal({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-green-500 hover:text-green-600 hover:bg-green-50 transition-all gap-1"
+                      className="w-16 h-16 rounded-lg flex flex-col items-center justify-center transition-all"
+                      style={{
+                        border: `2px dashed ${C.border}`,
+                        background: C.bg2,
+                        cursor: "pointer",
+                        color: C.text3,
+                      }}
                     >
-                      <Upload size={18} />
-                      <span className="text-[9px] font-bold">ატვირთვა</span>
+                      <Upload size={16} />
                     </button>
                   )}
                 </div>
@@ -537,22 +747,38 @@ export default function AddListingModal({
           )}
         </div>
 
-        {/* Footer */}
         {!success && (
-          <div className="px-6 py-4 border-t border-gray-100 shrink-0 bg-gray-50/50">
+          <div
+            className="p-5 shrink-0"
+            style={{ borderTop: `1px solid ${C.border}`, background: C.bg2 }}
+          >
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-green-600 text-white py-3.5 rounded-2xl text-sm font-black hover:bg-green-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+              className="w-full text-white py-3 rounded-lg text-sm font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{
+                background: C.green,
+                cursor: "pointer",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
             >
               {loading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" /> მიმდინარეობს...
-                </>
+                <span className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                  მიმდინარეობს...
+                </span>
               ) : editingListing ? (
-                "✓ განახლება"
+                "განახლება"
               ) : (
-                "🚀 გამოქვეყნება"
+                "გამოქვეყნება"
               )}
             </button>
           </div>
