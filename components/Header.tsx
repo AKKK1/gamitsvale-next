@@ -71,14 +71,13 @@ export default function Header({
     }
   }, [user]);
 
+  // pathname "/" - ს გაწმენდა state-ის დონეზე მარტო (onSearch გამოძახება არ ხდება)
   useEffect(() => {
     if (pathname === "/") {
       setSearchQuery("");
       setFilters({ city: "", category: "", condition: "" });
       setSearchType("want");
-      if (onSearch) onSearch("", "want", {});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   useEffect(() => {
@@ -161,7 +160,6 @@ export default function Header({
                 setSearchQuery("");
                 setFilters({ city: "", category: "", condition: "" });
                 setSearchType("want");
-                if (onSearch) onSearch("", "want", {});
               }}
               className="text-[17px] font-bold tracking-tight"
               style={{ color: C.text, textDecoration: "none" }}
@@ -683,7 +681,7 @@ export default function Header({
                       className="w-full py-3 rounded-xl text-white text-sm font-semibold transition-all"
                       style={{ background: C.green }}
                     >
-                      განცხადება
+                      რეგისტრაცია
                     </button>
                   </>
                 )}
@@ -1006,7 +1004,7 @@ function AuthModal({
                     <input
                       required
                       type="text"
-                      placeholder="სახელი"
+                      placeholder="გიორგი"
                       className={inp}
                       style={inpStyle}
                       value={formData.name}
@@ -1021,7 +1019,7 @@ function AuthModal({
                     </label>
                     <input
                       type="text"
-                      placeholder="გვარი"
+                      placeholder="მამულაშვილი"
                       className={inp}
                       style={inpStyle}
                       value={formData.lastName}

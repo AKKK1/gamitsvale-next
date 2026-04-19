@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import ListingCard, {
   ListingsTabs,
@@ -11,7 +12,7 @@ import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
 import { Trash2, MapPin } from "lucide-react";
-import Footer from "../app/footer/page";
+import Footer from "@/app/footer/page";
 import HeroSection from "@/components/newDesign/HeroSection";
 import CategoriesSection from "@/components/newDesign/CategoriesSection";
 
@@ -23,7 +24,6 @@ const C = {
   text3: "#999999",
 };
 
-// ── ქალაქი კოორდინატებით (10 ქ.) ──────────────────────────────────────────
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   თბილისი: { lat: 41.6938, lng: 44.8015 },
   ქუთაისი: { lat: 42.2679, lng: 42.6938 },
@@ -37,7 +37,6 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   სამტრედია: { lat: 42.1595, lng: 42.3407 },
 };
 
-// კილომეტრებში მანძილი (Haversine)
 function distKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -50,8 +49,11 @@ function distKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// მომხმარებლის კოორდინატებიდან ახლომდებარე ქალაქები (10 კმ radius)
-function nearbyCities(userLat: number, userLng: number, radius = 10): string[] {
+function nearbyCities(
+  userLat: number,
+  userLng: number,
+  radius = 100,
+): string[] {
   return Object.entries(CITY_COORDS)
     .filter(([, c]) => distKm(userLat, userLng, c.lat, c.lng) <= radius)
     .map(([name]) => name);
@@ -59,6 +61,8 @@ function nearbyCities(userLat: number, userLng: number, radius = 10): string[] {
 
 export default function HomePage() {
   const { user } = useAuth();
+  const router = useRouter();
+
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ListingTab>("new");
@@ -88,10 +92,8 @@ export default function HomePage() {
     fetchListings();
   }, []);
 
-  // ── Tab შეცვლა ──────────────────────────────────────────────────────────
   const handleTabChange = (tab: ListingTab) => {
     setActiveTab(tab);
-
     if (tab === "vip") {
       const p = new URLSearchParams();
       p.set("listingType", "VIP");
@@ -103,7 +105,6 @@ export default function HomePage() {
       p.set("sort", "popular");
       fetchListings(p);
     } else if (tab === "nearby") {
-      // ── გეოლოკაცია ──
       if (!navigator.geolocation) {
         setToast("გეოლოკაცია არ არის მხარდაჭერილი ამ ბრაუზერში");
         fetchListings();
@@ -121,14 +122,13 @@ export default function HomePage() {
             return;
           }
           const p = new URLSearchParams();
-          // ყველა ახლომდებარე ქალაქი გადაეცემა API-ს
           cities.forEach((c) => p.append("city", c));
           fetchListings(p);
           setToast(`📍 ნაჩვენებია ${cities.join(", ")}-ის განცხადებები`);
         },
         () => {
           setGeoStatus("denied");
-          setToast("გეოლოკაციაზე წვდომა აკრძალულია — ნებართვა მიეცი ბრაუზერს");
+          setToast("გეოლოკაციაზე წვდომა აკრძალულია");
           fetchListings();
         },
         { timeout: 8000, maximumAge: 300000 },
@@ -155,23 +155,17 @@ export default function HomePage() {
     action();
   };
 
+  // ჰიროდან ძებნა → /search გვერდზე გადასვლა
   const handleHeroSearch = (query: string, type: string, filters?: any) => {
     const p = new URLSearchParams();
     if (query?.trim()) {
-      p.append("search", query.trim());
+      p.append("q", query.trim());
       p.append("type", type || "want");
     }
     if (filters?.city) p.append("city", filters.city);
     if (filters?.category) p.append("category", filters.category);
     if (filters?.condition) p.append("condition", filters.condition);
-    fetchListings(p);
-    setTimeout(
-      () =>
-        document
-          .getElementById("listings-section")
-          ?.scrollIntoView({ behavior: "smooth" }),
-      300,
-    );
+    router.push(`/search?${p.toString()}`);
   };
 
   const displayListings =
@@ -191,27 +185,28 @@ export default function HomePage() {
     <div className="min-h-screen" style={{ background: "#fff", color: C.text }}>
       <Header
         onAddListing={() => requireAuth(() => setShowAddModal(true))}
+        // ჰედერიდან ძებნა → /search გვერდი (ჰირო გარეშე)
         onSearch={(query, type, filters) => {
           const p = new URLSearchParams();
           if (query?.trim()) {
-            p.append("search", query.trim());
+            p.append("q", query.trim());
             p.append("type", type || "want");
           }
           if (filters?.city) p.append("city", filters.city);
           if (filters?.category) p.append("category", filters.category);
           if (filters?.condition) p.append("condition", filters.condition);
-          fetchListings(p);
+          router.push(`/search?${p.toString()}`);
         }}
       />
 
+      {/* ── ჰირო + კატეგორიები — მობილეზე ნორმალური scroll, არა fixed ── */}
       <HeroSection onSearch={handleHeroSearch} />
       <CategoriesSection />
 
-      {/* განცხადებები */}
+      {/* ── განცხადებები ── */}
       <main id="listings-section" className="max-w-7xl mx-auto px-4 py-8">
         <ListingsTabs activeTab={activeTab} onChange={handleTabChange} />
 
-        {/* geo loading indicator */}
         {activeTab === "nearby" && geoStatus === "loading" && (
           <div
             className="flex items-center gap-2 mb-4 text-sm"
@@ -310,13 +305,10 @@ export default function HomePage() {
             >
               <Trash2 size={28} />
             </div>
-            <h3
-              className="text-[16px] font-bold mb-2"
-              style={{ color: C.text }}
-            >
+            <h3 className="text-base font-bold mb-2" style={{ color: C.text }}>
               ნამდვილად გსურთ წაშლა?
             </h3>
-            <p className="text-[12px] mb-6" style={{ color: C.text3 }}>
+            <p className="text-xs mb-6" style={{ color: C.text3 }}>
               ეს ქმედება შეუქცევადია.
             </p>
             <div className="flex gap-3">
@@ -324,7 +316,7 @@ export default function HomePage() {
                 onClick={() =>
                   setDeleteConfirmation({ isOpen: false, listingId: null })
                 }
-                className="flex-1 py-3 rounded-xl text-[12px] font-medium transition-all"
+                className="flex-1 py-3 rounded-xl text-xs font-medium"
                 style={{
                   border: `1px solid ${C.border}`,
                   color: C.text3,
@@ -336,7 +328,7 @@ export default function HomePage() {
               </button>
               <button
                 onClick={confirmDeleteListing}
-                className="flex-1 py-3 rounded-xl text-white text-[12px] font-semibold transition-all"
+                className="flex-1 py-3 rounded-xl text-white text-xs font-semibold"
                 style={{ background: "#ef4444", cursor: "pointer" }}
               >
                 წაშლა

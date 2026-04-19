@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CATEGORIES, GEORGIAN_CITIES } from "@/components/AuthProvider";
+import { CATEGORIES } from "@/components/AuthProvider";
 
 interface HeroSectionProps {
   onSearch?: (query: string, type: string, filters?: any) => void;
@@ -21,10 +21,12 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   };
 
   return (
+    // position: static (default) — მობილეზე ჩვეულებრივად scrollable
     <section
       style={{
-        background: "linear-gradient(180deg, #f8faf8 0%, #f8faf8 100%)",
+        background: "#f8faf8",
         borderBottom: "1px solid #e8ebe8",
+        // ✅ position fixed არ არის — მობილეზე scroll-ი მუშაობს
       }}
       className="px-4 pt-12 pb-10 flex flex-col items-center text-center"
     >
@@ -39,10 +41,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
       >
         <span
           className="w-2 h-2 rounded-full"
-          style={{
-            background: "#1a8a4a",
-            animation: "gv-blink 2s infinite",
-          }}
+          style={{ background: "#1a8a4a", animation: "gv-blink 2s infinite" }}
         />
         10,000+ მომხმარებელი · ახლა ონლაინ
       </div>
@@ -67,59 +66,21 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         ახალია.
       </p>
 
-      {/* Search bar */}
-      {/* <form
-        onSubmit={handleSearch}
-        className="flex w-full max-w-[600px] mb-6 overflow-hidden rounded-xl"
-        style={{
-          background: "#fff",
-          border: "1px solid #e8ebe8",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-        }}
-      >
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+      {/* Search bar (uncomment to enable inline hero search) */}
+      {/* <form onSubmit={handleSearch} className="flex w-full max-w-[600px] mb-6 overflow-hidden rounded-xl"
+        style={{ background: "#fff", border: "1px solid #e8ebe8", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}
           className="text-[13px] outline-none px-4 py-3 bg-transparent"
-          style={{
-            color: "#555",
-            borderRight: "1px solid #e8ebe8",
-            minWidth: 130,
-            fontFamily: "'Space Grotesk', sans-serif",
-            cursor: "pointer",
-          }}
-        >
+          style={{ color: "#555", borderRight: "1px solid #e8ebe8", minWidth: 130, fontFamily: "'Space Grotesk', sans-serif", cursor: "pointer" }}>
           <option value="">ყველა კატეგ. ▾</option>
-          {CATEGORIES.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.icon} {c.name}
-            </option>
-          ))}
+          {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
         </select>
-
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
           placeholder="მოძებნე ნივთი, ან რაში გინდა გაცვლა..."
           className="flex-1 px-4 py-3 text-[14px] outline-none bg-transparent"
-          style={{ color: "#111", fontFamily: "'Space Grotesk', sans-serif" }}
-        />
-
-        <button
-          type="submit"
-          className="px-6 py-3 text-[14px] font-semibold text-white transition-all whitespace-nowrap"
-          style={{
-            background: "#1a8a4a",
-            fontFamily: "'Space Grotesk', sans-serif",
-          }}
-          onMouseEnter={(e) =>
-            ((e.target as HTMLElement).style.background = "#125e33")
-          }
-          onMouseLeave={(e) =>
-            ((e.target as HTMLElement).style.background = "#1a8a4a")
-          }
-        >
+          style={{ color: "#111", fontFamily: "'Space Grotesk', sans-serif" }} />
+        <button type="submit" className="px-6 py-3 text-[14px] font-semibold text-white whitespace-nowrap"
+          style={{ background: "#1a8a4a", fontFamily: "'Space Grotesk', sans-serif" }}>
           ძებნა →
         </button>
       </form> */}

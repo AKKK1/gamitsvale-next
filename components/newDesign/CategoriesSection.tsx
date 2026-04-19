@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/components/AuthProvider";
 
-// კატეგორიების სია — count-ები შეგიძლია მოგვიანებით API-დან მოიტანო
 const CATEGORY_COUNTS: Record<string, number> = {
   electronics: 340,
   vehicles: 95,
@@ -25,12 +24,10 @@ const CATEGORY_COUNTS: Record<string, number> = {
 
 export default function CategoriesSection() {
   return (
+    // ✅ position fixed / sticky არ არის — მობილეზე ჩვეულებრივი scroll
     <section
       className="py-9 px-4"
-      style={{
-        background: "#fff",
-        borderBottom: "1px solid #e8ebe8",
-      }}
+      style={{ background: "#fff", borderBottom: "1px solid #e8ebe8" }}
     >
       <div className="max-w-[1100px] mx-auto">
         {/* Header */}
@@ -51,28 +48,32 @@ export default function CategoriesSection() {
           </div>
           <Link
             href="/categories"
-            className="text-[13px] font-medium transition-colors"
+            className="text-[13px] font-medium"
             style={{
               color: "#1a8a4a",
               fontFamily: "'Space Grotesk', sans-serif",
+              textDecoration: "none",
             }}
           >
             ყველა კატეგ. →
           </Link>
         </div>
 
-        {/* Grid */}
+        {/* Grid — მობილეზე 3 სვეტი, desktop-ზე auto-fill */}
         <div
           className="grid gap-2"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))",
-          }}
+          style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
         >
+          <style>{`
+            @media (min-width: 640px) {
+              .cats-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)) !important; }
+            }
+          `}</style>
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.id}
               href={`/category/${cat.id}`}
-              className="group flex flex-col items-center text-center py-4 px-3 rounded-xl transition-all duration-200 cursor-pointer"
+              className="group flex flex-col items-center text-center py-3 px-2 sm:py-4 sm:px-3 rounded-xl transition-all duration-200 cursor-pointer"
               style={{
                 background: "#f8faf8",
                 border: "1px solid #e8ebe8",
@@ -92,13 +93,13 @@ export default function CategoriesSection() {
               }}
             >
               <span
-                className="text-[26px] mb-2 flex items-center justify-center rounded-xl w-11 h-11"
+                className="text-[22px] sm:text-[26px] mb-1.5 sm:mb-2 flex items-center justify-center rounded-xl w-9 h-9 sm:w-11 sm:h-11"
                 style={{ background: "#fff" }}
               >
                 {cat.icon}
               </span>
               <span
-                className="text-[12px] font-semibold leading-tight mb-0.5 line-clamp-2"
+                className="text-[11px] sm:text-[12px] font-semibold leading-tight mb-0.5 line-clamp-2"
                 style={{
                   color: "#111",
                   fontFamily: "'Space Grotesk', sans-serif",
@@ -106,7 +107,10 @@ export default function CategoriesSection() {
               >
                 {cat.name}
               </span>
-              <span className="text-[11px]" style={{ color: "#999" }}>
+              <span
+                className="text-[10px] sm:text-[11px]"
+                style={{ color: "#999" }}
+              >
                 <strong style={{ color: "#1a8a4a" }}>
                   {CATEGORY_COUNTS[cat.id] || 0}
                 </strong>{" "}

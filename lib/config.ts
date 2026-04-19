@@ -7,7 +7,7 @@ export const CONFIG = {
 
   // 📝 განცხადებები
   LISTINGS: {
-    DAILY_LIMIT: 2,           // დღეში მაქს რამდენი პოსტი შეიძლება
+    DAILY_LIMIT: 3,           // დღეში მაქს რამდენი პოსტი შეიძლება
     MAX_IMAGES: 5,            // პოსტზე მაქს ფოტო
     MAX_WANTED_ITEMS: 3,      // "გაცვლა მინდა" მაქს რაოდენობა
     IMAGE_MAX_SIZE_MB: 10,    // ფოტოს მაქს ზომა MB-ში
