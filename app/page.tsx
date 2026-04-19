@@ -12,8 +12,7 @@ import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
 import { Trash2 } from "lucide-react";
 import Footer from "../app/footer/page";
-import HeroSection from "@/components/newDesign/HeroSection";
-import CategoriesSection from "@/components/newDesign/CategoriesSection";
+//
 
 const C = {
   green: "#1a8a4a",
