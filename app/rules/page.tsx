@@ -253,8 +253,7 @@ export default function RulesPage() {
                 >
                   <XCircle
                     size={17}
-                    className="shrink-0 mt-0.5"
-                    style={{ color: "#ef4444" }}
+                    className="shrink-0 mt-0.5 color-[#ef4444]"
                   />
                   {rule}
                 </li>
