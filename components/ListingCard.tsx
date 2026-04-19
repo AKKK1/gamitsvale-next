@@ -106,7 +106,7 @@ function TradePeriodBadge({ listing }: { listing: any }) {
   return (
     <span
       className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md"
-      style={{ background: "#f0f4f0", color: C.text3 }}
+      style={{ background: "#8c0b0bb8", color: "#ffff" }}
     >
       ⏳ {listing.tradeDuration} {unit}
       {/* მაგალითი: ⏳ 2 თვე, ⏳ 1 კვ., ⏳ 6 თვე */}
