@@ -88,9 +88,9 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
       {/* Stats */}
       <div className="flex items-center gap-8">
         {[
-          { n: "2,400+", l: "აქტიური განცხ." },
+          { n: "24000+", l: "აქტიური მომხმარებელი" },
           null,
-          { n: "850+", l: "გაცვლა ამ კვირას" },
+          { n: "100+", l: "გაცვლა ამ კვირას" },
           null,
           { n: "15", l: "კატეგორია" },
         ].map((item, i) =>
