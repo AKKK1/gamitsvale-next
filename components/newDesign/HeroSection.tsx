@@ -56,7 +56,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         }}
       >
         გაცვალე ნივთები —{" "}
-        <span style={{ color: "#1a8a4a", fontStyle: "italic" }}>
+        <span style={{ color: "#D4AF37", fontStyle: "italic" }}>
           ფულის გარეშე
         </span>
       </h1>

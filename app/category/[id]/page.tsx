@@ -222,7 +222,7 @@ export default function CategoryPage({
               ) : (
                 <>
                   <strong style={{ color: C.text }}>
-                    {/* {total.toLocaleString()} */}
+                    {total.toLocaleString()}
                   </strong>{" "}
                   {/* განცხადება */}
                 </>
