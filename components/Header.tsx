@@ -160,6 +160,7 @@ export default function Header({
                 setSearchQuery("");
                 setFilters({ city: "", category: "", condition: "" });
                 setSearchType("want");
+                this.props.history.push("/");
               }}
               className="text-[17px] font-bold tracking-tight"
               style={{ color: C.text, textDecoration: "none" }}
