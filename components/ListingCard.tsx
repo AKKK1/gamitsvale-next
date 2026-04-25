@@ -520,7 +520,7 @@ const TABS: { id: ListingTab; label: string }[] = [
   { id: "vip", label: "⭐ VIP განცხადებები" },
   { id: "new", label: "🆕 ახალი" },
   { id: "nearby", label: "📍 ჩემს ახლოს" },
-  { id: "popular", label: "🔥 პოპულარული" },
+  // { id: "popular", label: "🔥 პოპულარული" },
 ];
 export function ListingsTabs({ activeTab, onChange }: ListingsTabsProps) {
   return (
