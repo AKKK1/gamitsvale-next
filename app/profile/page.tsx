@@ -37,6 +37,7 @@ import {
 import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import Link from "next/link";
+import Footer from "../footer/page";
 
 const C = {
   bg: "#ffffff",
@@ -1687,6 +1688,7 @@ export default function ProfilePage() {
           </div>
         )}
       </AnimatePresence>
+      <Footer />
     </div>
   );
 }

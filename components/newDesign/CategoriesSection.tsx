@@ -3,12 +3,15 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/components/AuthProvider";
+import { HeartCrack, HeartHandshake, Toolbox } from "lucide-react";
 
 const GREEN = "#1a8a4a";
 const GREEN_LIGHT = "#e6f5ec";
 const GOLD = "#c8820a";
 const GOLD_LIGHT = "#fffdf4";
 const BORDER = "#e8ebe8";
+const RED = "#1a8a4a";
+const GREY = "#99999f";
 
 // ── Real counts hook ─────────────────────────────────────────────────────────
 // API route.ts-ში GET-ს დასჭირდება ?counts=1 პარამეტრის დამუშავება:
@@ -82,9 +85,12 @@ const FEATURED_CAT_IDS = [
   "electronics",
   "clothing",
   "sports",
-  "kids",
+  "tools",
   "books",
   "art",
+  "vehicles",
+  "realestate",
+  "other",
 ];
 
 // ── hover helper ─────────────────────────────────────────────────────────────
@@ -145,7 +151,7 @@ export default function CategoriesSection() {
         {/* ══ ოქროსფერი ბლოკი: დროებითი + ჩვეულებრივი გაცვლა ══ */}
         <div
           className="rounded-[14px] p-4 mb-5"
-          style={{ border: `1.5px solid ${GOLD}`, background: GOLD_LIGHT }}
+          style={{ border: `1.5px solid ${RED}`, background: GOLD_LIGHT }}
         >
           {/* სათაური */}
           <div className="flex items-center gap-2 mb-1">
@@ -229,24 +235,37 @@ export default function CategoriesSection() {
 
           {/* ── სტრიქონი 2: ჩვეულებრივი ── */}
           <div
-            className="text-[10px] font-bold uppercase tracking-widest mb-2"
-            style={{ color: "#999" }}
+            className="text-[10px] font-bold uppercase tracking-widest mb-2 flex gap-1"
+            style={{ color: GREY }}
           >
-            ♾ ჩვეულებრივი გაცვლა
+            <Toolbox size={16} /> სერვისების გაცვლა
           </div>
           <div className="flex gap-2.5 flex-wrap">
             {[
+              // {
+              //   href: "/category/vehicles",
+              //   icon: "🚗",
+              //   label: "ტრანსპორტი",
+              //   catId: "vehicles",
+              // },
+              // {
+              //   href: "/category/realestate",
+              //   icon: "🏠",
+              //   label: "უძრავი ქონება",
+              //   catId: "realestate",
+              // },
               {
-                href: "/category/vehicles",
-                icon: "🚗",
-                label: "ტრანსპორტი",
-                catId: "vehicles",
+                href: "/category/serviceToThing",
+                icon: "💼",
+                label: "მომსახურების ნივთში გადაცვლა",
+                catId: "serviceToThing",
               },
               {
-                href: "/category/realestate",
-                icon: "🏠",
-                label: "უძრავი ქონება",
-                catId: "realestate",
+                href: "/category/thingToService",
+                icon: "🎯",
+                rame: { HeartCrack },
+                label: "ნივთის მომსახურებაში გადაცვლა",
+                catId: "thingToService",
               },
             ].map((item) => (
               <Link
@@ -258,11 +277,14 @@ export default function CategoriesSection() {
                 <div
                   className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5"
                   style={{
-                    background: "#fff",
+                    background: "#ffffff",
                     border: `1px solid ${BORDER}`,
                     cursor: "pointer",
                     transition: "all .18s",
                   }}
+                  // onMouseEnter={(e) => hoverGold(e, true)}
+                  // onMouseLeave={(e) => hoverGold(e, false)}
+
                   onMouseEnter={(e) => {
                     const el = e.currentTarget as HTMLElement;
                     el.style.borderColor = GREEN;
@@ -276,7 +298,10 @@ export default function CategoriesSection() {
                     el.style.transform = "translateY(0)";
                   }}
                 >
-                  <span className="text-[22px]">{item.icon}</span>
+                  <span className="text-[22px]">
+                    {/* <HeartHandshake color="GOLD" /> */}
+                    {item.icon}
+                  </span>
                   <div>
                     <div
                       className="text-[11px] font-bold leading-tight"

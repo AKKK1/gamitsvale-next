@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Filter,
   ChevronDown,
+  HeartHandshake,
 } from "lucide-react";
 
 const GOLD = "#c8820a";

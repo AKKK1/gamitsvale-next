@@ -1,14 +1,14 @@
 {
   "name": "GAMITSVALE.GE — გაცვლის პლატფორმა",
-  "short_name": "GAMITSVALE",
-  "description": "საქართველოს პირველი გაცვლის პლატფორმა",
+  "short_name": "გამიცვალე - GAMITSVALE",
+  "description": "საქართველოს პირველი გაცვლის პლატფორმა, Georgia's first bartering platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#D4A017",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "ka",
+  "lang": "ka", 
   "categories": ["shopping", "social"],
   "icons": [
     {

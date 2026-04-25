@@ -23,6 +23,8 @@ export const GEORGIAN_CITIES = [
 
 export const CATEGORIES = [
   { id: "electronics", name: "ტექნოლოგია და ელექტრონიკა", icon: "📱" },
+  { id: "serviceToThing", name: "მომს ნივთში", icon: "🧰" },
+  { id: "thingToService", name: "ნივთი მომსახურებაში", icon: "🧰" },
   { id: "vehicles", name: "ტრანსპორტი", icon: "🚗" },
   { id: "realestate", name: "უძრავი ქონება", icon: "🏠" },
   { id: "clothing", name: "ტანსაცმელი და აქსესუარები", icon: "👗" },

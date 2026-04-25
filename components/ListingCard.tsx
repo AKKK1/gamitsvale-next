@@ -416,7 +416,7 @@ export default function ListingCard({
                 className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
                 style={{ color: C.green }}
               >
-                <RefreshCw size={8} /> გამოცვლა მინდა
+                <RefreshCw size={8} /> გაცვლა მინდა
               </p>
               <div className="flex flex-wrap gap-1 min-h-[18px]">
                 {listing.wantedType === "service" && listing.serviceWanted ? (

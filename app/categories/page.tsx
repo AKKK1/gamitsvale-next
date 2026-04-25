@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/components/AuthProvider";
 import Header from "@/components/Header";
+import { FileX, HeartHandshake, Toolbox } from "lucide-react";
 
 const GREEN = "#1a8a4a";
 const GREEN_LIGHT = "#e6f5ec";
@@ -250,6 +251,7 @@ export default function CategoriesPage() {
 
           {/* ჩვეულებრივი */}
           <div
+            className="flex gap-1"
             style={{
               fontSize: 10,
               fontWeight: 700,
@@ -259,21 +261,33 @@ export default function CategoriesPage() {
               marginBottom: 8,
             }}
           >
-            ♾ ჩვეულებრივი გაცვლა
+            <Toolbox size={16} /> სერვისების გაცვლა
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {[
+              // {
+              //   href: "/category/vehicles",
+              //   icon: "🚗",
+              //   label: "ტრანსპორტი",
+              //   catId: "vehicles",
+              // },
+              // {
+              //   href: "/category/realestate",
+              //   icon: "🏠",
+              //   label: "უძრავი ქონება",
+              //   catId: "realestate",
+              // },
               {
-                href: "/category/vehicles",
-                icon: "🚗",
-                label: "ტრანსპორტი",
-                catId: "vehicles",
+                href: "/category/serviceToThing",
+                icon: "💼",
+                label: "მომსახურების ნივთში გაცვლა",
+                catId: "serviceToThing",
               },
               {
-                href: "/category/realestate",
-                icon: "🏠",
-                label: "უძრავი ქონება",
-                catId: "realestate",
+                href: "/category/thingToService",
+                icon: "🎯",
+                label: "ნივთის მომსახურებაში გაცვლა",
+                catId: "thingToService",
               },
             ].map((item) => (
               <Link
@@ -306,7 +320,10 @@ export default function CategoriesPage() {
                     el.style.transform = "translateY(0)";
                   }}
                 >
-                  <span style={{ fontSize: 26 }}>{item.icon}</span>
+                  <span style={{ fontSize: 26 }}>
+                    {/* {item.icon}  */}
+                    <HeartHandshake color="GOLD" />
+                  </span>
                   <div>
                     <div
                       style={{
