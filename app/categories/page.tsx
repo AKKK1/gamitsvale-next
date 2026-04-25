@@ -320,10 +320,7 @@ export default function CategoriesPage() {
                     el.style.transform = "translateY(0)";
                   }}
                 >
-                  <span style={{ fontSize: 26 }}>
-                    {/* {item.icon}  */}
-                    <HeartHandshake color="GOLD" />
-                  </span>
+                  <span style={{ fontSize: 26 }}>{item.icon}</span>
                   <div>
                     <div
                       style={{
