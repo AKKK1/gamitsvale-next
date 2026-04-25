@@ -10,11 +10,13 @@ import {
   X,
   Filter,
   User,
+  Route,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import path from "path";
 
 // ── ფერების კონსტანტები (E დიზაინი) ─────────────────────────────────────────
 const C = {
@@ -160,7 +162,6 @@ export default function Header({
                 setSearchQuery("");
                 setFilters({ city: "", category: "", condition: "" });
                 setSearchType("want");
-                this.props.history.push("/");
               }}
               className="text-[17px] font-bold tracking-tight"
               style={{ color: C.text, textDecoration: "none" }}
