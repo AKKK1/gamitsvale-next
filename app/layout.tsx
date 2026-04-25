@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   keywords: [
     "გაცვლა",
     "barter",
+    "გაცვალე ნივთები",
+    "ნივთის ნივთში გადაცვლა",
     "ნივთების გაცვლა",
     "საქართველო",
     "გაცვლის საიტი",
@@ -39,7 +41,7 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.ico",
     apple: "/icons/icon-192.png", // iOS home screen icon
   },
   // PWA manifest
