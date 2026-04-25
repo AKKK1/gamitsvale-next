@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.svg",
     apple: "/icons/icon-192.png", // iOS home screen icon
   },
   // PWA manifest
