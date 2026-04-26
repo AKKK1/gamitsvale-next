@@ -16,8 +16,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import path from "path";
-
+import { useRouter } from "next/navigation";
 // ── ფერების კონსტანტები (E დიზაინი) ─────────────────────────────────────────
 const C = {
   green: "#1a8a4a",
@@ -30,7 +29,6 @@ const C = {
   text2: "#555555",
   text3: "#999999",
 };
-
 export default function Header({
   onAddListing,
   onSearch,
@@ -72,6 +70,8 @@ export default function Header({
         .catch(() => {});
     }
   }, [user]);
+
+  const router = useRouter();
 
   // pathname "/" - ს გაწმენდა state-ის დონეზე მარტო (onSearch გამოძახება არ ხდება)
   useEffect(() => {
@@ -159,6 +159,7 @@ export default function Header({
             <Link
               href="/"
               onClick={() => {
+                router.push("/");
                 setSearchQuery("");
                 setFilters({ city: "", category: "", condition: "" });
                 setSearchType("want");
