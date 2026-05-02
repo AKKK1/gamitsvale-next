@@ -30,20 +30,17 @@ function verificationEmailHtml(code: string, name: string, email: string) {
           <p style="color:#555;font-size:15px;margin-bottom:8px">გამარჯობა, <strong style="color:#111">${name}</strong>!</p>
           <p style="color:#555;font-size:14px;margin-bottom:28px">ანგარიშის გასააქტიურებლად დააჭირე ღილაკს:</p>
 
-
           <a href="${activationLink}"
              style="display:inline-block;background:#1a8a4a;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:12px;font-size:16px;font-weight:900;letter-spacing:1px;margin-bottom:28px">
             ✅ ანგარიშის გააქტიურება
           </a>
 
-          <p style="color:#999;font-size:12px;margin-bottom:8px>ან შეიყვანე კოდი ხელით </p>
-<p style="color:#555;font-size:15px;margin-bottom:8px"> <strong style="color:#111">${code}</strong>!</p>
-
           <p style="color:#999;font-size:12px;margin-bottom:8px">ღილაკი არ მუშაობს? დააკოპირე ლინკი:</p>
           <p style="color:#1a8a4a;font-size:11px;word-break:break-all;background:#e6f5ec;padding:10px;border-radius:8px">
             ${activationLink}
           </p>
-
+ <p style="color:#999;font-size:12px;margin-bottom:8px>ან შეიყვანე კოდი ხელით </p>
+<p style="color:#555;font-size:15px;margin-bottom:8px"> <strong style="color:#111">${code}</strong>!</p>
           <p style="color:#bbb;font-size:11px;margin-top:20px">ლინკი მოქმედია 30 წუთი</p>
         </div>
         <div style="padding:16px;border-top:1px solid #e8ebe8;text-align:center">
