@@ -1100,7 +1100,7 @@ function AuthModal({
                       </span>
                       <input
                         type="text"
-                        placeholder="Whatsapp ნომერი"
+                        placeholder="Whatsapp +995 5XX XXX XXX"
                         className={`${inp} pl-10`}
                         style={inpStyle}
                         value={formData.whatsapp}
@@ -1118,7 +1118,7 @@ function AuthModal({
                       </span>
                       <input
                         type="text"
-                        placeholder="Telegram ნომერი"
+                        placeholder="Telegram @იუზერნეიმი"
                         className={`${inp} pl-10`}
                         style={inpStyle}
                         value={formData.telegram}

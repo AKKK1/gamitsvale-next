@@ -247,6 +247,25 @@ export default function ProfilePage() {
   const navBtnBase =
     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all cursor-pointer w-full text-left";
 
+  //ვათსაპზე და ტელეგრამზე გადასასვლელი
+
+  const openChat = (type: "whatsapp" | "telegram", value: string) => {
+    if (!value) return;
+
+    let url = "";
+    if (type === "whatsapp") {
+      // აშორებს ყველაფერს ციფრების გარდა
+      const cleanNumber = value.replace(/\D/g, "");
+      url = `https://wa.me/${cleanNumber}`;
+    } else {
+      // აშორებს @ სიმბოლოს თუ არსებობს
+      const cleanUser = value.replace("@", "");
+      url = `https://t.me/${cleanUser}`;
+    }
+
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div
       className="min-h-screen"
@@ -736,6 +755,7 @@ export default function ProfilePage() {
                             )}
 
                             {/* contact */}
+                            {/* contact */}
                             {offer.status === "ACCEPTED" && (
                               <div
                                 className="mb-3 rounded-lg p-3"
@@ -750,76 +770,83 @@ export default function ProfilePage() {
                                 >
                                   კონტაქტი
                                 </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                  {[
-                                    // {
-                                    //   key: `${offer._id}-email`,
-                                    //   icon: <Mail size={12} />,
-                                    //   value: otherParty?.email,
-                                    // },
-                                    {
-                                      key: `${offer._id}-phone`,
-                                      icon: <Phone size={12} />,
-                                      value: otherParty?.phone,
-                                    },
-                                    {
-                                      key: `${offer._id}-telegram`,
-                                      icon: <FaTelegram size={12} />,
-                                      value: otherParty?.telegram,
-                                    },
-                                    {
-                                      key: `${offer._id}-whatsapp`,
-                                      icon: <FaWhatsapp size={12} />,
-                                      value: otherParty?.whatsapp,
-                                    },
-                                    // {
-                                    //   key: `${offer._id}-facebook`,
-                                    //   icon: <Facebook size={12} />,
-                                    //   value: otherParty?.facebook,
-                                    // },
-
-                                    // {
-                                    //   key: `${offer._id}-instagram`,
-                                    //   icon: <Instagram size={12} />,
-                                    //   value: otherParty?.instagram,
-                                    // },
-                                  ]
-                                    .filter((i) => i.value)
-                                    .map((item) => (
-                                      <button
-                                        key={item.key}
-                                        onClick={() =>
-                                          handleCopy(item.key, item.value)
-                                        }
-                                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full min-h-[44px]"
-                                        style={{
-                                          background: "rgba(255,255,255,0.6)",
-                                          border: `1px solid rgba(26,138,74,0.15)`,
-                                          cursor: "pointer",
-                                        }}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {/* Phone - რჩება კოპირებაზე */}
+                                  {otherParty?.phone && (
+                                    <button
+                                      key={`${offer._id}-phone`}
+                                      onClick={() =>
+                                        handleCopy(
+                                          `${offer._id}-phone`,
+                                          otherParty.phone,
+                                        )
+                                      }
+                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full"
+                                      style={{
+                                        background: "rgba(255,255,255,0.6)",
+                                        border: `1px solid rgba(26,138,74,0.15)`,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      <span style={{ color: C.green }}>
+                                        <Phone size={12} />
+                                      </span>
+                                      <span
+                                        className="text-xs flex-1 truncate"
+                                        style={{ color: C.text }}
                                       >
-                                        <span style={{ color: C.green }}>
-                                          {item.icon}
-                                        </span>
-                                        <span
-                                          className="text-xs flex-1 truncate"
-                                          style={{ color: C.text }}
-                                        >
-                                          {item.value}
-                                        </span>
-                                        {copiedKey === item.key ? (
-                                          <Check
-                                            size={12}
-                                            style={{ color: C.green }}
-                                          />
-                                        ) : (
-                                          <Copy
-                                            size={12}
-                                            style={{ color: C.text3 }}
-                                          />
-                                        )}
-                                      </button>
-                                    ))}
+                                        {copiedKey === `${offer._id}-phone`
+                                          ? "დაკოპირდა!"
+                                          : otherParty.phone}
+                                      </span>
+                                    </button>
+                                  )}
+
+                                  {/* Telegram - გადადის ჩატში */}
+                                  {otherParty?.telegram && (
+                                    <button
+                                      key={`${offer._id}-telegram`}
+                                      onClick={() =>
+                                        openChat(
+                                          "telegram",
+                                          otherParty.telegram,
+                                        )
+                                      }
+                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full text-white shadow-sm"
+                                      style={{
+                                        background: "#50a5cf",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      <FaTelegram size={14} />
+                                      <span className="text-xs font-semibold">
+                                        {otherParty.telegram}
+                                      </span>
+                                    </button>
+                                  )}
+
+                                  {/* WhatsApp - გადადის ჩატში */}
+                                  {otherParty?.whatsapp && (
+                                    <button
+                                      key={`${offer._id}-whatsapp`}
+                                      onClick={() =>
+                                        openChat(
+                                          "whatsapp",
+                                          otherParty.whatsapp,
+                                        )
+                                      }
+                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full text-white shadow-sm"
+                                      style={{
+                                        background: "#40cf74",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      <FaWhatsapp size={14} />
+                                      <span className="text-xs font-semibold">
+                                        {otherParty.whatsapp}
+                                      </span>
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             )}
