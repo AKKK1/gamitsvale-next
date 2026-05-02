@@ -21,7 +21,7 @@ export async function PATCH(request: Request) {
   }
 
   // დასაშვები ველები (სხვა ველების შეცვლა არ შეიძლება)
-  const allowed = ['phone', 'instagram', 'facebook', 'username'];
+  const allowed = ['phone','whatsapp', 'telegram', 'instagram', 'facebook', 'username'];
   const update: any = {};
   for (const key of allowed) {
     if (body[key] !== undefined) update[key] = body[key];

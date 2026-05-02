@@ -14,25 +14,36 @@ function createTransporter() {
   });
 }
 
-function verificationEmailHtml(code: string, name: string) {
+function verificationEmailHtml(code: string, name: string, email: string) {
+  const appUrl = process.env.APP_URL || 'https://gamitsvale.ge';
+  const activationLink = `${appUrl}/verify?email=${encodeURIComponent(email)}&code=${code}`;
+
   return `
     <!DOCTYPE html>
     <html>
-    <body style="margin:0;padding:0;background:#0a0a0a;font-family:Arial,sans-serif">
-      <div style="max-width:480px;margin:40px auto;background:#141414;border-radius:16px;overflow:hidden;border:1px solid #222">
-        <div style="background:#D4A017;padding:24px;text-align:center">
-          <h1 style="margin:0;color:#0a0a0a;font-size:22px;font-weight:900;letter-spacing:2px">GAMITSVALE.GE</h1>
+    <body style="margin:0;padding:0;background:#f8faf8;font-family:Arial,sans-serif">
+      <div style="max-width:480px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e8ebe8">
+        <div style="background:#1a8a4a;padding:24px;text-align:center">
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:900;letter-spacing:2px">GAMITSVALE.GE</h1>
         </div>
         <div style="padding:32px;text-align:center">
-          <p style="color:#aaa;font-size:15px;margin-bottom:8px">გამარჯობა, <strong style="color:#fff">${name}</strong>!</p>
-          <p style="color:#aaa;font-size:14px;margin-bottom:28px">გამოიყენე კოდი ანგარიშის გასააქტიურებლად:</p>
-          <div style="background:#0a0a0a;border:2px solid #D4A017;border-radius:12px;padding:20px;margin-bottom:28px;display:inline-block">
-            <span style="color:#D4A017;font-size:36px;font-weight:900;letter-spacing:12px">${code}</span>
-          </div>
-          <p style="color:#555;font-size:12px">კოდი მოქმედია 30 წუთი</p>
+          <p style="color:#555;font-size:15px;margin-bottom:8px">გამარჯობა, <strong style="color:#111">${name}</strong>!</p>
+          <p style="color:#555;font-size:14px;margin-bottom:28px">ანგარიშის გასააქტიურებლად დააჭირე ღილაკს:</p>
+
+          <a href="${activationLink}"
+             style="display:inline-block;background:#1a8a4a;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:12px;font-size:16px;font-weight:900;letter-spacing:1px;margin-bottom:28px">
+            ✅ ანგარიშის გააქტიურება
+          </a>
+
+          <p style="color:#999;font-size:12px;margin-bottom:8px">ღილაკი არ მუშაობს? დააკოპირე ლინკი:</p>
+          <p style="color:#1a8a4a;font-size:11px;word-break:break-all;background:#e6f5ec;padding:10px;border-radius:8px">
+            ${activationLink}
+          </p>
+
+          <p style="color:#bbb;font-size:11px;margin-top:20px">ლინკი მოქმედია 30 წუთი</p>
         </div>
-        <div style="padding:16px;border-top:1px solid #222;text-align:center">
-          <p style="color:#444;font-size:11px;margin:0">© 2025 GAMITSVALE.GE</p>
+        <div style="padding:16px;border-top:1px solid #e8ebe8;text-align:center">
+          <p style="color:#bbb;font-size:11px;margin:0">© 2025 GAMITSVALE.GE</p>
         </div>
       </div>
     </body>
@@ -43,17 +54,8 @@ function verificationEmailHtml(code: string, name: string) {
 export async function POST(request: Request) {
   await connectDB();
 
-  const {
-    email,
-    name,
-    lastName,
-    password,
-    phone,
-    instagram,
-    facebook,
-  } = await request.json();
+  const { email, name, lastName, password, phone, whatsapp, telegram } = await request.json();
 
-  // Validation
   if (!email || !name || !password || !phone) {
     return NextResponse.json(
       { error: 'სახელი, მეილი, პაროლი და ტელეფონი სავალდებულოა' },
@@ -68,7 +70,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Phone format — მხოლოდ ციფრები და +
   const cleanPhone = phone.replace(/\s/g, '');
   if (!/^[\+]?[0-9]{9,15}$/.test(cleanPhone)) {
     return NextResponse.json(
@@ -87,8 +88,6 @@ export async function POST(request: Request) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // სახელი + გვარი გაერთიანება
   const fullName = lastName ? `${name} ${lastName}`.trim() : name.trim();
 
   await User.create({
@@ -99,24 +98,22 @@ export async function POST(request: Request) {
     isVerified: false,
     balance: 0,
     phone: cleanPhone,
-    instagram: instagram?.replace('@', '').trim() || '',
-    facebook: facebook?.trim() || '',
+    whatsapp: whatsapp?.trim() || '',
+    telegram: telegram?.trim() || '',
   });
 
-  // Email გაგზავნა
   try {
     const transporter = createTransporter();
     await transporter.sendMail({
       from: `"GAMITSVALE.GE" <${process.env.MAIL_USER}>`,
       to: email,
-      subject: 'GAMITSVALE.GE — ანგარიშის ვერიფიკაცია',
-      html: verificationEmailHtml(verificationCode, name),
+      subject: 'GAMITSVALE.GE — ანგარიშის გააქტიურება',
+      html: verificationEmailHtml(verificationCode, name, email),
     });
   } catch (emailError) {
     console.error('Email send error:', emailError);
-    // User შეიქმნა მაგრამ მეილი ვერ გაიგზავნა
     return NextResponse.json(
-      { error: 'მომხმარებელი შეიქმნა, მაგრამ მეილი ვერ გაიგზავნა. შეამოწმე MAIL_PASS .env-ში.' },
+      { error: 'მომხმარებელი შეიქმნა, მაგრამ მეილი ვერ გაიგზავნა.' },
       { status: 500 }
     );
   }

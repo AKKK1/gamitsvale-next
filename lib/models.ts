@@ -15,6 +15,9 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, unique: true, sparse: true },
   instagram: { type: String },
   facebook: { type: String },
+  whatsapp: {type: String},
+  telegram: {type: String},
+
   avatar: { type: String },
   balance: { type: Number, default: 0 },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
