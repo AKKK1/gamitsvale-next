@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
+import Link from "next/link";
 
 function VerifyContent() {
   const params = useSearchParams();
@@ -103,13 +104,13 @@ function VerifyContent() {
             <p className="text-sm mb-6" style={{ color: "#999" }}>
               {message}
             </p>
-            <div
+            <Link
               href="/"
               className="inline-block py-3 px-6 rounded-xl text-white text-sm font-semibold"
               style={{ background: "#1a8a4a", textDecoration: "none" }}
             >
               მთავარზე დაბრუნება
-            </div>
+            </Link>
           </>
         )}
       </div>
