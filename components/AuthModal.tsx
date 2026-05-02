@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Loader2 } from "lucide-react";
 import { useAuth } from "./AuthProvider";
+import { FaWhatsapp } from "react-icons/fa";
+import { FaTelegram } from "react-icons/fa";
 
 interface AuthModalProps {
   type: "login" | "register";
@@ -26,6 +28,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
     facebook: "",
     code: "",
     newPassword: "",
+    whatsapp: "",
+    telegram: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -83,8 +87,8 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
             {
               lastName: formData.lastName,
               phone: formData.phone,
-              instagram: formData.instagram,
-              facebook: formData.facebook,
+              whatsapp: formData.whatsapp,
+              telegram: formData.telegram,
             },
           );
           if (res.success) setStep("verify");
@@ -214,32 +218,32 @@ export function AuthModal({ type, onClose }: AuthModalProps) {
                   <div className="space-y-3">
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
-                        📸
+                        <FaWhatsapp />
                       </span>
                       <input
                         type="text"
-                        placeholder="Instagram username"
+                        placeholder="Whatsapp-ის ნომერი"
                         className={`${inp} pl-10`}
-                        value={formData.instagram}
+                        value={formData.whatsapp}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            instagram: e.target.value,
+                            whatsapp: e.target.value,
                           })
                         }
                       />
                     </div>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
-                        🔵
+                        <FaTelegram />
                       </span>
                       <input
                         type="text"
-                        placeholder="Facebook profile URL"
+                        placeholder="telegram-ის  ნომერი"
                         className={`${inp} pl-10`}
-                        value={formData.facebook}
+                        value={formData.telegram}
                         onChange={(e) =>
-                          setFormData({ ...formData, facebook: e.target.value })
+                          setFormData({ ...formData, telegram: e.target.value })
                         }
                       />
                     </div>

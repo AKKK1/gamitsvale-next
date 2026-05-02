@@ -59,6 +59,8 @@ interface RegisterExtra {
   phone: string;
   instagram?: string;
   facebook?: string;
+  whatsapp?: string;
+  telegram?: string;
 }
 
 interface AuthContextType {
@@ -172,8 +174,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         lastName: extra.lastName || "",
         phone: extra.phone,
-        instagram: extra.instagram || "",
-        facebook: extra.facebook || "",
+        whatsapp: extra.whatsapp || "",
+        telegram: extra.telegram || "",
       }),
     });
     if (res.ok) return { success: true };

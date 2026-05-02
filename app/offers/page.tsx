@@ -363,14 +363,14 @@ export default function OffersPage() {
                             value: otherParty?.phone,
                           },
                           {
-                            key: `${offer._id}-facebook`,
+                            key: `${offer._id}-telegram`,
                             icon: <Facebook size={12} />,
-                            value: otherParty?.facebook,
+                            value: otherParty?.telegram,
                           },
                           {
-                            key: `${offer._id}-instagram`,
+                            key: `${offer._id}-whatsapp`,
                             icon: <Instagram size={12} />,
-                            value: otherParty?.instagram,
+                            value: otherParty?.whatsapp,
                           },
                         ]
                           .filter((item) => item.value)

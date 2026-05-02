@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   const offers = await Offer.find({ sender: decoded.id })
     .sort({ createdAt: -1 })
-    .populate('receiver', 'name avatar phone instagram facebook email')
+    .populate('receiver', 'name avatar phone whatsapp telegram instagram facebook email')
     .populate({ path: 'listing', match: { _id: { $exists: true } } });
 
   return NextResponse.json(offers.filter(o => o.listing !== null));

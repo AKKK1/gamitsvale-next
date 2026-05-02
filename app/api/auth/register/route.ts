@@ -51,6 +51,8 @@ export async function POST(request: Request) {
     phone,
     instagram,
     facebook,
+    whatsapp,
+    telegram,
   } = await request.json();
 
   // Validation
@@ -99,8 +101,10 @@ export async function POST(request: Request) {
     isVerified: false,
     balance: 0,
     phone: cleanPhone,
-    instagram: instagram?.replace('@', '').trim() || '',
-    facebook: facebook?.trim() || '',
+    // instagram: instagram?.replace('@', '').trim() || '',
+    // facebook: facebook?.trim() || '',
+    whatsapp: cleanPhone,
+    telegram: cleanPhone,
   });
 
   // Email გაგზავნა

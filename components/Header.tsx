@@ -17,6 +17,7 @@ import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { FaTelegram, FaWhatsapp } from "react-icons/fa";
 // ── ფერების კონსტანტები (E დიზაინი) ─────────────────────────────────────────
 const C = {
   green: "#1a8a4a",
@@ -869,6 +870,8 @@ function AuthModal({
     instagram: "",
     facebook: "",
     code: "",
+    whatsapp: "",
+    telegram: "",
     newPassword: "",
   });
   const [loading, setLoading] = useState(false);
@@ -934,6 +937,8 @@ function AuthModal({
               phone: formData.phone,
               instagram: formData.instagram,
               facebook: formData.facebook,
+              whatsapp: formData.whatsapp,
+              telegram: formData.telegram,
             },
           );
           if (res.success) setStep("verify");
@@ -1007,7 +1012,7 @@ function AuthModal({
                     <input
                       required
                       type="text"
-                      placeholder="გიორგი"
+                      placeholder="სხვიჩა"
                       className={inp}
                       style={inpStyle}
                       value={formData.name}
@@ -1022,7 +1027,7 @@ function AuthModal({
                     </label>
                     <input
                       type="text"
-                      placeholder="მამულაშვილი"
+                      placeholder="კვარაცხელია"
                       className={inp}
                       style={inpStyle}
                       value={formData.lastName}
@@ -1086,39 +1091,39 @@ function AuthModal({
                     className="text-[10px] font-bold uppercase tracking-widest mb-3"
                     style={{ color: C.text3 }}
                   >
-                    სოციალური ქსელები (არასავალდებულო)
+                    Telegram / Whatsapp ჩათისთვის (არასავალდებულო)
                   </p>
                   <div className="space-y-3">
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
-                        📸
+                        <FaWhatsapp />
                       </span>
                       <input
                         type="text"
-                        placeholder="Instagram username"
+                        placeholder="Whatsapp ნომერი"
                         className={`${inp} pl-10`}
                         style={inpStyle}
-                        value={formData.instagram}
+                        value={formData.whatsapp}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            instagram: e.target.value,
+                            whatsapp: e.target.value,
                           })
                         }
                       />
                     </div>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
-                        🔵
+                        <FaTelegram />
                       </span>
                       <input
                         type="text"
-                        placeholder="Facebook profile URL"
+                        placeholder="Telegram ნომერი"
                         className={`${inp} pl-10`}
                         style={inpStyle}
-                        value={formData.facebook}
+                        value={formData.telegram}
                         onChange={(e) =>
-                          setFormData({ ...formData, facebook: e.target.value })
+                          setFormData({ ...formData, telegram: e.target.value })
                         }
                       />
                     </div>

@@ -6,6 +6,9 @@ import Header from "@/components/Header";
 import AddListingModal from "@/components/AddListingModal";
 import ListingCard from "@/components/ListingCard";
 import { motion, AnimatePresence } from "motion/react";
+import { FaWhatsapp } from "react-icons/fa";
+import { FaTelegram } from "react-icons/fa";
+
 import {
   User as UserIcon,
   Package,
@@ -33,6 +36,7 @@ import {
   Copy,
   Check,
   AtSign,
+  InstagramIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
@@ -338,13 +342,13 @@ export default function ProfilePage() {
                 {[
                   { icon: <Mail size={14} />, val: user.email },
                   user.phone && { icon: <Phone size={14} />, val: user.phone },
-                  user.instagram && {
-                    icon: <Instagram size={14} />,
-                    val: `@${user.instagram.replace("@", "")}`,
+                  user.whatsapp && {
+                    icon: <FaWhatsapp />,
+                    val: user.whatsapp.split("/").pop(),
                   },
-                  user.facebook && {
-                    icon: <Facebook size={14} />,
-                    val: user.facebook.split("/").pop(),
+                  user.telegram && {
+                    icon: <FaTelegram size={14} />,
+                    val: user.telegram.split("/").pop(),
                   },
                 ]
                   .filter(Boolean)
@@ -748,26 +752,37 @@ export default function ProfilePage() {
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                                   {[
-                                    {
-                                      key: `${offer._id}-email`,
-                                      icon: <Mail size={12} />,
-                                      value: otherParty?.email,
-                                    },
+                                    // {
+                                    //   key: `${offer._id}-email`,
+                                    //   icon: <Mail size={12} />,
+                                    //   value: otherParty?.email,
+                                    // },
                                     {
                                       key: `${offer._id}-phone`,
                                       icon: <Phone size={12} />,
                                       value: otherParty?.phone,
                                     },
                                     {
-                                      key: `${offer._id}-facebook`,
-                                      icon: <Facebook size={12} />,
-                                      value: otherParty?.facebook,
+                                      key: `${offer._id}-telegram`,
+                                      icon: <FaTelegram size={12} />,
+                                      value: otherParty?.telegram,
                                     },
                                     {
-                                      key: `${offer._id}-instagram`,
-                                      icon: <Instagram size={12} />,
-                                      value: otherParty?.instagram,
+                                      key: `${offer._id}-whatsapp`,
+                                      icon: <FaWhatsapp size={12} />,
+                                      value: otherParty?.whatsapp,
                                     },
+                                    // {
+                                    //   key: `${offer._id}-facebook`,
+                                    //   icon: <Facebook size={12} />,
+                                    //   value: otherParty?.facebook,
+                                    // },
+
+                                    // {
+                                    //   key: `${offer._id}-instagram`,
+                                    //   icon: <Instagram size={12} />,
+                                    //   value: otherParty?.instagram,
+                                    // },
                                   ]
                                     .filter((i) => i.value)
                                     .map((item) => (
@@ -1289,17 +1304,29 @@ export default function ProfilePage() {
                           defaultValue: user.phone,
                         },
                         {
-                          name: "instagram",
-                          label: "Instagram",
-                          placeholder: "@username",
-                          defaultValue: user.instagram,
+                          name: "whatsapp",
+                          label: "whatsapp",
+                          placeholder: "whatsapp ნომერი",
+                          defaultValue: user.whatsapp,
                         },
                         {
-                          name: "facebook",
-                          label: "Facebook",
-                          placeholder: "facebook.com/profile",
-                          defaultValue: user.facebook,
+                          name: "telegram",
+                          label: "telegram",
+                          placeholder: "telegram ნომერი",
+                          defaultValue: user.telegram,
                         },
+                        //  {
+                        //   name: "instagram",
+                        //   label: "Instagram",
+                        //   placeholder: "@username",
+                        //   defaultValue: user.instagram,
+                        // },
+                        // {
+                        //   name: "facebook",
+                        //   label: "Facebook",
+                        //   placeholder: "facebook.com/profile",
+                        //   defaultValue: user.facebook,
+                        // },
                       ].map((f) => (
                         <div key={f.name} className="space-y-1.5">
                           <label
