@@ -628,7 +628,10 @@ export default function AddListingModal({
               {/* Wanted toggle */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label style={labelStyle}>რაში გინდა გაცვლა?</label>
+                  <label style={labelStyle}>
+                    სასურველი ნივთები - (არ იცით რა გსურთ? ჩაწერეთ -
+                    შემომთავაზეთ) .
+                  </label>
                   <div
                     className="flex gap-1 p-1 rounded-lg"
                     style={{

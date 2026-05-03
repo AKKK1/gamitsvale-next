@@ -92,7 +92,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           null,
           { n: "100+", l: "გაცვლა ამ კვირას" },
           null,
-          { n: "15", l: "კატეგორია" },
+          { n: "15+", l: "კატეგორია" },
         ].map((item, i) =>
           item === null ? (
             <div
