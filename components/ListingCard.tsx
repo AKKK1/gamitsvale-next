@@ -416,19 +416,19 @@ export default function ListingCard({
                 className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
                 style={{ color: C.green }}
               >
-                <RefreshCw size={8} /> გაცვლა მინდა
+                <RefreshCw size={8} /> მსურს
               </p>
               <div className="flex flex-wrap gap-1 min-h-[18px]">
                 {listing.wantedType === "service" && listing.serviceWanted ? (
                   <span
-                    className="text-[11px] font-medium"
+                    className="text-[11px] font-medium text-[#861c1c]!"
                     style={{ color: C.text }}
                   >
                     🛠️ {listing.serviceWanted}
                   </span>
                 ) : listing.wantedItems?.length > 0 ? (
                   <span
-                    className="text-[11px] font-medium line-clamp-1"
+                    className="text-[11px] font-medium line-clamp-1 "
                     style={{ color: C.text }}
                   >
                     {listing.wantedItems

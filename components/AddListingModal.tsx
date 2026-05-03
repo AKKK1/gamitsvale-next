@@ -403,13 +403,13 @@ export default function AddListingModal({
                   {
                     id: "SILVER",
                     name: "SILVER",
-                    price: "25 ₾",
+                    price: "15 ₾",
                     icon: <ShieldCheck size={14} />,
                   },
                   {
                     id: "VIP",
                     name: "VIP",
-                    price: "50 ₾",
+                    price: "30 ₾",
                     icon: <Star size={14} style={{ color: C.gold }} />,
                   },
                 ].map((type) => (
