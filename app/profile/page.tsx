@@ -37,6 +37,9 @@ import {
   Check,
   AtSign,
   InstagramIcon,
+  MessageCircleMore,
+  Replace,
+  MessagesSquare,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
@@ -361,13 +364,14 @@ export default function ProfilePage() {
                 {[
                   { icon: <Mail size={14} />, val: user.email },
                   user.phone && { icon: <Phone size={14} />, val: user.phone },
-                  user.whatsapp && {
-                    icon: <FaWhatsapp />,
-                    val: user.whatsapp.split("/").pop(),
-                  },
+
                   user.telegram && {
-                    icon: <FaTelegram size={14} />,
-                    val: user.telegram.split("/").pop(),
+                    icon: <FaTelegram size={14} color="#1a79a9" />,
+                    val: user.telegram.split("@").pop(),
+                  },
+                  user.whatsapp && {
+                    icon: <FaWhatsapp color="#0db50a" />,
+                    val: user.whatsapp.split("/").pop(),
                   },
                 ]
                   .filter(Boolean)
@@ -812,15 +816,21 @@ export default function ProfilePage() {
                                           otherParty.telegram,
                                         )
                                       }
-                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full text-white shadow-sm"
+                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full border-[#50a5cf] border-1 text-[#202122] shadow-sm"
                                       style={{
-                                        background: "#50a5cf",
+                                        background: "#f5fbf7",
+
                                         cursor: "pointer",
                                       }}
                                     >
-                                      <FaTelegram size={14} />
-                                      <span className="text-xs font-semibold">
-                                        {otherParty.telegram}
+                                      <FaTelegram size={14} color="#1a79a9" />
+                                      <span className="text-xs truncate text-[#1c1f20]">
+                                        {otherParty.telegram.startsWith("@")
+                                          ? otherParty.telegram.slice(1)
+                                          : otherParty.telegram}
+                                      </span>
+                                      <span className="text-xs text-[#cab6b6e0] text-right flex items-center">
+                                        .......... CHAT ON TELEGRAM ..........
                                       </span>
                                     </button>
                                   )}
@@ -835,15 +845,18 @@ export default function ProfilePage() {
                                           otherParty.whatsapp,
                                         )
                                       }
-                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full text-white shadow-sm"
+                                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left w-full border-[#40cf74] border-1 text-[#202122] shadow-sm"
                                       style={{
-                                        background: "#40cf74",
+                                        background: "#f5fbf7",
                                         cursor: "pointer",
                                       }}
                                     >
-                                      <FaWhatsapp size={14} />
-                                      <span className="text-xs font-semibold">
+                                      <FaWhatsapp size={14} color="#0ba644" />
+                                      <span className="text-xs truncate flex justify-end ">
                                         {otherParty.whatsapp}
+                                      </span>
+                                      <span className="text-xs text-[#cab6b6e0] text-right flex items-center">
+                                        .......... CHAT ON WHATSAPP ..........
                                       </span>
                                     </button>
                                   )}

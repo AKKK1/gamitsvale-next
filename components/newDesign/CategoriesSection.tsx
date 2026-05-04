@@ -84,13 +84,16 @@ function CountBadge({
 const FEATURED_CAT_IDS = [
   "electronics",
   "clothing",
-  "sports",
   "tools",
   "books",
   "art",
-  "vehicles",
+  "vehiclesreal",
   "realestate",
   "other",
+  "games",
+  "home",
+  "agriculture",
+  "carParts",
 ];
 
 // ── hover helper ─────────────────────────────────────────────────────────────

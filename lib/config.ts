@@ -16,8 +16,8 @@ export const CONFIG = {
   // 💰 ფასები
   PRICING: {
     NORMAL: 0,   // უფასო
-    SILVER: 25,  // SILVER განცხადება — ₾
-    VIP: 50,     // VIP განცხადება — ₾
+    SILVER: 15,  // SILVER განცხადება — ₾
+    VIP: 30,     // VIP განცხადება — ₾
   },
 
   // 🤝 შეთავაზებები

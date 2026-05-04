@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { cn } from "./AuthProvider";
 import Toast from "./Toast";
+import { BorderTrail } from "./motion-primitives/border-trail";
+import { TextRoll } from "@/components/motion-primitives/text-roll";
+import { TextLoop } from "./motion-primitives/text-loop";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 🎨 კონსტანტები: ფერები
@@ -29,6 +32,8 @@ const C = {
   text2: "#555555",
   text3: "#999999",
   gold: "#c8820a",
+  white: "#ffffff",
+  blue: "#1e088a ",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -106,7 +111,7 @@ function TradePeriodBadge({ listing }: { listing: any }) {
   return (
     <span
       className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md"
-      style={{ background: "#D4AF37", color: "#ffff" }}
+      style={{ background: "#0c8c1b", color: "#ffff" }}
     >
       ⏳ {listing.tradeDuration} {unit}
       {/* მაგალითი: ⏳ 2 თვე, ⏳ 1 კვ., ⏳ 6 თვე */}
@@ -405,7 +410,107 @@ export default function ListingCard({
             </div>
 
             {/* გაცვლა მინდა */}
-            <div
+            {/* aqedam */}
+
+            {listing.wantedType === "service" && listing.serviceWanted ? (
+              <div
+                className="rounded-lg px-2.5 py-2"
+                style={{
+                  background: "#1a8a4a",
+                  borderLeft: `3px solid #065c2b`,
+                }}
+              >
+                <p
+                  className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
+                  style={{ color: C.white }}
+                >
+                  <RefreshCw size={8} />
+                  გავცვლი სერვისში 👨🏻‍🔧
+                </p>
+                <div className="flex flex-wrap gap-1 min-h-[18px]">
+                  {listing.wantedType === "service" && listing.serviceWanted ? (
+                    <span
+                      className="text-[11px] font-medium text-[#ffffff]!"
+                      style={{ color: C.text }}
+                    >
+                      <TextLoop className="  dark:text-white">
+                        {listing.serviceWanted}
+                      </TextLoop>
+
+                      <BorderTrail
+                        className="bg-linear-to-l from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700"
+                        size={120}
+                      />
+                    </span>
+                  ) : listing.wantedItems?.length > 0 ? (
+                    <span
+                      className="text-[11px] font-medium line-clamp-1 "
+                      style={{ color: C.text }}
+                    >
+                      {listing.wantedItems
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join(" · ")}
+                    </span>
+                  ) : (
+                    <span
+                      className="text-[11px] italic"
+                      style={{ color: C.text3 }}
+                    >
+                      მითითებული არ არის
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div
+                className="rounded-lg px-2.5 py-2"
+                style={{
+                  background: C.greenLight,
+                  borderLeft: `3px solid ${C.green}`,
+                }}
+              >
+                <p
+                  className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
+                  style={{ color: C.green }}
+                >
+                  <RefreshCw size={8} /> მსურს
+                </p>
+                <div className="flex flex-wrap gap-1 min-h-[18px]">
+                  {listing.wantedType === "service" && listing.serviceWanted ? (
+                    <span
+                      className="text-[11px] font-medium text-[#050000]!"
+                      style={{ color: C.text }}
+                    >
+                      🛠️ {listing.serviceWanted}
+                      <BorderTrail
+                        className="bg-linear-to-l from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700"
+                        size={120}
+                      />
+                    </span>
+                  ) : listing.wantedItems?.length > 0 ? (
+                    <span
+                      className="text-[11px] font-medium line-clamp-1 "
+                      style={{ color: C.text }}
+                    >
+                      {listing.wantedItems
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join(" · ")}
+                    </span>
+                  ) : (
+                    <span
+                      className="text-[11px] italic"
+                      style={{ color: C.text3 }}
+                    >
+                      მითითებული არ არის
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* <div
               className="rounded-lg px-2.5 py-2"
               style={{
                 background: C.greenLight,
@@ -416,19 +521,23 @@ export default function ListingCard({
                 className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
                 style={{ color: C.green }}
               >
-                <RefreshCw size={8} /> გაცვლა მინდა
+                <RefreshCw size={8} /> მსურს
               </p>
               <div className="flex flex-wrap gap-1 min-h-[18px]">
                 {listing.wantedType === "service" && listing.serviceWanted ? (
                   <span
-                    className="text-[11px] font-medium"
+                    className="text-[11px] font-medium text-[#050000]!"
                     style={{ color: C.text }}
                   >
                     🛠️ {listing.serviceWanted}
+                    <BorderTrail
+                      className="bg-linear-to-l from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700"
+                      size={120}
+                    />
                   </span>
                 ) : listing.wantedItems?.length > 0 ? (
                   <span
-                    className="text-[11px] font-medium line-clamp-1"
+                    className="text-[11px] font-medium line-clamp-1 "
                     style={{ color: C.text }}
                   >
                     {listing.wantedItems
@@ -445,8 +554,9 @@ export default function ListingCard({
                   </span>
                 )}
               </div>
-            </div>
+            </div> */}
 
+            {/* aqamde */}
             {/* footer */}
             <div
               className="flex items-center justify-between pt-1.5 mt-auto"

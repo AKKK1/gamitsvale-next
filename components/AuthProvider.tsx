@@ -38,7 +38,9 @@ export const CATEGORIES = [
   { id: "electronics", name: "ტექნოლოგია და ელექტრონიკა", icon: "📱" },
   { id: "serviceToThing", name: "მომს ნივთში", icon: "🧰" },
   { id: "thingToService", name: "ნივთი მომსახურებაში", icon: "🧰" },
-  { id: "vehicles", name: "ტრანსპორტი", icon: "🚗" },
+  { id: "vehicles", name: "ტრანსპორტის გაცვლა დროებით", icon: "🚗" },
+  { id: "vehiclesreal", name: "ტრანსპორტი", icon: "🛻" },
+
   { id: "realestate", name: "უძრავი ქონება", icon: "🏠" },
   { id: "clothing", name: "ტანსაცმელი და აქსესუარები", icon: "👗" },
   { id: "home", name: "სახლი და ბაღი", icon: "🏡" },
@@ -51,6 +53,10 @@ export const CATEGORIES = [
   { id: "animals", name: "ცხოველები", icon: "🐾" },
   { id: "beauty", name: "სილამაზე და ჯანმრთელობა", icon: "💄" },
   { id: "services", name: "სერვისები", icon: "🛠️" },
+  { id: "games", name: "კომპიუტერული თამაშები", icon: "🎮" },
+
+  { id: "carParts", name: "მანქანის ნაწილები", icon: "⚙️" },
+
   { id: "other", name: "სხვა", icon: "📦" },
 ];
 

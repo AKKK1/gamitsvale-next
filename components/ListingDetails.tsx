@@ -326,7 +326,7 @@ export default function ListingDetails({
               className="font-bold text-base flex items-center gap-2 mb-3"
               style={{ color: C.text }}
             >
-              <RefreshCw size={16} style={{ color: C.green }} /> გაცვლა მინდა:
+              მსურს:
             </h3>
             <div className="flex flex-wrap gap-2">
               {listing.wantedType === "service" && listing.serviceWanted ? (
