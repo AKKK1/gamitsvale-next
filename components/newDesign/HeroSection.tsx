@@ -43,7 +43,8 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           className="w-2 h-2 rounded-full"
           style={{ background: "#1a8a4a", animation: "gv-blink 2s infinite" }}
         />
-        10,000+ მომხმარებელი · ახლა ონლაინ
+        {/* 10,000+ მომხმარებელი · ახლა ონლაინ */} საიტი ახალი გაშვებულია -
+        პოსტების რაოდენობა ჯერჯერობით მცირეა.
       </div>
 
       {/* Title */}
