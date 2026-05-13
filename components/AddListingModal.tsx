@@ -128,8 +128,7 @@ export default function AddListingModal({
         wantedType: editingListing.wantedType || "items",
         images: editingListing.images || [],
         listingType: editingListing.listingType || "NORMAL",
-
-        // ▼▼▼ გაცვლის პერიოდის ველების ჩატვირთვა ▼▼▼
+        offerMe: "null", // ▼▼▼ გაცვლის პერიოდის ველების ჩატვირთვა ▼▼▼
         tradePeriod: editingListing.tradePeriod || "permanent",
         tradeDuration: editingListing.tradeDuration || 1,
         tradeUnit: editingListing.tradeUnit || "month",
