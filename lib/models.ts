@@ -48,7 +48,10 @@ const ListingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   expiresAt: { type: Date },
   serviceWanted: { type: String, default: '' },
-  wantedType: { type: String, enum: ['items', 'service'], default: 'items' },
+  wantedType: { type: String, enum: ['items', 'service', 'offerMe'], default: 'offerMe',
+    offerMe: [{ type: String }],
+   },
+
 
   // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
   // 🔁 გაცვლის პერიოდის ველები - ახალი დამატება (2026)

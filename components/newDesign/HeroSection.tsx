@@ -43,7 +43,8 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           className="w-2 h-2 rounded-full"
           style={{ background: "#1a8a4a", animation: "gv-blink 2s infinite" }}
         />
-        10,000+ მომხმარებელი · ახლა ონლაინ
+        {/* 10,000+ მომხმარებელი · ახლა ონლაინ */}იყავი პირველ ათასეულში -
+        დაგვეხმარე განვითარებაში
       </div>
 
       {/* Title */}
@@ -63,7 +64,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
 
       <p className="text-[15px] mb-8 max-w-md" style={{ color: "#555" }}>
         საქართველოს პირველი ბარტერული პლატფორმა. შენი ძველი ნივთი სხვისთვის
-        ახალია.
+        ახალია. გამოგვყევით...
       </p>
 
       {/* Search bar (uncomment to enable inline hero search) */}
@@ -88,11 +89,11 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
       {/* Stats */}
       <div className="flex items-center gap-8">
         {[
-          { n: "24000+", l: "აქტიური მომხმარებელი" },
+          { n: "FB", l: "ჯგუფზე და ფეიჯზე" },
           null,
-          { n: "100+", l: "გაცვლა ამ კვირას" },
+          { n: "IG", l: "ფეიჯზე" },
           null,
-          { n: "15+", l: "კატეგორია" },
+          { n: "Tiktok", l: "არხზე" },
         ].map((item, i) =>
           item === null ? (
             <div

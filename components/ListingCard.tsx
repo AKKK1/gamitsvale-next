@@ -34,6 +34,9 @@ const C = {
   gold: "#c8820a",
   white: "#ffffff",
   blue: "#1e088a ",
+  offerMe: "#092686c5",
+  orange: "#9c6126",
+  orangeLight: "#ecd0b4",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -111,7 +114,7 @@ function TradePeriodBadge({ listing }: { listing: any }) {
   return (
     <span
       className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md"
-      style={{ background: "#0c8c1b", color: "#ffff" }}
+      style={{ background: "#c8820a", color: "#ffff" }}
     >
       ⏳ {listing.tradeDuration} {unit}
       {/* მაგალითი: ⏳ 2 თვე, ⏳ 1 კვ., ⏳ 6 თვე */}
@@ -425,7 +428,7 @@ export default function ListingCard({
                   style={{ color: C.white }}
                 >
                   <RefreshCw size={8} />
-                  გავცვლი სერვისში 👨🏻‍🔧
+                  მსურს 👨🏻‍🔧
                 </p>
                 <div className="flex flex-wrap gap-1 min-h-[18px]">
                   {listing.wantedType === "service" && listing.serviceWanted ? (
@@ -438,7 +441,7 @@ export default function ListingCard({
                       </TextLoop>
 
                       <BorderTrail
-                        className="bg-linear-to-l from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700"
+                        className="bg-linear-to-l from-green-200 via-green-500 to-green-200 dark:from-green-400 dark:via-green-500 dark:to-green-700"
                         size={120}
                       />
                     </span>
@@ -457,7 +460,7 @@ export default function ListingCard({
                       className="text-[11px] italic"
                       style={{ color: C.text3 }}
                     >
-                      მითითებული არ არის
+                      შემომთავაზეთ
                     </span>
                   )}
                 </div>
@@ -484,13 +487,13 @@ export default function ListingCard({
                     >
                       🛠️ {listing.serviceWanted}
                       <BorderTrail
-                        className="bg-linear-to-l from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700"
+                        className="bg-linear-to-l from-red-200 via-red-500 to-red-200 dark:from-red-400 dark:via-red-500 dark:to-red-700"
                         size={120}
                       />
                     </span>
                   ) : listing.wantedItems?.length > 0 ? (
                     <span
-                      className="text-[11px] font-medium line-clamp-1 "
+                      className="text-[11px] font-bold line-clamp-1 "
                       style={{ color: C.text }}
                     >
                       {listing.wantedItems
@@ -500,10 +503,10 @@ export default function ListingCard({
                     </span>
                   ) : (
                     <span
-                      className="text-[11px] italic"
-                      style={{ color: C.text3 }}
+                      className="text-[11px] font-bold "
+                      style={{ color: C.greenDark }}
                     >
-                      მითითებული არ არის
+                      💡 შემომთავაზეთ
                     </span>
                   )}
                 </div>

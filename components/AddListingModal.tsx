@@ -71,6 +71,7 @@ export default function AddListingModal({
     wantedItems: ["", "", ""],
     serviceWanted: "",
     wantedType: "items" as "items" | "service",
+    offerMe: "",
     images: [] as string[],
     listingType: "NORMAL",
 
@@ -127,8 +128,7 @@ export default function AddListingModal({
         wantedType: editingListing.wantedType || "items",
         images: editingListing.images || [],
         listingType: editingListing.listingType || "NORMAL",
-
-        // ▼▼▼ გაცვლის პერიოდის ველების ჩატვირთვა ▼▼▼
+        offerMe: "null", // ▼▼▼ გაცვლის პერიოდის ველების ჩატვირთვა ▼▼▼
         tradePeriod: editingListing.tradePeriod || "permanent",
         tradeDuration: editingListing.tradeDuration || 1,
         tradeUnit: editingListing.tradeUnit || "month",
@@ -628,10 +628,7 @@ export default function AddListingModal({
               {/* Wanted toggle */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label style={labelStyle}>
-                    სასურველი ნივთები - (არ იცით რა გსურთ? ჩაწერეთ -
-                    შემომთავაზეთ) .
-                  </label>
+                  <label style={labelStyle}>სასურველი ნივთები</label>
                   <div
                     className="flex gap-1 p-1 rounded-lg"
                     style={{
@@ -642,6 +639,7 @@ export default function AddListingModal({
                     {[
                       { id: "items", label: "📦 ნივთი" },
                       { id: "service", label: "🛠️ სერვისი" },
+                      { id: "offerMe", label: "💡შემომთავაზეთ" },
                     ].map((t) => (
                       <button
                         key={t.id}
@@ -685,6 +683,16 @@ export default function AddListingModal({
                     placeholder="მაგ: ავტომობილის შეკეთება, ვებ დიზაინი..."
                     style={{ ...inp, fontSize: 12 }}
                     value={form.serviceWanted}
+                    onChange={(e) =>
+                      setForm({ ...form, serviceWanted: e.target.value })
+                    }
+                  />
+                )}
+                {form.offerMe === "offerMe" && (
+                  <input
+                    placeholder=" 💡შემომთავაზეთ "
+                    style={{ ...inp, fontSize: 12 }}
+                    value={form.offerMe}
                     onChange={(e) =>
                       setForm({ ...form, serviceWanted: e.target.value })
                     }

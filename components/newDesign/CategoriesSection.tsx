@@ -94,6 +94,12 @@ const FEATURED_CAT_IDS = [
   "home",
   "agriculture",
   "carParts",
+  "kids",
+  "sports",
+  "animals",
+  "beauty",
+  "vehicles",
+  "services",
 ];
 
 // ── hover helper ─────────────────────────────────────────────────────────────
@@ -111,6 +117,7 @@ function hoverGold(e: React.MouseEvent, enter: boolean) {
 
 export default function CategoriesSection() {
   const { counts, loading } = useCategoryCounts();
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const featuredCats = CATEGORIES.filter((c) =>
     FEATURED_CAT_IDS.includes(c.id),
   );
@@ -120,7 +127,7 @@ export default function CategoriesSection() {
       className="px-4 py-8"
       style={{ background: "#fff", borderBottom: `1px solid ${BORDER}` }}
     >
-      <div className="max-w-[1100px] mx-auto">
+      <div className="max-w-[1250px] mx-auto">
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -137,18 +144,23 @@ export default function CategoriesSection() {
               აირჩიე კატეგორია და ნახე განცხადებები
             </div>
           </div>
-          <Link
-            href="/categories"
+          <button
+            type="button"
+            onClick={() => setShowAllCategories((v) => !v)}
             style={{
               color: GREEN,
               textDecoration: "none",
               fontSize: 13,
               fontWeight: 600,
               fontFamily: "'Space Grotesk', sans-serif",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
             }}
           >
-            ყველა კატეგ. →
-          </Link>
+            {showAllCategories ? "დაკეცვა ↑" : "ყველა კატეგ. →"}
+          </button>
         </div>
 
         {/* ══ ოქროსფერი ბლოკი: დროებითი + ჩვეულებრივი გაცვლა ══ */}
@@ -165,39 +177,40 @@ export default function CategoriesSection() {
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
-              დროებითი გაცვლა
+              სერვისების ნივთებში გაცვლა
             </span>
             <span
               className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
               style={{ background: GOLD }}
             >
-              იურიდიული
+              უნარებით
             </span>
           </div>
           <p className="text-[11px] mb-3.5" style={{ color: "#888" }}>
-            იურიდიული დოკუმენტებით ვეხმარებით — ორივე მხარე დაცულია
+            მოითხოვე შენი უნარის სანაცვლოდ ნივთი ან პირიქით.
           </p>
 
           {/* ── სტრიქონი 1: დროებითი ── */}
           <div
-            className="text-[10px] font-bold uppercase tracking-widest mb-2"
+            className="text-[10px] font-bold uppercase tracking-widest mb-2 flex gap-1"
             style={{ color: GOLD }}
           >
-            ⏳ დროებითი გაცვლა
+            <Toolbox size={16} /> სერვისების გაცვლა
           </div>
-          <div className="flex gap-2.5 flex-wrap mb-3">
+          <div className="flex gap-2.5 flex-wrap mb-0">
             {[
               {
-                href: "/swap-temporary/vehicles",
-                icon: "🚗",
-                label: "ტრანსპორტის გაცვლა დროებით",
-                catId: "vehicles",
+                href: "/category/serviceToThing",
+                icon: "💼",
+                label: "მომსახურების ნივთში გადაცვლა",
+                catId: "serviceToThing",
               },
               {
-                href: "/swap-temporary/realestate",
-                icon: "🏠",
-                label: "სახლების გაცვლა დროებით",
-                catId: "realestate",
+                href: "/category/thingToService",
+                icon: "🎯",
+                rame: { HeartCrack },
+                label: "ნივთის მომსახურებაში გადაცვლა",
+                catId: "thingToService",
               },
             ].map((item) => (
               <Link
@@ -235,158 +248,86 @@ export default function CategoriesSection() {
               </Link>
             ))}
           </div>
+        </div>
 
-          {/* ── სტრიქონი 2: ჩვეულებრივი ── */}
-          <div
-            className="text-[10px] font-bold uppercase tracking-widest mb-2 flex gap-1"
-            style={{ color: GREY }}
-          >
-            <Toolbox size={16} /> სერვისების გაცვლა
-          </div>
-          <div className="flex gap-2.5 flex-wrap">
-            {[
-              // {
-              //   href: "/category/vehicles",
-              //   icon: "🚗",
-              //   label: "ტრანსპორტი",
-              //   catId: "vehicles",
-              // },
-              // {
-              //   href: "/category/realestate",
-              //   icon: "🏠",
-              //   label: "უძრავი ქონება",
-              //   catId: "realestate",
-              // },
-              {
-                href: "/category/serviceToThing",
-                icon: "💼",
-                label: "მომსახურების ნივთში გადაცვლა",
-                catId: "serviceToThing",
-              },
-              {
-                href: "/category/thingToService",
-                icon: "🎯",
-                rame: { HeartCrack },
-                label: "ნივთის მომსახურებაში გადაცვლა",
-                catId: "thingToService",
-              },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex-1 min-w-[140px]"
-                style={{ textDecoration: "none" }}
-              >
-                <div
-                  className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5"
-                  style={{
-                    background: "#ffffff",
-                    border: `1px solid ${BORDER}`,
-                    cursor: "pointer",
-                    transition: "all .18s",
-                  }}
-                  // onMouseEnter={(e) => hoverGold(e, true)}
-                  // onMouseLeave={(e) => hoverGold(e, false)}
-
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = GREEN;
-                    el.style.background = GREEN_LIGHT;
-                    el.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = BORDER;
-                    el.style.background = "#fff";
-                    el.style.transform = "translateY(0)";
-                  }}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateRows: showAllCategories ? "1fr" : "0fr",
+            transition: "grid-template-rows .25s ease",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ minHeight: 0 }}>
+            {/* ══ 6 featured კატეგორია ══ */}
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 mb-5">
+              {featuredCats.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/category/${cat.id}`}
+                  style={{ textDecoration: "none" }}
                 >
-                  <span className="text-[22px]">
-                    {/* <HeartHandshake color="GOLD" /> */}
-                    {item.icon}
-                  </span>
-                  <div>
-                    <div
-                      className="text-[11px] font-bold leading-tight"
+                  <div
+                    className="flex flex-col items-center text-center py-2 px-1.5 rounded-lg"
+                    style={{
+                      background: "#f8faf8",
+                      border: `1px solid ${BORDER}`,
+                      transition: "all .18s",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.borderColor = GREEN;
+                      el.style.background = GREEN_LIGHT;
+                      el.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.borderColor = BORDER;
+                      el.style.background = "#f8faf8";
+                      el.style.transform = "translateY(0)";
+                    }}
+                  >
+                    <span
+                      className="text-[15px] mb-1 flex items-center justify-center rounded-lg w-6 h-6"
+                      style={{ background: "#fff" }}
+                    >
+                      {cat.icon}
+                    </span>
+                    <span
+                      className="text-[9px] font-semibold leading-tight mb-0.5 line-clamp-2"
                       style={{
                         color: "#111",
                         fontFamily: "'Space Grotesk', sans-serif",
                       }}
                     >
-                      {item.label}
-                    </div>
+                      {cat.name}
+                    </span>
                     <CountBadge
-                      catId={item.catId}
+                      catId={cat.id}
                       counts={counts}
                       loading={loading}
                     />
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* ══ 6 featured კატეგორია ══ */}
-        <div className="grid grid-cols-3 gap-2 mb-5">
-          {featuredCats.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/category/${cat.id}`}
-              style={{ textDecoration: "none" }}
-            >
-              <div
-                className="flex flex-col items-center text-center py-3 px-2 rounded-xl"
-                style={{
-                  background: "#f8faf8",
-                  border: `1px solid ${BORDER}`,
-                  transition: "all .18s",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = GREEN;
-                  el.style.background = GREEN_LIGHT;
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = BORDER;
-                  el.style.background = "#f8faf8";
-                  el.style.transform = "translateY(0)";
-                }}
-              >
-                <span
-                  className="text-[22px] mb-1.5 flex items-center justify-center rounded-xl w-9 h-9"
-                  style={{ background: "#fff" }}
-                >
-                  {cat.icon}
-                </span>
-                <span
-                  className="text-[11px] font-semibold leading-tight mb-0.5 line-clamp-2"
-                  style={{
-                    color: "#111",
-                    fontFamily: "'Space Grotesk', sans-serif",
-                  }}
-                >
-                  {cat.name}
-                </span>
-                <CountBadge catId={cat.id} counts={counts} loading={loading} />
-              </div>
-            </Link>
-          ))}
         </div>
 
         {/* ── ყველა კატეგ. ბმული ── */}
         <div className="text-center">
-          <Link
-            href="/categories"
+          <button
+            type="button"
+            onClick={() => setShowAllCategories((v) => !v)}
             className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-[13px] font-semibold transition-all"
             style={{
               color: GREEN,
               border: `1px solid rgba(26,138,74,0.25)`,
               textDecoration: "none",
               fontFamily: "'Space Grotesk', sans-serif",
+              background: "transparent",
+              cursor: "pointer",
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background = GREEN;
@@ -397,8 +338,10 @@ export default function CategoriesSection() {
               (e.currentTarget as HTMLElement).style.color = GREEN;
             }}
           >
-            ყველა კატეგ. ნახვა →
-          </Link>
+            {showAllCategories
+              ? "კატეგორიების დაკეცვა ↑"
+              : "ყველა კატეგ. ნახვა →"}
+          </button>
         </div>
       </div>
     </section>
