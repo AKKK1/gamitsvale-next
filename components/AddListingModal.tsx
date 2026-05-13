@@ -690,7 +690,7 @@ export default function AddListingModal({
                 )}
                 {form.offerMe === "offerMe" && (
                   <input
-                    placeholder=" 💡შემომთავაზეთ "
+                    placeholder=" შემომთავაზეთ💡 "
                     style={{ ...inp, fontSize: 12 }}
                     value={form.offerMe}
                     onChange={(e) =>

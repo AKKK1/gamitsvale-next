@@ -506,7 +506,7 @@ export default function ListingCard({
                       className="text-[11px] font-bold "
                       style={{ color: C.greenDark }}
                     >
-                      💡 შემომთავაზეთ
+                      💡შემომთავაზეთ
                     </span>
                   )}
                 </div>
