@@ -370,7 +370,7 @@ export default function ListingDetails({
                 ))
               ) : (
                 <span className="italic text-sm" style={{ color: C.text3 }}>
-                  მითითებული არ არის
+                  💡შემომთავაზეთ
                 </span>
               )}
             </div>
