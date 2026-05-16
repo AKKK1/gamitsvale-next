@@ -63,3 +63,46 @@ body {
 .dark-glass {
   @apply bg-dark-card/80 backdrop-blur-xl border border-dark-border;
 }
+
+.exclusive-card-glow {
+  animation: exclusive-card-glow 2.8s ease-in-out infinite;
+}
+
+.exclusive-badge-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.exclusive-badge-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -60% auto -60% -40%;
+  width: 42%;
+  transform: rotate(22deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+  animation: exclusive-badge-shimmer 2.1s ease-in-out infinite;
+}
+
+@keyframes exclusive-card-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(124, 58, 237, 0);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(124, 58, 237, 0.2);
+  }
+}
+
+@keyframes exclusive-badge-shimmer {
+  0% {
+    left: -45%;
+  }
+  100% {
+    left: 130%;
+  }
+}

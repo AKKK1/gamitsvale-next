@@ -44,6 +44,17 @@ export async function PATCH(
     return NextResponse.json({ error: 'არ აქვს წვდომა' }, { status: 403 });
   }
 
+  if (
+    body.listingType === 'EXCLUSIVE' &&
+    user.role !== 'ADMIN' &&
+    !user.canPostExclusive
+  ) {
+    return NextResponse.json(
+      { error: 'ამ ანგარიშისთვის EXCLUSIVE განცხადების შექმნა ჯერ ჩართული არ არის' },
+      { status: 403 }
+    );
+  }
+
   // ▼▼▼ სავალდებულო ველების ვალიდაცია ▼▼▼
   const { title, category, city, description } = body;
   if (title !== undefined && !title?.trim()) 
@@ -63,6 +74,10 @@ export async function PATCH(
   const { tradePeriod: _, tradeDuration: __, tradeUnit: ___, ...cleanBody } = body;
   
   const updateData: any = { ...cleanBody };
+  if (body.listingType !== undefined) {
+    updateData.isVIP =
+      body.listingType === 'VIP' || body.listingType === 'EXCLUSIVE';
+  }
   
   // 2. თუ tradePeriod არის გაგზავნილი, დავამუშავოთ
   if (body.tradePeriod !== undefined) {

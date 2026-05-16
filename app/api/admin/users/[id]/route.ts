@@ -25,7 +25,15 @@ export async function PATCH(
   if (!decoded || decoded.role !== 'ADMIN')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const { id } = await params;
-  const { isBlocked } = await request.json();
-  const user = await User.findByIdAndUpdate(id, { isBlocked }, { new: true });
+  const body = await request.json();
+  const update: Record<string, unknown> = {};
+
+  if (typeof body.isBlocked === 'boolean') update.isBlocked = body.isBlocked;
+  if (typeof body.canPostExclusive === 'boolean') {
+    update.canPostExclusive = body.canPostExclusive;
+  }
+  if (body.role === 'USER' || body.role === 'ADMIN') update.role = body.role;
+
+  const user = await User.findByIdAndUpdate(id, update, { new: true });
   return NextResponse.json(user);
 }

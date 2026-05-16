@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     : {};
 
   const users = await User.find(query)
-    .select('name email role balance isVerified createdAt isBlocked')
+    .select('name email role balance isVerified createdAt isBlocked canPostExclusive')
     .sort({ createdAt: -1 });
 
   return NextResponse.json(users);
