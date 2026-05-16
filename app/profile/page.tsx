@@ -42,7 +42,7 @@ import {
   Replace,
   MessagesSquare,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import Link from "next/link";
 import Footer from "../footer/page";
@@ -64,7 +64,6 @@ const C = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, logout, refresh } = useAuth();
 
   const [activeTab, setActiveTab] = useState<
@@ -106,7 +105,7 @@ export default function ProfilePage() {
   }, [user, activeTab]);
 
   useEffect(() => {
-    const tab = searchParams.get("tab");
+    const tab = new URLSearchParams(window.location.search).get("tab");
     if (
       tab === "offers" ||
       tab === "listings" ||
@@ -116,7 +115,7 @@ export default function ProfilePage() {
     ) {
       setActiveTab(tab);
     }
-  }, [searchParams, user?.role]);
+  }, [user?.role]);
 
   const fetchData = async () => {
     setLoading(true);
