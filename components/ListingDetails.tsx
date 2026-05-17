@@ -95,7 +95,7 @@ export default function ListingDetails({
   const handleShare = async () => {
     const shareData = {
       title: listing.title,
-      text: `GAMITSVALE.GE  მინდა გავცვალო - : ${listing.title}`,
+      text: `GAMITSVALE.GE  მინდა გავცვალო - : ${listing.wantedType === "service" ? listing.serviceWanted : listing.wantedItems?.join(", ")}\n\n${listing.description}\n\n`,
       url: window.location.href,
     };
 
