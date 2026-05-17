@@ -21,7 +21,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   };
 
   return (
-    <section className="max-w-[1200px] w-full mx-auto bg-white rounded-[24px] p-6 md:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-2 gap-10 items-center my-6">
+    <section className="max-w-[1250px] w-full mx-auto bg-white rounded-[24px] p-5 sm:p-6 md:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-10 items-center my-6">
       {/* სუფთა CSS გლობალური კონფლიქტების გარეშე მხოლოდ მცურავი ანიმაციისთვის */}
       <style>{`
         @keyframes platformFloat {
@@ -31,10 +31,15 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         .animate-platform-float {
           animation: platformFloat 4s ease-in-out infinite;
         }
+        @media (max-width: 767px) {
+          .animate-platform-float {
+            animation-duration: 5.5s;
+          }
+        }
       `}</style>
 
       {/* მარცხენა მხარე: ტექსტური კონტენტი */}
-      <div className="flex flex-col gap-6 order-2 md:order-1 items-center md:items-start text-center md:text-left">
+      <div className="flex flex-col gap-5 md:gap-6 order-2 md:order-1 items-center md:items-start text-center md:text-left">
         {/* ზედა ბეჯი */}
         <div className="inline-flex items-center gap-2 bg-[#e6f6ee] text-[#007D40] px-4 py-2 rounded-full text-sm font-semibold self-center md:self-start">
           <span>🎉</span> გახდი პირველი 10000 მომხმარებლის ნაწილი
@@ -71,9 +76,9 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
       </div>
 
       {/* მარჯვენა მხარე: ბარტერის ვიზუალი (SVG) */}
-      <div className="bg-gradient-to-br from-[#f0fdf4] to-[#e6f6ee] rounded-[20px] p-10 flex justify-center items-center h-full min-h-[300px] md:min-h-[400px] order-1 md:order-2 animate-platform-float">
+      <div className="bg-gradient-to-br from-[#f0fdf4] to-[#e6f6ee] rounded-[20px] p-4 sm:p-6 md:p-10 flex justify-center items-center h-full min-h-[185px] sm:min-h-[230px] md:min-h-[400px] order-1 md:order-2 animate-platform-float">
         <svg
-          className="w-full max-w-[380px] h-auto"
+          className="w-full max-w-[220px] sm:max-w-[280px] md:max-w-[380px] h-auto"
           viewBox="0 0 200 200"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
