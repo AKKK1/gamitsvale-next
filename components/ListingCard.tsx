@@ -465,7 +465,7 @@ export default function ListingCard({
                   <RefreshCw size={8} />
                   მსურს 👨🏻‍🔧
                 </p>
-                <div className="flex flex-wrap gap-1 min-h-[18px]">
+                <div className="flex flex-wrap gap-1 min-h-[18px] leading-[18px] overflow-hidden">
                   {listing.wantedType === "service" && listing.serviceWanted ? (
                     <span
                       className="text-[11px] font-medium text-[#ffffff]!"
@@ -482,7 +482,7 @@ export default function ListingCard({
                     </span>
                   ) : listing.wantedItems?.length > 0 ? (
                     <span
-                      className="text-[11px] font-medium line-clamp-1 "
+                      className="block w-full truncate text-[11px] font-medium leading-[18px]"
                       style={{ color: C.text }}
                     >
                       {listing.wantedItems
@@ -518,7 +518,7 @@ export default function ListingCard({
                 >
                   <RefreshCw size={8} /> მსურს
                 </p>
-                <div className="flex flex-wrap gap-1 min-h-[18px]">
+                <div className="flex flex-wrap gap-1 min-h-[18px] leading-[18px] overflow-hidden">
                   {listing.wantedType === "service" && listing.serviceWanted ? (
                     <span
                       className="text-[11px] font-medium text-[#050000]!"
@@ -532,7 +532,7 @@ export default function ListingCard({
                     </span>
                   ) : listing.wantedItems?.length > 0 ? (
                     <span
-                      className="text-[11px] font-bold line-clamp-1 "
+                      className="block w-full truncate text-[11px] font-bold leading-[18px]"
                       style={{ color: isExclusive ? "#111827" : C.text }}
                     >
                       {listing.wantedItems

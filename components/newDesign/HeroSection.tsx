@@ -21,7 +21,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   };
 
   return (
-    <section className="max-w-[1250px] w-full mx-auto bg-white rounded-[24px] p-5 sm:p-6 md:p-14 shadow-[0_10px_30px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-10 items-center my-6">
+    <section className="relative max-w-[1250px] w-full mx-auto bg-white rounded-[24px] p-5 sm:p-6 md:p-14 pb-10 md:pb-14 shadow-[0_10px_30px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-10 items-center my-6">
       {/* სუფთა CSS გლობალური კონფლიქტების გარეშე მხოლოდ მცურავი ანიმაციისთვის */}
       <style>{`
         @keyframes platformFloat {
@@ -30,6 +30,13 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         }
         .animate-platform-float {
           animation: platformFloat 4s ease-in-out infinite;
+        }
+        @keyframes scrollCue {
+          0%, 100% { transform: translate(-50%, 0); opacity: 0.58; }
+          50% { transform: translate(-50%, 5px); opacity: 1; }
+        }
+        .hero-scroll-cue {
+          animation: scrollCue 1.7s ease-in-out infinite;
         }
         @media (max-width: 767px) {
           .animate-platform-float {
@@ -136,6 +143,18 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           />
         </svg>
       </div>
+      <a
+        href="#listings-section"
+        aria-label="Scroll to listings"
+        className="hero-scroll-cue absolute bottom-3 left-1/2 hidden md:flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+        style={{
+          border: "1px solid rgba(0,125,64,0.18)",
+          background: "rgba(230,246,238,0.82)",
+          color: "#007D40",
+        }}
+      >
+        <span className="text-sm leading-none">⌄</span>
+      </a>
     </section>
   );
 }
