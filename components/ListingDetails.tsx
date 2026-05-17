@@ -95,7 +95,7 @@ export default function ListingDetails({
   const handleShare = async () => {
     const shareData = {
       title: listing.title,
-      text: `GAMITSVALE.GE  მინდა გავცვალო - : ${listing.wantedType === "service" ? listing.serviceWanted : listing.wantedItems?.join(", ")}\n\n${listing.description}\n\n`,
+      text: `GAMITSVALE.GE  მსურს - ${listing.wantedType === "service" ? listing.serviceWanted : listing.wantedItems?.join(", ")}\n\n${listing.description}\n\n`,
       url: window.location.href,
     };
 
@@ -111,6 +111,7 @@ export default function ListingDetails({
     await navigator.clipboard.writeText(window.location.href);
     setToast("Link copied");
   };
+
   useEffect(() => {
     setIsSaved(user?.savedListings?.includes(listing._id));
   }, [user, listing._id]);
