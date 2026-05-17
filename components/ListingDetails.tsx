@@ -95,7 +95,7 @@ export default function ListingDetails({
   const handleShare = async () => {
     const shareData = {
       title: listing.title,
-      text: `Check this swap on TRA.DE: ${listing.title}`,
+      text: `GAMITSVALE.GE  მინდა გავცვალო - : ${listing.title}`,
       url: window.location.href,
     };
 
@@ -338,10 +338,7 @@ export default function ListingDetails({
           </div>
 
           {/* აღწერა */}
-          <div
-            className="rounded-2xl p-5"
-            style={detailPanelStyle}
-          >
+          <div className="rounded-2xl p-5" style={detailPanelStyle}>
             <h3 className="font-bold text-base mb-3" style={{ color: C.text }}>
               აღწერა
             </h3>
