@@ -138,7 +138,7 @@ export default function CategoriesSection() {
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
-              🗂 სად რისი გაცვლა შეიძლება
+              🗂️ სად რისი გაცვლა შეიძლება
             </div>
             <div className="text-[12px] mt-0.5" style={{ color: "#999" }}>
               აირჩიე კატეგორია და ნახე განცხადებები

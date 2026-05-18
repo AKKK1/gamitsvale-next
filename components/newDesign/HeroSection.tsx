@@ -77,7 +77,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
             href="/search"
             className="border-2 border-[#007D40] text-[#007D40] px-7 py-4 rounded-xl font-semibold text-center hover:bg-[#f0fdf4] hover:-translate-y-0.5 transition-all duration-200"
           >
-            კატალოგის ნახვა
+            განცხადებების ნახვა
           </Link>
         </div>
       </div>
