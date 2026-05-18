@@ -21,6 +21,7 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String },
   balance: { type: Number, default: 0 },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
+  canPostExclusive: { type: Boolean, default: false },
   savedListings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
   dailyPostCount: { type: Number, default: 0 },
   lastPostDate: { type: Date, default: Date.now },
@@ -41,7 +42,7 @@ const ListingSchema = new mongoose.Schema({
   condition: { type: String, enum: ['NEW', 'USED'], required: true },
   images: [{ type: String }],
   wantedItems: [{ type: String }],
-  listingType: { type: String, enum: ['NORMAL', 'SILVER', 'VIP'], default: 'NORMAL' },
+  listingType: { type: String, enum: ['NORMAL', 'SILVER', 'VIP', 'EXCLUSIVE'], default: 'NORMAL' },
   isVIP: { type: Boolean, default: false },
   isTraded: { type: Boolean, default: false },
   views: { type: Number, default: 0 },
@@ -142,8 +143,14 @@ const SettingsSchema = new mongoose.Schema({
 // ─────────────────────────────────────────────────────────────────────────────
 // ექსპორტი - ასე იმპორტდება სხვა ფაილებში
 // ─────────────────────────────────────────────────────────────────────────────
+const listingModel = mongoose.models.Listing as any;
+const listingTypeEnum = listingModel?.schema.path('listingType')?.options?.enum;
+if (listingModel && Array.isArray(listingTypeEnum) && !listingTypeEnum.includes('EXCLUSIVE')) {
+  listingTypeEnum.push('EXCLUSIVE');
+}
+
 export const User = mongoose.models.User || mongoose.model('User', UserSchema);
-export const Listing = mongoose.models.Listing || mongoose.model('Listing', ListingSchema);
+export const Listing = (listingModel || mongoose.model('Listing', ListingSchema)) as any;
 export const Offer = mongoose.models.Offer || mongoose.model('Offer', OfferSchema);
 export const Notification = mongoose.models.Notification || mongoose.model('Notification', NotificationSchema);
 export const Settings = mongoose.models.Settings || mongoose.model('Settings', SettingsSchema);

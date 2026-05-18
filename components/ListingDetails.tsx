@@ -43,6 +43,7 @@ function TradePeriodInfo({ listing }: { listing: any }) {
     month: "თვე",
     year: "წელი",
   };
+  const [toast, setToast] = useState<string | null>(null);
 
   return (
     <div className="flex items-center gap-2">
@@ -91,6 +92,26 @@ export default function ListingDetails({
     user?.savedListings?.includes(listing._id),
   );
 
+  const handleShare = async () => {
+    const shareData = {
+      title: listing.title,
+      text: `GAMITSVALE.GE  მსურს - ${listing.wantedType === "service" ? listing.serviceWanted : listing.wantedItems?.join(", ")}\n\n${listing.description}\n\n`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+      }
+    }
+
+    await navigator.clipboard.writeText(window.location.href);
+    setToast("Link copied");
+  };
+
   useEffect(() => {
     setIsSaved(user?.savedListings?.includes(listing._id));
   }, [user, listing._id]);
@@ -131,6 +152,22 @@ export default function ListingDetails({
 
   const isOwner = user?._id === listing.owner?._id;
   const isExchanged = listing.isTraded || listing.status === "EXCHANGED";
+  const isExclusive = listing.listingType === "EXCLUSIVE";
+  const detailPanelStyle = isExclusive
+    ? {
+        background:
+          "linear-gradient(135deg, rgba(255,255,255,0.99) 0%, rgba(246,252,248,0.98) 100%)",
+        border: "1px solid rgba(26,138,74,0.18)",
+        boxShadow: "0 14px 34px rgba(17,24,39,0.06)",
+      }
+    : { background: C.bg2, border: `1px solid ${C.border}` };
+  const exclusiveWantPanelStyle = {
+    background:
+      "linear-gradient(135deg, rgba(250,245,255,0.99) 0%, rgba(237,233,254,0.96) 52%, rgba(204,251,241,0.9) 100%)",
+    border: "1px solid rgba(124,58,237,0.24)",
+    boxShadow:
+      "inset 0 1px 0 rgba(255,255,255,0.76), 0 18px 38px rgba(124,58,237,0.1)",
+  };
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
@@ -152,7 +189,7 @@ export default function ListingDetails({
         <div className="space-y-4">
           <div
             className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl group"
-            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            style={detailPanelStyle}
           >
             {isExchanged && (
               <div
@@ -296,16 +333,13 @@ export default function ListingDetails({
           {/* ── გაცვლის ვადა ── */}
           <div
             className="rounded-xl px-4 py-3 flex items-center gap-3"
-            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            style={detailPanelStyle}
           >
             <TradePeriodInfo listing={listing} />
           </div>
 
           {/* აღწერა */}
-          <div
-            className="rounded-2xl p-5"
-            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
-          >
+          <div className="rounded-2xl p-5" style={detailPanelStyle}>
             <h3 className="font-bold text-base mb-3" style={{ color: C.text }}>
               აღწერა
             </h3>
@@ -320,11 +354,11 @@ export default function ListingDetails({
           {/* გაცვლა მინდა */}
           <div
             className="rounded-2xl p-5"
-            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            style={isExclusive ? exclusiveWantPanelStyle : detailPanelStyle}
           >
             <h3
               className="font-bold text-base flex items-center gap-2 mb-3"
-              style={{ color: C.text }}
+              style={{ color: isExclusive ? "#4c1d95" : C.text }}
             >
               მსურს:
             </h3>
@@ -332,11 +366,19 @@ export default function ListingDetails({
               {listing.wantedType === "service" && listing.serviceWanted ? (
                 <span
                   className="px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2"
-                  style={{
-                    background: C.greenLight,
-                    color: C.green,
-                    border: `1px solid rgba(26,138,74,0.2)`,
-                  }}
+                  style={
+                    isExclusive
+                      ? {
+                          background: "rgba(255,255,255,0.72)",
+                          color: "#111827",
+                          border: "1px solid rgba(124,58,237,0.18)",
+                        }
+                      : {
+                          background: C.greenLight,
+                          color: C.green,
+                          border: `1px solid rgba(26,138,74,0.2)`,
+                        }
+                  }
                 >
                   🛠️ {listing.serviceWanted}
                 </span>
@@ -346,31 +388,40 @@ export default function ListingDetails({
                     key={idx}
                     className="px-3 py-1.5 rounded-lg text-sm font-bold"
                     style={
-                      idx === 0
+                      isExclusive
                         ? {
-                            background: C.goldLight,
-                            color: C.gold,
-                            border: `1px solid rgba(200,130,10,0.2)`,
+                            background: "rgba(255,255,255,0.72)",
+                            color: "#111827",
+                            border: "1px solid rgba(124,58,237,0.18)",
                           }
-                        : idx === 1
+                        : idx === 0
                           ? {
-                              background: C.greenLight,
-                              color: C.green,
-                              border: `1px solid rgba(26,138,74,0.2)`,
+                              background: C.goldLight,
+                              color: C.gold,
+                              border: `1px solid rgba(200,130,10,0.2)`,
                             }
-                          : {
-                              background: C.bg3,
-                              color: C.text2,
-                              border: `1px solid ${C.border}`,
-                            }
+                          : idx === 1
+                            ? {
+                                background: C.greenLight,
+                                color: C.green,
+                                border: `1px solid rgba(26,138,74,0.2)`,
+                              }
+                            : {
+                                background: C.bg3,
+                                color: C.text2,
+                                border: `1px solid ${C.border}`,
+                              }
                     }
                   >
                     {item}
                   </span>
                 ))
               ) : (
-                <span className="italic text-sm" style={{ color: C.text3 }}>
-                  💡შემომთავაზეთ
+                <span
+                  className="italic text-sm"
+                  style={{ color: isExclusive ? "#0f766e" : C.text3 }}
+                >
+                  შემომთავაზეთ💡
                 </span>
               )}
             </div>
@@ -462,10 +513,11 @@ export default function ListingDetails({
               {isSaved ? "შენახულია" : "შენახვა"}
             </button>
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setToast("ბმული დაკოპირდა! 🔗");
-              }}
+              // onClick={() => {
+              //   navigator.clipboard.writeText(window.location.href);
+              //   setToast("ბმული დაკოპირდა! 🔗");
+              // }}
+              onClick={handleShare}
               className="flex-1 py-3 rounded-xl font-bold border transition-all flex items-center justify-center gap-2 text-sm"
               style={{
                 background: C.bg2,

@@ -197,18 +197,31 @@ export default function ListingCard({
   };
 
   const type = listing.listingType || (listing.isVIP ? "VIP" : "NORMAL");
+  const isExclusive = type === "EXCLUSIVE";
   const isExchanged = listing.isTraded || listing.status === "EXCHANGED";
   const isOwner =
     user && (user._id === listing.owner?._id || user.role === "ADMIN");
+  const exclusiveWantPanel = {
+    background:
+      "linear-gradient(135deg, rgba(250,245,255,0.98) 0%, rgba(237,233,254,0.94) 52%, rgba(204,251,241,0.86) 100%)",
+    border: "1px solid rgba(124,58,237,0.24)",
+    borderLeft: "3px solid #7c3aed",
+    boxShadow:
+      "inset 0 1px 0 rgba(255,255,255,0.7), 0 10px 22px rgba(124,58,237,0.1)",
+  };
 
   const cardBorder =
-    type === "VIP"
-      ? `2px solid ${C.gold}`
-      : type === "SILVER"
+    isExclusive
+      ? "1.5px solid rgba(124,58,237,0.36)"
+      : type === "VIP"
+        ? `2px solid ${C.gold}`
+        : type === "SILVER"
         ? "1px solid #C0C0C0"
         : `1px solid ${C.border}`;
   const cardHoverShadow =
-    type === "VIP"
+    isExclusive
+      ? "0 10px 34px rgba(124,58,237,0.18)"
+      : type === "VIP"
       ? "0 8px 28px rgba(200,130,10,0.12)"
       : "0 8px 28px rgba(26,138,74,0.08)";
 
@@ -220,9 +233,14 @@ export default function ListingCard({
         onClick={() => listing._id && router.push(`/listing/${listing._id}`)}
       >
         <div
-          className="group relative w-full h-full flex flex-col overflow-hidden rounded-[14px] transition-all duration-200"
+          className={cn(
+            "group relative w-full h-full flex flex-col overflow-hidden rounded-[14px] transition-all duration-200",
+            isExclusive && !isExchanged && "exclusive-card-glow",
+          )}
           style={{
-            background: C.bg,
+            background: isExclusive
+              ? "linear-gradient(135deg, rgba(255,255,255,0.99) 0%, rgba(250,245,255,0.98) 48%, rgba(236,254,255,0.94) 100%)"
+              : C.bg,
             border: isExchanged ? "1px solid #fca5a5" : cardBorder,
             opacity: isExchanged ? 0.9 : 1,
           }}
@@ -232,15 +250,17 @@ export default function ListingCard({
             (e.currentTarget as HTMLElement).style.boxShadow = cardHoverShadow;
             if (!isExchanged)
               (e.currentTarget as HTMLElement).style.borderColor =
-                type === "VIP" ? C.gold : C.green;
+                isExclusive ? "#7c3aed" : type === "VIP" ? C.gold : C.green;
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
             (e.currentTarget as HTMLElement).style.boxShadow = "none";
             (e.currentTarget as HTMLElement).style.borderColor =
-              type === "VIP"
-                ? C.gold
-                : type === "SILVER"
+              isExclusive
+                ? "rgba(124,58,237,0.36)"
+                : type === "VIP"
+                  ? C.gold
+                  : type === "SILVER"
                   ? "#C0C0C0"
                   : isExchanged
                     ? "#fca5a5"
@@ -344,6 +364,17 @@ export default function ListingCard({
                 ⭐ VIP
               </span>
             )}
+            {isExclusive && (
+              <span
+                className="exclusive-badge-shimmer absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-bold z-20 shadow text-white"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #111827 0%, #7c3aed 52%, #14b8a6 100%)",
+                }}
+              >
+                EXCLUSIVE
+              </span>
+            )}
             {type === "SILVER" && (
               <span
                 className="absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-bold z-20 shadow"
@@ -418,23 +449,27 @@ export default function ListingCard({
             {listing.wantedType === "service" && listing.serviceWanted ? (
               <div
                 className="rounded-lg px-2.5 py-2"
-                style={{
-                  background: "#1a8a4a",
-                  borderLeft: `3px solid #065c2b`,
-                }}
+                style={
+                  isExclusive
+                    ? exclusiveWantPanel
+                    : {
+                        background: "#1a8a4a",
+                        borderLeft: `3px solid #065c2b`,
+                      }
+                }
               >
                 <p
                   className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
-                  style={{ color: C.white }}
+                  style={{ color: isExclusive ? "#6d28d9" : C.white }}
                 >
                   <RefreshCw size={8} />
                   მსურს 👨🏻‍🔧
                 </p>
-                <div className="flex flex-wrap gap-1 min-h-[18px]">
+                <div className="flex flex-wrap gap-1 min-h-[18px] leading-[18px] overflow-hidden">
                   {listing.wantedType === "service" && listing.serviceWanted ? (
                     <span
                       className="text-[11px] font-medium text-[#ffffff]!"
-                      style={{ color: C.text }}
+                      style={{ color: isExclusive ? "#111827" : "#fff" }}
                     >
                       <TextLoop className="  dark:text-white">
                         {listing.serviceWanted}
@@ -447,7 +482,7 @@ export default function ListingCard({
                     </span>
                   ) : listing.wantedItems?.length > 0 ? (
                     <span
-                      className="text-[11px] font-medium line-clamp-1 "
+                      className="block w-full truncate text-[11px] font-medium leading-[18px]"
                       style={{ color: C.text }}
                     >
                       {listing.wantedItems
@@ -468,18 +503,22 @@ export default function ListingCard({
             ) : (
               <div
                 className="rounded-lg px-2.5 py-2"
-                style={{
-                  background: C.greenLight,
-                  borderLeft: `3px solid ${C.green}`,
-                }}
+                style={
+                  isExclusive
+                    ? exclusiveWantPanel
+                    : {
+                        background: C.greenLight,
+                        borderLeft: `3px solid ${C.green}`,
+                      }
+                }
               >
                 <p
                   className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
-                  style={{ color: C.green }}
+                  style={{ color: isExclusive ? "#6d28d9" : C.green }}
                 >
                   <RefreshCw size={8} /> მსურს
                 </p>
-                <div className="flex flex-wrap gap-1 min-h-[18px]">
+                <div className="flex flex-wrap gap-1 min-h-[18px] leading-[18px] overflow-hidden">
                   {listing.wantedType === "service" && listing.serviceWanted ? (
                     <span
                       className="text-[11px] font-medium text-[#050000]!"
@@ -493,8 +532,8 @@ export default function ListingCard({
                     </span>
                   ) : listing.wantedItems?.length > 0 ? (
                     <span
-                      className="text-[11px] font-bold line-clamp-1 "
-                      style={{ color: C.text }}
+                      className="block w-full truncate text-[11px] font-bold leading-[18px]"
+                      style={{ color: isExclusive ? "#111827" : C.text }}
                     >
                       {listing.wantedItems
                         .filter(Boolean)
@@ -504,9 +543,9 @@ export default function ListingCard({
                   ) : (
                     <span
                       className="text-[11px] font-bold "
-                      style={{ color: C.greenDark }}
+                      style={{ color: isExclusive ? "#0f766e" : C.greenDark }}
                     >
-                      💡 შემომთავაზეთ
+                      💡შემომთავაზეთ
                     </span>
                   )}
                 </div>
@@ -624,12 +663,13 @@ export default function ListingCard({
 // ─────────────────────────────────────────────────────────────────────────────
 // 🧩 ListingsTabs: ტაბების კომპონენტი
 // ─────────────────────────────────────────────────────────────────────────────
-export type ListingTab = "vip" | "new" | "nearby" | "popular";
+export type ListingTab = "exclusive" | "vip" | "new" | "nearby" | "popular";
 interface ListingsTabsProps {
   activeTab: ListingTab;
   onChange: (tab: ListingTab) => void;
 }
 const TABS: { id: ListingTab; label: string }[] = [
+  { id: "exclusive", label: "EXCLUSIVE" },
   { id: "vip", label: "⭐ VIP განცხადებები" },
   { id: "new", label: "🆕 ახალი" },
   { id: "nearby", label: "📍 ჩემს ახლოს" },

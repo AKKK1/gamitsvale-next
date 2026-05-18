@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import React, { useState } from "react";
 import { CATEGORIES } from "@/components/AuthProvider";
 
@@ -21,105 +21,140 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   };
 
   return (
-    // position: static (default) — მობილეზე ჩვეულებრივად scrollable
-    <section
-      style={{
-        background: "#f8faf8",
-        borderBottom: "1px solid #e8ebe8",
-        // ✅ position fixed არ არის — მობილეზე scroll-ი მუშაობს
-      }}
-      className="px-4 pt-12 pb-10 flex flex-col items-center text-center"
-    >
-      {/* Live badge */}
-      <div
-        className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full text-[12px] font-medium"
-        style={{
-          background: "#e6f5ec",
-          border: "1px solid rgba(26,138,74,0.2)",
-          color: "#1a8a4a",
-        }}
-      >
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ background: "#1a8a4a", animation: "gv-blink 2s infinite" }}
-        />
-        {/* 10,000+ მომხმარებელი · ახლა ონლაინ */}იყავი პირველ ათასეულში -
-        დაგვეხმარე განვითარებაში
-      </div>
-
-      {/* Title */}
-      <h1
-        className="text-[clamp(30px,6vw,56px)] font-bold leading-tight tracking-tight mb-3 max-w-2xl"
-        style={{
-          color: "#111",
-          fontFamily: "'Space Grotesk', sans-serif",
-          letterSpacing: "-1px",
-        }}
-      >
-        გაცვალე ნივთები —{" "}
-        <span style={{ color: "#1a8a4a", fontStyle: "italic" }}>
-          ფულის გარეშე
-        </span>
-      </h1>
-
-      <p className="text-[15px] mb-8 max-w-md" style={{ color: "#555" }}>
-        საქართველოს პირველი ბარტერული პლატფორმა. შენი ძველი ნივთი სხვისთვის
-        ახალია. გამოგვყევით...
-      </p>
-
-      {/* Search bar (uncomment to enable inline hero search) */}
-      {/* <form onSubmit={handleSearch} className="flex w-full max-w-[600px] mb-6 overflow-hidden rounded-xl"
-        style={{ background: "#fff", border: "1px solid #e8ebe8", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
-        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}
-          className="text-[13px] outline-none px-4 py-3 bg-transparent"
-          style={{ color: "#555", borderRight: "1px solid #e8ebe8", minWidth: 130, fontFamily: "'Space Grotesk', sans-serif", cursor: "pointer" }}>
-          <option value="">ყველა კატეგ. ▾</option>
-          {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-        </select>
-        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="მოძებნე ნივთი, ან რაში გინდა გაცვლა..."
-          className="flex-1 px-4 py-3 text-[14px] outline-none bg-transparent"
-          style={{ color: "#111", fontFamily: "'Space Grotesk', sans-serif" }} />
-        <button type="submit" className="px-6 py-3 text-[14px] font-semibold text-white whitespace-nowrap"
-          style={{ background: "#1a8a4a", fontFamily: "'Space Grotesk', sans-serif" }}>
-          ძებნა →
-        </button>
-      </form> */}
-
-      {/* Stats */}
-      <div className="flex items-center gap-8">
-        {[
-          { n: "FB", l: "ჯგუფზე და ფეიჯზე" },
-          null,
-          { n: "IG", l: "ფეიჯზე" },
-          null,
-          { n: "Tiktok", l: "არხზე" },
-        ].map((item, i) =>
-          item === null ? (
-            <div
-              key={i}
-              className="hidden sm:block w-px h-8"
-              style={{ background: "#e8ebe8" }}
-            />
-          ) : (
-            <div key={i} className="text-center">
-              <div className="text-[22px] font-bold" style={{ color: "#111" }}>
-                {item.n}
-              </div>
-              <div className="text-[11px]" style={{ color: "#999" }}>
-                {item.l}
-              </div>
-            </div>
-          ),
-        )}
-      </div>
-
+    <section className="relative max-w-[1250px] w-full mx-auto bg-white rounded-[24px] p-5 sm:p-6 md:p-14 pb-10 md:pb-14 shadow-[0_10px_30px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-10 items-center my-6">
+      {/* სუფთა CSS გლობალური კონფლიქტების გარეშე მხოლოდ მცურავი ანიმაციისთვის */}
       <style>{`
-        @keyframes gv-blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
+        @keyframes platformFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+        .animate-platform-float {
+          animation: platformFloat 4s ease-in-out infinite;
+        }
+        @keyframes scrollCue {
+          0%, 100% { transform: translate(-50%, 0); opacity: 0.58; }
+          50% { transform: translate(-50%, 5px); opacity: 1; }
+        }
+        .hero-scroll-cue {
+          animation: scrollCue 1.7s ease-in-out infinite;
+        }
+        @media (max-width: 767px) {
+          .animate-platform-float {
+            animation-duration: 5.5s;
+          }
         }
       `}</style>
+
+      {/* მარცხენა მხარე: ტექსტური კონტენტი */}
+      <div className="flex flex-col gap-5 md:gap-6 order-2 md:order-1 items-center md:items-start text-center md:text-left">
+        {/* ზედა ბეჯი */}
+        <div className="inline-flex items-center gap-2 bg-[#e6f6ee] text-[#007D40] px-4 py-2 rounded-full text-sm font-semibold self-center md:self-start">
+          <span>🎉</span> გახდი პირველი 10000 მომხმარებლის ნაწილი
+        </div>
+
+        {/* მთავარი სათაური */}
+        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-slate-900">
+          გაცვალე ნივთები — <br />
+          <span className="text-[#007D40]">ფულის გარეშე</span>
+        </h1>
+
+        {/* ქვესათაური */}
+        <p className="text-base md:text-lg text-slate-600 max-w-[480px]">
+          საქართველოს პირველი ბარტერული პლატფორმა. მიეცი ნივთებს მეორე სიცოცხლე,
+          დაზოგე თანხა და იპოვე ის, რაც ზუსტად ახლა გჭირდება.
+        </p>
+
+        {/* მოქმედების ღილაკები (CTA) */}
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-2">
+          {/* <Link
+            href="/add-item"
+            className="bg-[#007D40] text-white px-7 py-4 rounded-xl font-semibold text-center shadow-lg shadow-emerald-700/20 hover:bg-[#006433] hover:-translate-y-0.5 transition-all duration-200"
+          >
+            + დაამატე ნივთი
+          </Link> */}
+
+          <Link
+            href="/search"
+            className="border-2 border-[#007D40] text-[#007D40] px-7 py-4 rounded-xl font-semibold text-center hover:bg-[#f0fdf4] hover:-translate-y-0.5 transition-all duration-200"
+          >
+            განცხადებების ნახვა
+          </Link>
+        </div>
+      </div>
+
+      {/* მარჯვენა მხარე: ბარტერის ვიზუალი (SVG) */}
+      <div className="bg-gradient-to-br from-[#f0fdf4] to-[#e6f6ee] rounded-[20px] p-4 sm:p-6 md:p-10 flex justify-center items-center h-full min-h-[185px] sm:min-h-[230px] md:min-h-[400px] order-1 md:order-2 animate-platform-float">
+        <svg
+          className="w-full max-w-[220px] sm:max-w-[280px] md:max-w-[380px] h-auto"
+          viewBox="0 0 200 200"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* წრიული ფონი ისრებით */}
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="#007D40"
+            strokeWidth="2"
+            strokeDasharray="8 8"
+            opacity="0.4"
+          />
+
+          {/* მარცხენა ნივთი */}
+          <g transform="translate(30, 70)">
+            <rect width="45" height="45" rx="10" fill="#007D40" />
+            <path
+              d="M15 15H30M15 22.5H30M15 30H25"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </g>
+
+          {/* მარჯვენა ნივთი */}
+          <g transform="translate(125, 70)">
+            <rect width="45" height="45" rx="10" fill="#34d399" />
+            <circle
+              cx="22.5"
+              cy="22.5"
+              r="10"
+              fill="none"
+              stroke="white"
+              strokeWidth="3"
+            />
+          </g>
+
+          {/* ბარტერის ისრები */}
+          <path
+            d="M85 65H115M115 65L108 58M115 65L108 72"
+            stroke="#007D40"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M115 125H85M85 125L92 118M85 125L92 132"
+            stroke="#007D40"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <a
+        href="#listings-section"
+        aria-label="Scroll to listings"
+        className="hero-scroll-cue absolute bottom-3 left-1/2 hidden md:flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+        style={{
+          border: "1px solid rgba(0,125,64,0.18)",
+          background: "rgba(230,246,238,0.82)",
+          color: "#007D40",
+        }}
+      >
+        <span className="text-sm leading-none">⌄</span>
+      </a>
     </section>
   );
 }

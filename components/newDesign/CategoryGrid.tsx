@@ -69,7 +69,7 @@ export default function CategoryGrid() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-black text-gray-900">
-              🗂 სად რისი გაცვლა შეიძლება
+              🗂️ სად რისი გაცვლა შეიძლება
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {loading ? (

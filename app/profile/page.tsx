@@ -36,6 +36,7 @@ import {
   Copy,
   Check,
   AtSign,
+  LockKeyhole,
   InstagramIcon,
   MessageCircleMore,
   Replace,
@@ -87,6 +88,8 @@ export default function ProfilePage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [settingsError, setSettingsError] = useState("");
   const [settingsSuccess, setSettingsSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +103,19 @@ export default function ProfilePage() {
         .catch(() => {});
     }
   }, [user, activeTab]);
+
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (
+      tab === "offers" ||
+      tab === "listings" ||
+      tab === "saved" ||
+      tab === "settings" ||
+      (tab === "admin_users" && user?.role === "ADMIN")
+    ) {
+      setActiveTab(tab);
+    }
+  }, [user?.role]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -166,10 +182,22 @@ export default function ProfilePage() {
   };
 
   const handleRoleChange = async (id: string, role: string) => {
-    const res = await fetch(`/api/admin/users/${id}/role`, {
+    const res = await fetch(`/api/admin/users/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role }),
+    });
+    if (res.ok) fetchData();
+  };
+
+  const handleExclusiveAccess = async (
+    id: string,
+    canPostExclusive: boolean,
+  ) => {
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ canPostExclusive: !canPostExclusive }),
     });
     if (res.ok) fetchData();
   };
@@ -245,6 +273,13 @@ export default function ProfilePage() {
     padding: "10px 16px",
     borderRadius: 10,
     fontSize: 14,
+  } as React.CSSProperties;
+
+  const compactInp = {
+    ...inp,
+    padding: "8px 12px",
+    borderRadius: 9,
+    fontSize: 12,
   } as React.CSSProperties;
 
   const navBtnBase =
@@ -1225,6 +1260,25 @@ export default function ProfilePage() {
                               </td>
                               <td className="px-4 py-3">
                                 <button
+                                  onClick={() =>
+                                    handleExclusiveAccess(
+                                      u._id,
+                                      Boolean(u.canPostExclusive),
+                                    )
+                                  }
+                                  className="mr-2 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-widest transition-all"
+                                  style={{
+                                    background: u.canPostExclusive
+                                      ? "#7c3aed"
+                                      : "rgba(124,58,237,0.08)",
+                                    border: "1px solid rgba(124,58,237,0.24)",
+                                    color: u.canPostExclusive ? "#fff" : "#7c3aed",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {u.canPostExclusive ? "Exclusive ON" : "Exclusive"}
+                                </button>
+                                <button
                                   onClick={() => handleDeleteUser(u._id)}
                                   className="p-2 rounded-lg transition-all"
                                   style={{ color: C.text3, cursor: "pointer" }}
@@ -1411,6 +1465,143 @@ export default function ProfilePage() {
                         }}
                       >
                         ცვლილებების შენახვა
+                      </button>
+                    </form>
+                  </section>
+
+                  <section
+                    className="rounded-xl p-4"
+                    style={{
+                      background: C.bg2,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <h4
+                      className="text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center gap-2"
+                      style={{ color: C.text3 }}
+                    >
+                      <LockKeyhole size={13} style={{ color: C.green }} /> პაროლი
+                    </h4>
+                    <form
+                      className="space-y-3 max-w-sm"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setPasswordError("");
+                        setPasswordSuccess("");
+                        const form = e.currentTarget;
+                        const formData = new FormData(form);
+                        const currentPassword = String(
+                          formData.get("currentPassword") || "",
+                        );
+                        const newPassword = String(
+                          formData.get("newPassword") || "",
+                        );
+                        const confirmPassword = String(
+                          formData.get("confirmPassword") || "",
+                        );
+
+                        if (newPassword.length < 6) {
+                          setPasswordError("პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს");
+                          return;
+                        }
+                        if (newPassword !== confirmPassword) {
+                          setPasswordError("პაროლები ერთმანეთს არ ემთხვევა");
+                          return;
+                        }
+
+                        const res = await fetch("/api/profile/password", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            currentPassword,
+                            newPassword,
+                          }),
+                        });
+
+                        if (res.ok) {
+                          setPasswordSuccess("პაროლი განახლდა!");
+                          form.reset();
+                          setTimeout(() => setPasswordSuccess(""), 3000);
+                        } else {
+                          const err = await res.json();
+                          setPasswordError(err.error || "პაროლის შეცვლა ვერ მოხერხდა");
+                        }
+                      }}
+                    >
+                      <div className="space-y-1.5">
+                        <label
+                          className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                          style={{ color: C.text3 }}
+                        >
+                          ძველი პაროლი
+                        </label>
+                        <input
+                          name="currentPassword"
+                          type="password"
+                          placeholder="Google-ით თუ შეხვედით, ცარიელი დატოვეთ"
+                          style={compactInp}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label
+                            className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                            style={{ color: C.text3 }}
+                          >
+                            ახალი პაროლი
+                          </label>
+                          <input
+                            name="newPassword"
+                            type="password"
+                            minLength={6}
+                            placeholder="მინ. 6 სიმბოლო"
+                            style={compactInp}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label
+                            className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                            style={{ color: C.text3 }}
+                          >
+                            გამეორება
+                          </label>
+                          <input
+                            name="confirmPassword"
+                            type="password"
+                            minLength={6}
+                            placeholder="გაიმეორეთ პაროლი"
+                            style={compactInp}
+                          />
+                        </div>
+                      </div>
+
+                      {passwordError && (
+                        <p
+                          className="text-xs font-bold"
+                          style={{ color: "#ef4444" }}
+                        >
+                          {passwordError}
+                        </p>
+                      )}
+                      {passwordSuccess && (
+                        <p
+                          className="text-xs font-bold"
+                          style={{ color: C.green }}
+                        >
+                          {passwordSuccess}
+                        </p>
+                      )}
+
+                      <button
+                        className="w-full text-white py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
+                        style={{
+                          background: C.text,
+                          cursor: "pointer",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}
+                      >
+                        პაროლის შენახვა
                       </button>
                     </form>
                   </section>
