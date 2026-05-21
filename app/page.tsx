@@ -193,7 +193,10 @@ export default function HomePage() {
             });
 
   return (
-    <div className="min-h-screen" style={{ background: "#fff", color: C.text }}>
+    <div
+      className="min-h-screen overflow-x-clip"
+      style={{ background: "#fff", color: C.text }}
+    >
       <Header
         onAddListing={() => requireAuth(() => setShowAddModal(true))}
         // ჰედერიდან ძებნა → /search გვერდი (ჰირო გარეშე)
@@ -211,7 +214,9 @@ export default function HomePage() {
       />
 
       {/* ── ჰირო + კატეგორიები — მობილეზე ნორმალური scroll, არა fixed ── */}
-      <HeroSection onSearch={handleHeroSearch} />
+      <div className="px-3 sm:px-4">
+        <HeroSection onSearch={handleHeroSearch} />
+      </div>
       <CategoriesSection />
 
       {/* ── განცხადებები ── */}

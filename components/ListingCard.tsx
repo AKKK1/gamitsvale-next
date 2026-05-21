@@ -678,7 +678,7 @@ const TABS: { id: ListingTab; label: string }[] = [
 export function ListingsTabs({ activeTab, onChange }: ListingsTabsProps) {
   return (
     <div
-      className="flex gap-0 mb-6"
+      className="no-scrollbar -mx-4 mb-6 flex gap-0 overflow-x-auto px-4"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
       {TABS.map((tab) => (
