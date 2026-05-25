@@ -11,6 +11,7 @@ import {
   ChevronRight,
   RefreshCw,
   Clock,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "./AuthProvider";
 import Toast from "./Toast";
@@ -197,10 +198,16 @@ export default function ListingCard({
   };
 
   const type = listing.listingType || (listing.isVIP ? "VIP" : "NORMAL");
+  const isVip = type === "VIP";
   const isExclusive = type === "EXCLUSIVE";
   const isExchanged = listing.isTraded || listing.status === "EXCHANGED";
   const isOwner =
     user && (user._id === listing.owner?._id || user.role === "ADMIN");
+  const wantedItems = Array.isArray(listing.wantedItems)
+    ? listing.wantedItems
+        .map((item: unknown) => String(item || "").trim())
+        .filter(Boolean)
+    : [];
   const exclusiveWantPanel = {
     background:
       "linear-gradient(135deg, rgba(250,245,255,0.98) 0%, rgba(237,233,254,0.94) 52%, rgba(204,251,241,0.86) 100%)",
@@ -436,11 +443,33 @@ export default function ListingCard({
             </h3>
 
             <div
-              className="flex items-center gap-1 text-[11px]"
+              className="flex items-center justify-between gap-2 text-[11px]"
               style={{ color: C.text3 }}
             >
-              <MapPin size={11} color="#ef4444" />
-              {listing.city}
+              <span className="flex min-w-0 items-center gap-1">
+                <MapPin size={11} color="#ef4444" className="shrink-0" />
+                <span className="truncate">{listing.city}</span>
+              </span>
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                style={{
+                  background: isExclusive
+                    ? "rgba(124,58,237,0.08)"
+                    : isVip
+                      ? "rgba(200,130,10,0.14)"
+                      : "rgba(26,138,74,0.1)",
+                  color: isExclusive ? "#6d28d9" : isVip ? C.gold : C.green,
+                  border: isExclusive
+                    ? "1px solid rgba(124,58,237,0.16)"
+                    : isVip
+                      ? "1px solid rgba(200,130,10,0.28)"
+                      : "1px solid rgba(26,138,74,0.14)",
+                }}
+              >
+                <RefreshCw size={8} />
+                მსურს
+                <ChevronDown size={10} strokeWidth={2.4} />
+              </span>
             </div>
 
             {/* გაცვლა მინდა */}
@@ -448,7 +477,7 @@ export default function ListingCard({
 
             {listing.wantedType === "service" && listing.serviceWanted ? (
               <div
-                className="rounded-lg px-2.5 py-2"
+                className={cn("rounded-lg px-2.5", isExclusive ? "py-2" : "py-1.5")}
                 style={
                   isExclusive
                     ? exclusiveWantPanel
@@ -459,17 +488,24 @@ export default function ListingCard({
                 }
               >
                 <p
-                  className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
+                  className="hidden"
                   style={{ color: isExclusive ? "#6d28d9" : C.white }}
                 >
                   <RefreshCw size={8} />
                   მსურს 👨🏻‍🔧
                 </p>
-                <div className="flex flex-wrap gap-1 min-h-[18px] leading-[18px] overflow-hidden">
+                <div
+                  className={cn(
+                    "flex flex-wrap gap-1 leading-[18px] overflow-hidden",
+                    isExclusive ? "min-h-[18px]" : "min-h-[24px]",
+                  )}
+                >
                   {listing.wantedType === "service" && listing.serviceWanted ? (
                     <span
-                      className="text-[11px] font-medium text-[#ffffff]!"
-                      style={{ color: isExclusive ? "#111827" : "#fff" }}
+                      className={cn(
+                        "text-[11px] font-medium",
+                        isExclusive ? "text-[#111827]!" : "text-[#ffffff]!",
+                      )}
                     >
                       <TextLoop className="  dark:text-white">
                         {listing.serviceWanted}
@@ -502,7 +538,7 @@ export default function ListingCard({
               </div>
             ) : (
               <div
-                className="rounded-lg px-2.5 py-2"
+                className={cn("rounded-lg px-2.5", isExclusive ? "py-2" : "py-1.5")}
                 style={
                   isExclusive
                     ? exclusiveWantPanel
@@ -513,12 +549,17 @@ export default function ListingCard({
                 }
               >
                 <p
-                  className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
+                  className="hidden"
                   style={{ color: isExclusive ? "#6d28d9" : C.green }}
                 >
                   <RefreshCw size={8} /> მსურს
                 </p>
-                <div className="flex flex-wrap gap-1 min-h-[18px] leading-[18px] overflow-hidden">
+                <div
+                  className={cn(
+                    "flex flex-wrap gap-1 leading-[18px] overflow-hidden",
+                    isExclusive ? "min-h-[18px]" : "min-h-[24px]",
+                  )}
+                >
                   {listing.wantedType === "service" && listing.serviceWanted ? (
                     <span
                       className="text-[11px] font-medium text-[#050000]!"
@@ -530,16 +571,48 @@ export default function ListingCard({
                         size={120}
                       />
                     </span>
-                  ) : listing.wantedItems?.length > 0 ? (
-                    <span
-                      className="block w-full truncate text-[11px] font-bold leading-[18px]"
-                      style={{ color: isExclusive ? "#111827" : C.text }}
-                    >
-                      {listing.wantedItems
-                        .filter(Boolean)
-                        .slice(0, 2)
-                        .join(" · ")}
+                  ) : wantedItems.length > 0 ? (
+                    isExclusive ? (
+                      <span
+                        className="block w-full truncate text-[11px] font-bold leading-[18px]"
+                        style={{ color: "#111827" }}
+                      >
+                        {wantedItems.slice(0, 2).join(" · ")}
+                      </span>
+                    ) : (
+                    <span className="grid w-full grid-cols-2 gap-1 sm:flex sm:flex-wrap">
+                      {wantedItems.slice(0, 3).map((item: string, chipIndex: number) => (
+                        <span
+                          key={`${item}-${chipIndex}`}
+                          className="min-w-0 truncate rounded-md px-2 py-0.5 text-[9px] font-bold"
+                          style={{
+                            background:
+                              chipIndex % 2 === 0
+                                ? "#ffffff"
+                                : "rgba(255,255,255,0.74)",
+                            border: "1px solid rgba(26,138,74,0.14)",
+                            color: C.text,
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.78)",
+                          }}
+                          title={item}
+                        >
+                          {item}
+                        </span>
+                      ))}
+                      {wantedItems.length > 3 && (
+                        <span
+                          className="rounded-md px-2 py-0.5 text-[9px] font-bold"
+                          style={{
+                            background: "rgba(255,255,255,0.74)",
+                            border: "1px solid rgba(26,138,74,0.14)",
+                            color: C.text,
+                          }}
+                        >
+                          +{wantedItems.length - 3}
+                        </span>
+                      )}
                     </span>
+                    )
                   ) : (
                     <span
                       className="text-[11px] font-bold "
