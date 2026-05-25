@@ -457,13 +457,23 @@ export default function ListingCard({
                     ? "rgba(124,58,237,0.08)"
                     : isVip
                       ? "rgba(200,130,10,0.14)"
-                      : "rgba(26,138,74,0.1)",
-                  color: isExclusive ? "#6d28d9" : isVip ? C.gold : C.green,
+                      : type === "SILVER"
+                        ? "linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%)"
+                        : "rgba(26,138,74,0.1)",
+                  color: isExclusive
+                    ? "#6d28d9"
+                    : isVip
+                      ? C.gold
+                      : type === "SILVER"
+                        ? "#475569"
+                        : C.green,
                   border: isExclusive
                     ? "1px solid rgba(124,58,237,0.16)"
                     : isVip
                       ? "1px solid rgba(200,130,10,0.28)"
-                      : "1px solid rgba(26,138,74,0.14)",
+                      : type === "SILVER"
+                        ? "1px solid #cbd5e1"
+                        : "1px solid rgba(26,138,74,0.14)",
                 }}
               >
                 <RefreshCw size={8} />
