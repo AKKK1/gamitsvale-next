@@ -11,6 +11,7 @@ import ListingCard, {
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
+import SponsoredPartnerAds from "@/components/SponsoredPartnerAds";
 import { Trash2, MapPin } from "lucide-react";
 import Footer from "@/app/footer/page";
 import HeroSection from "@/components/newDesign/HeroSection";
@@ -282,6 +283,12 @@ export default function HomePage() {
                 }
               />
             ))}
+          </div>
+        )}
+
+        {activeTab === "exclusive" && (
+          <div className="mt-5">
+            <SponsoredPartnerAds variant="wide" />
           </div>
         )}
       </main>

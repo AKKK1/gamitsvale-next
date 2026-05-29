@@ -11,6 +11,7 @@ import ListingCard from "@/components/ListingCard";
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
+import SponsoredPartnerAds from "@/components/SponsoredPartnerAds";
 import { Trash2, Search, X } from "lucide-react";
 import Footer from "@/app/footer/page";
 
@@ -205,23 +206,31 @@ function SearchContent() {
                   წესები ნახეთ აქ
                 </button>
                 {isListingsPage && (
-                  <button
-                    type="button"
-                    onClick={() => router.push("/categories")}
-                    className="rounded-full px-4 py-2 text-xs font-bold transition-colors"
-                    style={{
-                      background: C.bg3,
-                      color: C.text2,
-                      border: `1px solid ${C.border}`,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ყველა კატეგორია
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/categories")}
+                      className="rounded-full px-4 py-2 text-xs font-bold transition-colors"
+                      style={{
+                        background: C.bg3,
+                        color: C.text2,
+                        border: `1px solid ${C.border}`,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ყველა კატეგორია
+                    </button>
+                  </>
                 )}
               </div>
             </div>
           </div>
+
+          {isListingsPage && (
+            <div className="mx-auto mb-5 max-w-5xl">
+              <SponsoredPartnerAds variant="wide" />
+            </div>
+          )}
 
           {/* filter chips */}
           {activeFilters.length > 0 && (
