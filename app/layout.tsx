@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 export const viewport: Viewport = {
   themeColor: "#D4A017",
   width: "device-width",
@@ -65,6 +66,7 @@ export default function RootLayout({
         <AuthProvider>{children}</AuthProvider>
         <CookieConsent />
         <Analytics />
+        <SpeedInsights />
         {/* Google OAuth */}
         <Script
           src="https://accounts.google.com/gsi/client"
