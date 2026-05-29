@@ -89,7 +89,9 @@ export async function POST(request: Request) {
   const decoded = getUserFromRequest(request);
   if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const user = await User.findById(decoded.id);
+  const user =
+    (await User.findById(decoded.id)) ||
+    (decoded.role === 'ADMIN' ? await User.findOne({ role: 'ADMIN' }) : null);
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
   const body = await request.json();
@@ -97,6 +99,12 @@ export async function POST(request: Request) {
   const { title, category, city, description, condition, listingType } = body;
 
   const isNormal = !listingType || listingType === 'NORMAL';
+  if (listingType === 'EXCLUSIVE' && user.role !== 'ADMIN' && !user.canPostExclusive) {
+    return NextResponse.json(
+      { error: 'ამ ანგარიშისთვის EXCLUSIVE განცხადების შექმნა ჯერ ჩართული არ არის' },
+      { status: 403 }
+    );
+  }
 
   if (isNormal && user.role !== 'ADMIN') {
     const today    = new Date(); today.setHours(0, 0, 0, 0);
@@ -132,8 +140,8 @@ export async function POST(request: Request) {
 
   const listing = await Listing.create({
     ...cleanBody,
-    owner: decoded.id,
-    isVIP: listingType === 'VIP',
+    owner: user._id,
+    isVIP: listingType === 'VIP' || listingType === 'EXCLUSIVE',
     tradePeriod,
     tradeDuration,
     tradeUnit,

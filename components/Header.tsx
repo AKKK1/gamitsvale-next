@@ -113,6 +113,16 @@ export default function Header({
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  const goToOffers = async () => {
+    setShowNotifications(false);
+    setShowMobileMenu(false);
+    if (unreadCount > 0) {
+      await fetch("/api/notifications/read", { method: "POST" });
+      setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+    }
+    router.push("/profile?tab=offers");
+  };
+
   // ── მინდა / გინდა toggle ──────────────────────────────────────────────────
   const SearchToggle = ({ small = false }: { small?: boolean }) => (
     <div
@@ -313,17 +323,7 @@ export default function Header({
                 {/* Bell */}
                 <div className="relative">
                   <button
-                    onClick={async () => {
-                      setShowNotifications(!showNotifications);
-                      if (!showNotifications && unreadCount > 0) {
-                        await fetch("/api/notifications/read", {
-                          method: "POST",
-                        });
-                        setNotifications(
-                          notifications.map((n) => ({ ...n, isRead: true })),
-                        );
-                      }
-                    }}
+                    onClick={goToOffers}
                     className="relative p-2.5 rounded-xl transition-colors"
                     style={{
                       border: `1px solid ${C.border}`,
@@ -458,15 +458,7 @@ export default function Header({
             </button>
             {user && (
               <button
-                onClick={async () => {
-                  setShowNotifications(!showNotifications);
-                  if (!showNotifications && unreadCount > 0) {
-                    await fetch("/api/notifications/read", { method: "POST" });
-                    setNotifications(
-                      notifications.map((n) => ({ ...n, isRead: true })),
-                    );
-                  }
-                }}
+                onClick={goToOffers}
                 className="relative p-2.5 rounded-xl transition-colors"
                 style={{
                   border: `1px solid ${C.border}`,

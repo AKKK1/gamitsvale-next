@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   Clock,
 } from "lucide-react";
-import { GEORGIAN_CITIES, CATEGORIES, cn } from "./AuthProvider";
+import { GEORGIAN_CITIES, CATEGORIES, cn, useAuth } from "./AuthProvider";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 🎨 კონსტანტები: ფერები და სტილები
@@ -59,6 +59,7 @@ export default function AddListingModal({
   onRefresh: () => void;
   editingListing?: any;
 }) {
+  const { user } = useAuth();
   // ───────────────────────────────────────────────────────────────────────────
   // 📦 STATE: ფორმის მონაცემები
   // ───────────────────────────────────────────────────────────────────────────
@@ -392,7 +393,7 @@ export default function AddListingModal({
               </AnimatePresence>
 
               {/* Listing Type */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   {
                     id: "NORMAL",
@@ -412,6 +413,16 @@ export default function AddListingModal({
                     price: "30 ₾",
                     icon: <Star size={14} style={{ color: C.gold }} />,
                   },
+                  ...(user?.role === "ADMIN" || user?.canPostExclusive
+                    ? [
+                        {
+                          id: "EXCLUSIVE",
+                          name: "EXCLUSIVE",
+                          price: "0 ₾",
+                          icon: <Star size={14} style={{ color: "#7c3aed" }} />,
+                        },
+                      ]
+                    : []),
                 ].map((type) => (
                   <button
                     key={type.id}
@@ -690,7 +701,7 @@ export default function AddListingModal({
                 )}
                 {form.offerMe === "offerMe" && (
                   <input
-                    placeholder=" 💡შემომთავაზეთ "
+                    placeholder=" შემომთავაზეთ💡 "
                     style={{ ...inp, fontSize: 12 }}
                     value={form.offerMe}
                     onChange={(e) =>

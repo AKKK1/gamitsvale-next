@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/components/AuthProvider";
-import { HeartCrack, HeartHandshake, Toolbox } from "lucide-react";
+import { HeartCrack, Toolbox } from "lucide-react";
 
 const GREEN = "#1a8a4a";
 const GREEN_LIGHT = "#e6f5ec";
@@ -11,7 +11,6 @@ const GOLD = "#c8820a";
 const GOLD_LIGHT = "#fffdf4";
 const BORDER = "#e8ebe8";
 const RED = "#1a8a4a";
-const GREY = "#99999f";
 
 // ── Real counts hook ─────────────────────────────────────────────────────────
 // API route.ts-ში GET-ს დასჭირდება ?counts=1 პარამეტრის დამუშავება:
@@ -103,12 +102,6 @@ const FEATURED_CAT_IDS = [
 ];
 
 // ── hover helper ─────────────────────────────────────────────────────────────
-function hoverGreen(e: React.MouseEvent, enter: boolean) {
-  const el = e.currentTarget as HTMLElement;
-  el.style.borderColor = enter ? GREEN : BORDER;
-  el.style.background = enter ? GREEN_LIGHT : "#fff";
-  el.style.transform = enter ? "translateY(-2px)" : "translateY(0)";
-}
 function hoverGold(e: React.MouseEvent, enter: boolean) {
   const el = e.currentTarget as HTMLElement;
   el.style.opacity = enter ? "0.84" : "1";
@@ -124,29 +117,30 @@ export default function CategoriesSection() {
 
   return (
     <section
-      className="px-4 py-8"
+      className="overflow-x-clip px-3 sm:px-4 py-8"
       style={{ background: "#fff", borderBottom: `1px solid ${BORDER}` }}
     >
-      <div className="max-w-[1250px] mx-auto">
+      <div className="max-w-[1250px] min-w-0 mx-auto">
         {/* ── Header ── */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
+        <div className="flex min-w-0 items-start justify-between gap-3 mb-5">
+          <div className="min-w-0">
             <div
-              className="text-[16px] font-bold"
+              className="text-[15px] sm:text-[16px] font-bold leading-snug break-words"
               style={{
                 color: "#111",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
-              🗂 სად რისი გაცვლა შეიძლება
+              🗂️ სად რისი გაცვლა შეიძლება
             </div>
-            <div className="text-[12px] mt-0.5" style={{ color: "#999" }}>
+            <div className="text-[12px] mt-0.5 leading-snug" style={{ color: "#999" }}>
               აირჩიე კატეგორია და ნახე განცხადებები
             </div>
           </div>
           <button
             type="button"
             onClick={() => setShowAllCategories((v) => !v)}
+            className="shrink-0 whitespace-nowrap"
             style={{
               color: GREEN,
               textDecoration: "none",
@@ -197,7 +191,7 @@ export default function CategoriesSection() {
           >
             <Toolbox size={16} /> სერვისების გაცვლა
           </div>
-          <div className="flex gap-2.5 flex-wrap mb-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-0">
             {[
               {
                 href: "/category/serviceToThing",
@@ -216,11 +210,11 @@ export default function CategoriesSection() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex-1 min-w-[140px]"
+                className="min-w-0"
                 style={{ textDecoration: "none" }}
               >
                 <div
-                  className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5"
+                  className="flex min-w-0 items-center gap-2.5 rounded-[10px] px-3 py-2.5"
                   style={{
                     background: GOLD,
                     cursor: "pointer",
@@ -230,9 +224,9 @@ export default function CategoriesSection() {
                   onMouseLeave={(e) => hoverGold(e, false)}
                 >
                   <span className="text-[22px]">{item.icon}</span>
-                  <div>
+                  <div className="min-w-0">
                     <div
-                      className="text-[11px] font-bold text-white leading-tight"
+                      className="text-[11px] font-bold text-white leading-tight break-words"
                       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                       {item.label}
@@ -260,7 +254,7 @@ export default function CategoriesSection() {
         >
           <div style={{ minHeight: 0 }}>
             {/* ══ 6 featured კატეგორია ══ */}
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 mb-5">
+            <div className="grid grid-cols-3 min-[380px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 mb-5">
               {featuredCats.map((cat) => (
                 <Link
                   key={cat.id}

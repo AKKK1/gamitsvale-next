@@ -108,7 +108,7 @@ export default function CategoriesPage() {
               marginBottom: 4,
             }}
           >
-            🗂 ყველა კატეგორია
+            📁 ყველა კატეგორია
           </h1>
           <p style={{ color: "#999", fontSize: 13 }}>
             {loading ? (

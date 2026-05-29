@@ -104,6 +104,18 @@ export default function AdminPanel() {
     fetchUsers();
   };
 
+  const handleExclusiveAccess = async (
+    userId: string,
+    canPostExclusive: boolean,
+  ) => {
+    await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ canPostExclusive: !canPostExclusive }),
+    });
+    fetchUsers();
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("ნამდვილად გსურთ მომხმარებლის წაშლა?")) return;
     await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
@@ -338,6 +350,8 @@ export default function AdminPanel() {
                                 ? "bg-red-500/10 text-red-400"
                                 : u.role === "ADMIN"
                                   ? "bg-gold/10 text-gold"
+                                  : u.canPostExclusive
+                                    ? "bg-violet-500/10 text-violet-300"
                                   : "bg-green-500/10 text-green-400",
                             )}
                           >
@@ -345,6 +359,8 @@ export default function AdminPanel() {
                               ? "დაბლოკილი"
                               : u.role === "ADMIN"
                                 ? "ADMIN"
+                                : u.canPostExclusive
+                                  ? "EXCLUSIVE"
                                 : "აქტიური"}
                           </span>
                         </td>
@@ -356,6 +372,27 @@ export default function AdminPanel() {
                               className="px-3 py-1.5 bg-gold/10 text-gold border border-gold/20 rounded-lg text-[10px] font-black hover:bg-gold hover:text-dark transition-all"
                             >
                               +25₾
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleExclusiveAccess(
+                                  u._id,
+                                  Boolean(u.canPostExclusive),
+                                )
+                              }
+                              className={cn(
+                                "px-3 py-1.5 border rounded-lg text-[10px] font-black transition-all",
+                                u.canPostExclusive
+                                  ? "bg-violet-500 text-white border-violet-400"
+                                  : "bg-violet-500/10 border-violet-500/20 text-violet-300 hover:bg-violet-500 hover:text-white",
+                              )}
+                              title={
+                                u.canPostExclusive
+                                  ? "EXCLUSIVE უფლების გამორთვა"
+                                  : "EXCLUSIVE უფლების ჩართვა"
+                              }
+                            >
+                              {u.canPostExclusive ? "EXCLUSIVE ON" : "EXCLUSIVE"}
                             </button>
                             {/* დაბლოკვა */}
                             <button
@@ -427,9 +464,11 @@ export default function AdminPanel() {
                         <span
                           className={cn(
                             "px-2 py-1 rounded-lg text-[10px] font-black",
-                            l.listingType === "VIP"
-                              ? "bg-gold/10 text-gold"
-                              : l.listingType === "SILVER"
+                            l.listingType === "EXCLUSIVE"
+                              ? "bg-violet-500/10 text-violet-300"
+                              : l.listingType === "VIP"
+                                ? "bg-gold/10 text-gold"
+                                : l.listingType === "SILVER"
                                 ? "bg-zinc-400/10 text-zinc-300"
                                 : "bg-dark text-zinc-500",
                           )}

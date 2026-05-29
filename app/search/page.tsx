@@ -4,13 +4,14 @@
 // ჰედერიდან ძებნის შემდეგ ეს გვერდი გამოჩნდება
 
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import Header from "@/components/Header";
 import ListingCard from "@/components/ListingCard";
 import AddListingModal from "@/components/AddListingModal";
 import OfferModal from "@/components/OfferModal";
 import Toast from "@/components/Toast";
+import SponsoredPartnerAds from "@/components/SponsoredPartnerAds";
 import { Trash2, Search, X } from "lucide-react";
 import Footer from "@/app/footer/page";
 
@@ -26,15 +27,44 @@ const C = {
   border: "#e8ebe8",
 };
 
+type ListingPriorityInput = { listingType?: string; isVIP?: boolean };
+
+const getListingPriority = (listing: ListingPriorityInput) => {
+  const listingType = listing.listingType || (listing.isVIP ? "VIP" : "NORMAL");
+
+  if (listingType === "EXCLUSIVE") return 0;
+  if (listingType === "VIP") return 1;
+  if (listingType === "SILVER") return 2;
+  return 3;
+};
+
+const ruleSlides = [
+  {
+    title: "როგორ იწყება გაცვლა",
+    text: "აირჩიე ნივთი ან სერვისი, ნახე რა სურს ავტორს და გაუგზავნე ზუსტი შეთავაზება.",
+  },
+  {
+    title: "შეთანხმება ორივე მხარეს სჭირდება",
+    text: "კონტაქტები გამოჩნდება მხოლოდ მაშინ, როცა ორივე მხარე დაეთანხმება შეთავაზებას.",
+  },
+  {
+    title: "უსაფრთხოება პირველია",
+    text: "ადგილი, დრო და დეტალები წინასწარ შეათანხმე. გაცვლა გააკეთე მხოლოდ მაშინ, როცა ყველაფერი ნათელია.",
+  },
+];
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
 
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState<any>(null);
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const [rulesStep, setRulesStep] = useState(0);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -48,13 +78,18 @@ function SearchContent() {
   const city = searchParams.get("city") || "";
   const category = searchParams.get("category") || "";
   const condition = searchParams.get("condition") || "";
+  const isListingsPage = pathname === "/listings";
 
   const fetchResults = async (p?: URLSearchParams) => {
     setLoading(true);
     const params = p || buildParams();
     const res = await fetch(`/api/listings?${params.toString()}`);
     const data = await res.json();
-    setListings(Array.isArray(data) ? data : []);
+    setListings(
+      Array.isArray(data)
+        ? [...data].sort((a, b) => getListingPriority(a) - getListingPriority(b))
+        : [],
+    );
     setLoading(false);
   };
 
@@ -139,28 +174,63 @@ function SearchContent() {
         {/* ── სათაური + ფილტრ ჩიფები ── */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <div
-              className="flex items-center justify-center w-9 h-9 rounded-xl"
-              style={{ background: C.greenLight }}
-            >
-              <Search size={16} style={{ color: C.green }} />
-            </div>
+            {!isListingsPage && (
+              <div
+                className="flex items-center justify-center w-9 h-9 rounded-xl"
+                style={{ background: C.greenLight }}
+              >
+                <Search size={16} style={{ color: C.green }} />
+              </div>
+            )}
             <div>
-              <h1 className="text-xl font-bold" style={{ color: C.text }}>
-                {query ? `"${query}"` : "ძებნის შედეგები"}
-              </h1>
-              <p className="text-xs" style={{ color: C.text3 }}>
-                {loading ? (
-                  "იტვირთება..."
-                ) : (
+              {!isListingsPage && (
+                <h1 className="text-xl font-bold" style={{ color: C.text }}>
+                  {query ? `"${query}" — აი რა ვიპოვეთ` : "იპოვე შენი შემდეგი გაცვლა"}
+                </h1>
+              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRulesStep(0);
+                    setShowRulesModal(true);
+                  }}
+                  className="rounded-full px-4 py-2 text-xs font-bold transition-colors"
+                  style={{
+                    background: C.greenLight,
+                    color: C.green,
+                    border: `1px solid rgba(26,138,74,0.18)`,
+                    cursor: "pointer",
+                  }}
+                >
+                  წესები ნახეთ აქ
+                </button>
+                {isListingsPage && (
                   <>
-                    <strong style={{ color: C.text }}>{listings.length}</strong>{" "}
-                    განცხადება მოიძებნა
+                    <button
+                      type="button"
+                      onClick={() => router.push("/categories")}
+                      className="rounded-full px-4 py-2 text-xs font-bold transition-colors"
+                      style={{
+                        background: C.bg3,
+                        color: C.text2,
+                        border: `1px solid ${C.border}`,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ყველა კატეგორია
+                    </button>
                   </>
                 )}
-              </p>
+              </div>
             </div>
           </div>
+
+          {isListingsPage && (
+            <div className="mx-auto mb-5 max-w-5xl">
+              <SponsoredPartnerAds variant="wide" />
+            </div>
+          )}
 
           {/* filter chips */}
           {activeFilters.length > 0 && (
@@ -291,6 +361,77 @@ function SearchContent() {
           listing={showOfferModal}
           onClose={() => setShowOfferModal(null)}
         />
+      )}
+
+      {showRulesModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="წესების დახურვა"
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setShowRulesModal(false)}
+          />
+          <div
+            className="relative w-full max-w-md rounded-2xl p-6 shadow-xl"
+            style={{ background: C.bg, border: `1px solid ${C.border}` }}
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p
+                  className="text-[10px] font-bold uppercase tracking-widest mb-1"
+                  style={{ color: C.green }}
+                >
+                  წესი {rulesStep + 1} / {ruleSlides.length}
+                </p>
+                <h3 className="text-lg font-bold" style={{ color: C.text }}>
+                  {ruleSlides[rulesStep].title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRulesModal(false)}
+                className="rounded-full p-2 transition-colors"
+                style={{ color: C.text3, background: C.bg2, cursor: "pointer" }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className="min-h-20 text-sm leading-relaxed" style={{ color: C.text2 }}>
+              {ruleSlides[rulesStep].text}
+            </p>
+
+            <div className="mt-6 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setRulesStep((step) => Math.max(0, step - 1))}
+                disabled={rulesStep === 0}
+                className="flex-1 rounded-xl py-3 text-sm font-bold transition-colors"
+                style={{
+                  background: C.bg3,
+                  color: rulesStep === 0 ? C.text3 : C.text2,
+                  cursor: rulesStep === 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                უკან
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (rulesStep === ruleSlides.length - 1) {
+                    setShowRulesModal(false);
+                    return;
+                  }
+                  setRulesStep((step) => Math.min(ruleSlides.length - 1, step + 1));
+                }}
+                className="flex-1 rounded-xl py-3 text-sm font-bold text-white transition-colors"
+                style={{ background: C.green, cursor: "pointer" }}
+              >
+                {rulesStep === ruleSlides.length - 1 ? "დახურვა" : "შემდეგი"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {deleteConfirmation.isOpen && (

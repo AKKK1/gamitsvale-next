@@ -13,11 +13,24 @@ export async function POST(request: Request) {
     await connectDB();
 
     // ადმინის რეალური იუზერი ბაზიდან
-    const adminUser = await User.findOne({ role: 'ADMIN' });
+    let adminUser = await User.findOne({ role: 'ADMIN' });
+    if (!adminUser) {
+      adminUser = await User.create({
+        name: 'Admin',
+        email: 'admin@gamitsvale.local',
+        password: '',
+        role: 'ADMIN',
+        isVerified: true,
+        canPostExclusive: true,
+      });
+    } else if (!adminUser.canPostExclusive) {
+      adminUser.canPostExclusive = true;
+      await adminUser.save();
+    }
 
     const token = jwt.sign(
       { 
-        id: adminUser ? adminUser._id.toString() : 'admin', 
+        id: adminUser._id.toString(), 
         role: 'ADMIN' 
       },
       process.env.JWT_SECRET!,

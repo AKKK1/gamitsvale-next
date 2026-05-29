@@ -139,7 +139,7 @@ export default function ListingPageClient({ id, initialListing }: Props) {
       <div className="max-w-[1200px] mx-auto px-4 py-8">
         <div className="flex gap-6 items-start">
           {/* ── მარცხენა რეკლამა ── */}
-          <aside className="hidden xl:flex flex-col gap-4 shrink-0 w-[160px] sticky top-[76px]">
+          <aside className="hidden">
             <AdSlot label="160 × 280px" />
             <AdSlot label="160 × 280px" />
           </aside>
@@ -148,7 +148,7 @@ export default function ListingPageClient({ id, initialListing }: Props) {
           <main className="flex-1 min-w-0">
             {/* ზედა ბანერი — tablet-ზე გამოჩნდება (xl-ზე ad sidebar-ია) */}
             <div
-              className="xl:hidden flex items-center justify-center rounded-2xl mb-6 gap-3"
+              className="hidden"
               style={{
                 background: C.bg2,
                 border: `1px dashed ${C.border}`,
@@ -187,7 +187,7 @@ export default function ListingPageClient({ id, initialListing }: Props) {
           </main>
 
           {/* ── მარჯვენა რეკლამა ── */}
-          <aside className="hidden xl:flex flex-col gap-4 shrink-0 w-[160px] sticky top-[76px]">
+          <aside className="hidden">
             <AdSlot label="160 × 280px" />
             <AdSlot label="160 × 280px" />
           </aside>
