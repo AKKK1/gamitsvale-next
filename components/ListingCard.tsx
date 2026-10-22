@@ -197,18 +197,23 @@ export default function ListingCard({
   };
 
   const type = listing.listingType || (listing.isVIP ? "VIP" : "NORMAL");
+  const isGift = listing.wantedType === "gift";
   const isExchanged = listing.isTraded || listing.status === "EXCHANGED";
   const isOwner =
     user && (user._id === listing.owner?._id || user.role === "ADMIN");
 
   const cardBorder =
-    type === "VIP"
+    isGift
+      ? "4px solid transparent"
+      : type === "VIP"
       ? `2px solid ${C.gold}`
       : type === "SILVER"
         ? "1px solid #C0C0C0"
         : `1px solid ${C.border}`;
   const cardHoverShadow =
-    type === "VIP"
+    isGift
+      ? "0 8px 28px rgba(180,35,50,0.16), 0 0 0 2px rgba(244,208,111,0.35)"
+      : type === "VIP"
       ? "0 8px 28px rgba(200,130,10,0.12)"
       : "0 8px 28px rgba(26,138,74,0.08)";
 
@@ -222,23 +227,31 @@ export default function ListingCard({
         <div
           className="group relative w-full h-full flex flex-col overflow-hidden rounded-[14px] transition-all duration-200"
           style={{
-            background: C.bg,
-            border: isExchanged ? "1px solid #fca5a5" : cardBorder,
+            background:
+              isGift && !isExchanged
+                ? "linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #b42332 0 42%, #f4d06f 42% 58%, #b42332 58%) border-box"
+                : C.bg,
+            border: isExchanged
+              ? "1px solid #fca5a5"
+              : isGift
+                ? "4px solid transparent"
+                : cardBorder,
             opacity: isExchanged ? 0.9 : 1,
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.transform =
               "translateY(-2px)";
             (e.currentTarget as HTMLElement).style.boxShadow = cardHoverShadow;
-            if (!isExchanged)
+            if (!isExchanged && !isGift)
               (e.currentTarget as HTMLElement).style.borderColor =
                 type === "VIP" ? C.gold : C.green;
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
             (e.currentTarget as HTMLElement).style.boxShadow = "none";
-            (e.currentTarget as HTMLElement).style.borderColor =
-              type === "VIP"
+            (e.currentTarget as HTMLElement).style.borderColor = isGift
+              ? "transparent"
+              : type === "VIP"
                 ? C.gold
                 : type === "SILVER"
                   ? "#C0C0C0"
@@ -419,13 +432,14 @@ export default function ListingCard({
               <div
                 className="rounded-lg px-2.5 py-2"
                 style={{
-                  background: C.greenLight,
-                  borderLeft: `3px solid ${C.green}`,
+                  background: "#fff7e6",
+                  borderLeft: "3px solid #b42332",
+                  boxShadow: "inset 0 0 0 1px rgba(244,208,111,0.55)",
                 }}
               >
                 <p
                   className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
-                  style={{ color: C.green }}
+                  style={{ color: "#9f1d2a" }}
                 >
                   🎁 გავაჩუქებ
                 </p>
