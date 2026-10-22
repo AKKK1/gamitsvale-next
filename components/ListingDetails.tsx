@@ -326,10 +326,21 @@ export default function ListingDetails({
               className="font-bold text-base flex items-center gap-2 mb-3"
               style={{ color: C.text }}
             >
-              მსურს:
+              {listing.wantedType === "gift" ? "გავაჩუქებ:" : "მსურს:"}
             </h3>
             <div className="flex flex-wrap gap-2">
-              {listing.wantedType === "service" && listing.serviceWanted ? (
+              {listing.wantedType === "gift" ? (
+                <span
+                  className="px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2"
+                  style={{
+                    background: C.greenLight,
+                    color: C.green,
+                    border: `1px solid rgba(26,138,74,0.2)`,
+                  }}
+                >
+                  🎁 გავაჩუქებ
+                </span>
+              ) : listing.wantedType === "service" && listing.serviceWanted ? (
                 <span
                   className="px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2"
                   style={{

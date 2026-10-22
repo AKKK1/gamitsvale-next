@@ -70,7 +70,7 @@ export default function AddListingModal({
     condition: "USED",
     wantedItems: ["", "", ""],
     serviceWanted: "",
-    wantedType: "items" as "items" | "service",
+    wantedType: "items" as "items" | "service" | "offerMe" | "gift",
     offerMe: "",
     images: [] as string[],
     listingType: "NORMAL",
@@ -640,6 +640,7 @@ export default function AddListingModal({
                       { id: "items", label: "📦 ნივთი" },
                       { id: "service", label: "🛠️ სერვისი" },
                       { id: "offerMe", label: "💡შემომთავაზეთ" },
+                      { id: "gift", label: "🎁 ჩუქდება" },
                     ].map((t) => (
                       <button
                         key={t.id}

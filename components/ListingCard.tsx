@@ -415,7 +415,22 @@ export default function ListingCard({
             {/* გაცვლა მინდა */}
             {/* aqedam */}
 
-            {listing.wantedType === "service" && listing.serviceWanted ? (
+            {listing.wantedType === "gift" ? (
+              <div
+                className="rounded-lg px-2.5 py-2"
+                style={{
+                  background: C.greenLight,
+                  borderLeft: `3px solid ${C.green}`,
+                }}
+              >
+                <p
+                  className="text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1"
+                  style={{ color: C.green }}
+                >
+                  🎁 გავაჩუქებ
+                </p>
+              </div>
+            ) : listing.wantedType === "service" && listing.serviceWanted ? (
               <div
                 className="rounded-lg px-2.5 py-2"
                 style={{

@@ -48,7 +48,7 @@ const ListingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   expiresAt: { type: Date },
   serviceWanted: { type: String, default: '' },
-  wantedType: { type: String, enum: ['items', 'service', 'offerMe'], default: 'offerMe',
+  wantedType: { type: String, enum: ['items', 'service', 'offerMe', 'gift'], default: 'offerMe',
     offerMe: [{ type: String }],
    },
 

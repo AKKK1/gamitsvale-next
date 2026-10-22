@@ -184,6 +184,19 @@ export default async function Image({
         </div>
 
         {/* wantedItems */}
+        {wantedType === "gift" && (
+          <div style={{ marginBottom: "24px" }}>
+            <div
+              style={{
+                fontSize: "16px",
+                color: "#D4A017",
+                fontWeight: "900",
+              }}
+            >
+              🎁 გავაჩუქებ
+            </div>
+          </div>
+        )}
         {wantedType === "items" && wantedItems.length > 0 && (
           <div style={{ marginBottom: "24px" }}>
             <div
