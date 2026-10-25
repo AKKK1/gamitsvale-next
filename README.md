@@ -6,6 +6,11 @@
 
 **Gamitsvale Next** is a web-based platform designed to make item swapping and exchanging easier and more efficient. Built with cutting-edge web technologies, the project aims to provide a seamless, fast, and user-friendly experience for users looking to trade items without necessarily using traditional currency.
 
+Modern UI/UX: Clean, responsive, and mobile-friendly interface.
+
+Fast Performance: Server-side rendering and static generation powered by Next.js.
+
+Item Management: Add, edit, and browse items available for exchange.
 ---
 
 ## Built With
